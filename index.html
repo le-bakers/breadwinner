@@ -1,1 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Breadwinner – Gluten-Free Receipt Scanner</title>
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div id="app">
 
+  <header>
+    <div class="logo-icon">🌾</div>
+    <div class="logo-text">
+      <span class="logo-title">Breadwinner</span>
+      <span class="logo-sub">Gluten-Free Receipt Scanner</span>
+    </div>
+  </header>
+
+  <main>
+
+    <!-- Upload Card -->
+    <div class="card">
+      <div class="card-title">📷 Upload Your Receipt</div>
+
+      <div id="upload-zone" role="button" tabindex="0" aria-label="Tap to upload a receipt photo">
+        <input type="file" id="file-input" accept="image/*,image/jpeg,image/png" aria-label="Choose receipt file" capture="environment">
+        <div class="upload-icon">🧾</div>
+        <div class="upload-label">Tap to take a photo or upload</div>
+        <div class="upload-hint">Use your camera or choose a photo from your phone</div>
+        <img id="preview-img" src="" alt="Receipt preview">
+      </div>
+
+      <div class="gap-md"></div>
+
+      <button class="btn btn-primary" id="scan-btn" disabled aria-live="polite">
+        <span>🔍</span> Scan for Gluten
+      </button>
+
+      <div class="gap-sm"></div>
+
+      <button class="btn btn-secondary" id="clear-btn" style="display:none">
+        <span>✕</span> Clear &amp; Start Over
+      </button>
+
+      <div class="error-box" id="error-box" role="alert"></div>
+    </div>
+
+    <!-- Loading -->
+    <div id="loading-state">
+      <div class="spinner" aria-hidden="true"></div>
+      <div class="loading-text" id="loading-text">Reading your receipt…</div>
+    </div>
+
+    <!-- Results -->
+    <div id="results-section">
+
+      <div class="summary-bar">
+        <div class="summary-tile tile-safe">
+          <div class="tile-val" id="tile-safe-count">0</div>
+          <div class="tile-label">Safe Items</div>
+        </div>
+        <div class="summary-tile tile-gluten">
+          <div class="tile-val" id="tile-gluten-count">0</div>
+          <div class="tile-label">Has Gluten</div>
+        </div>
+        <div class="summary-tile tile-deduct">
+          <div class="tile-val" id="tile-deduct-count">0</div>
+          <div class="tile-label">Deductible</div>
+        </div>
+      </div>
+
+      <div class="card" id="receipt-card">
+
+        <div id="gluten-section" style="display:none">
+          <div class="section-header gluten-hdr">⚠️ Contains Gluten</div>
+          <div id="gluten-list"></div>
+        </div>
+
+        <div id="safe-section" style="display:none">
+          <div class="section-header safe-hdr" style="margin-top:8px">✅ Gluten-Free Safe</div>
+          <div id="safe-list"></div>
+        </div>
+
+        <div id="deduct-section" style="display:none">
+          <div class="section-header deduct-hdr" style="margin-top:8px">💰 Tax Deductible (GF Premium)</div>
+          <div id="deduct-list"></div>
+        </div>
+
+        <div class="totals-section">
+          <div class="total-row">
+            <span class="total-label">Gluten-free items</span>
+            <span class="total-val" id="total-safe">$0.00</span>
+          </div>
+          <div class="total-row">
+            <span class="total-label" style="color:var(--danger)">Gluten items</span>
+            <span class="total-val" id="total-gluten" style="color:var(--danger)">$0.00</span>
+          </div>
+          <div class="total-row">
+            <span class="total-label" style="color:var(--gold-dark)">Est. tax-deductible</span>
+            <span class="total-val" id="total-deduct" style="color:var(--gold-dark)">$0.00</span>
+          </div>
+          <div class="total-row big">
+            <span class="total-label">Receipt total</span>
+            <span class="total-val" id="total-all">$0.00</span>
+          </div>
+        </div>
+
+        <div class="deduction-callout">
+          <div class="callout-title">💡 About Your Tax Deduction</div>
+          <div class="callout-body" id="deduct-callout-text">
+            People diagnosed with celiac disease may deduct the <em>cost difference</em> between gluten-free and regular versions of the same food as a medical expense. Save this report for your tax records.
+          </div>
+        </div>
+      </div>
+
+      <button class="btn btn-secondary" id="export-btn" style="margin-top:0">
+        📄 Save / Share Summary
+      </button>
+      <button class="btn btn-secondary" id="scan-another-btn" style="margin-top:0">
+        📷 Scan Another Receipt
+      </button>
+
+    </div>
+
+    <!-- How it works -->
+    <div class="card" id="how-it-works">
+      <div class="card-title">How Breadwinner Works</div>
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-text">
+            <strong>Take a photo of your receipt</strong>
+            <span>Tap the box above and use your camera, or choose a photo from your phone.</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-text">
+            <strong>We scan for gluten ingredients</strong>
+            <span>Our AI reads every item and checks it against known gluten-containing foods.</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-text">
+            <strong>See what's safe — and what's deductible</strong>
+            <span>Gluten-free items are listed separately, with eligible tax deductions highlighted in gold.</span>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-text">
+            <strong>Save your report</strong>
+            <span>Keep a record for your doctor or tax advisor with one tap.</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+
+  <footer>
+    <strong>Breadwinner</strong> — Made for the celiac community<br>
+    <span style="font-size:11px">Tax information is for guidance only. Consult a tax professional regarding medical expense deductions.</span>
+  </footer>
+</div>
+
+
+
+
+<script src="app.js"></script>
+</body>
+</html>
