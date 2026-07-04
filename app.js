@@ -1,237 +1,280 @@
-var uploadedBase64 = null;
-  var uploadedMime = null;
+(() => {
+  'use strict';
 
-  var uploadZone    = document.getElementById('upload-zone');
-  var fileInput     = document.getElementById('file-input');
-  var previewImg    = document.getElementById('preview-img');
-  var scanBtn       = document.getElementById('scan-btn');
-  var clearBtn      = document.getElementById('clear-btn');
-  var loadingState  = document.getElementById('loading-state');
-  var loadingText   = document.getElementById('loading-text');
-  var resultsSection = document.getElementById('results-section');
-  var errorBox      = document.getElementById('error-box');
-  var howItWorks    = document.getElementById('how-it-works');
-  var exportBtn     = document.getElementById('export-btn');
-  var scanAnotherBtn = document.getElementById('scan-another-btn');
+  // ---------- Element references ----------
+  const dropzone       = document.getElementById('dropzone');
+  const fileCamera      = document.getElementById('file-camera');
+  const fileUpload      = document.getElementById('file-upload');
+  const btnCamera       = document.getElementById('btn-camera');
+  const btnUpload       = document.getElementById('btn-upload');
 
-  fileInput.addEventListener('change', function(e) {
-    var f = e.target.files[0];
-    if (f) processFile(f);
+  const uploadPanel     = document.getElementById('upload-panel');
+  const statusPanel     = document.getElementById('status-panel');
+  const statusText      = document.getElementById('status-text');
+  const errorPanel      = document.getElementById('error-panel');
+  const errorText       = document.getElementById('error-text');
+  const resultsPanel    = document.getElementById('results-panel');
+
+  const btnTryAgain     = document.getElementById('btn-try-again');
+  const btnNewReceipt   = document.getElementById('btn-new-receipt');
+  const btnShare        = document.getElementById('btn-share');
+
+  const receiptStoreEl  = document.getElementById('receipt-store');
+  const receiptDateEl   = document.getElementById('receipt-date');
+  const receiptItemsEl  = document.getElementById('receipt-items');
+  const summaryCountEl  = document.getElementById('summary-count');
+  const summaryTotalEl  = document.getElementById('summary-total');
+  const summaryGlutenEl = document.getElementById('summary-gluten');
+  const summaryDeductEl = document.getElementById('summary-deductible');
+
+  let lastShareText = '';
+
+  // ---------- Helpers ----------
+  const money = (n) => `$${Number(n || 0).toFixed(2)}`;
+
+  const showOnly = (panelToShow) => {
+    [uploadPanel, statusPanel, errorPanel, resultsPanel].forEach((p) => {
+      if (!p) return;
+      p.hidden = (p !== panelToShow);
+    });
+  };
+
+  const setStatus = (message) => {
+    statusText.textContent = message;
+  };
+
+  const showError = (message) => {
+    errorText.textContent = message;
+    showOnly(errorPanel);
+  };
+
+  // ---------- File intake ----------
+  btnCamera.addEventListener('click', () => fileCamera.click());
+  btnUpload.addEventListener('click', () => fileUpload.click());
+
+  fileCamera.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
+  });
+  fileUpload.addEventListener('change', (e) => {
+    if (e.target.files && e.target.files[0]) handleFile(e.target.files[0]);
   });
 
-  uploadZone.addEventListener('keydown', function(e) {
-    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); fileInput.click(); }
+  dropzone.addEventListener('click', () => fileUpload.click());
+  dropzone.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      fileUpload.click();
+    }
   });
 
-  uploadZone.addEventListener('dragover', function(e) { e.preventDefault(); uploadZone.classList.add('drag-over'); });
-  uploadZone.addEventListener('dragleave', function() { uploadZone.classList.remove('drag-over'); });
-  uploadZone.addEventListener('drop', function(e) {
-    e.preventDefault(); uploadZone.classList.remove('drag-over');
-    var f = e.dataTransfer.files[0];
-    if (f) processFile(f);
+  ['dragenter', 'dragover'].forEach((evt) => {
+    dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropzone.classList.add('is-dragover');
+    });
+  });
+  ['dragleave', 'drop'].forEach((evt) => {
+    dropzone.addEventListener(evt, (e) => {
+      e.preventDefault();
+      dropzone.classList.remove('is-dragover');
+    });
+  });
+  dropzone.addEventListener('drop', (e) => {
+    const file = e.dataTransfer.files && e.dataTransfer.files[0];
+    if (file) handleFile(file);
   });
 
-  function processFile(f) {
-    uploadedMime = f.type || 'image/jpeg';
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      var dataUrl = ev.target.result;
-      uploadedBase64 = dataUrl.split(',')[1];
-      if (f.type.startsWith('image/')) {
-        previewImg.src = dataUrl;
-        previewImg.style.display = 'block';
-      } else {
-        previewImg.style.display = 'none';
+  btnTryAgain.addEventListener('click', () => showOnly(uploadPanel));
+  btnNewReceipt.addEventListener('click', () => showOnly(uploadPanel));
+
+  btnShare.addEventListener('click', async () => {
+    if (!lastShareText) return;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'Breadwinner receipt summary', text: lastShareText });
+      } catch (err) {
+        // User cancelled share sheet; no action needed.
       }
-      scanBtn.disabled = false;
-      clearBtn.style.display = 'flex';
-      hideError();
-    };
-    reader.readAsDataURL(f);
+    } else {
+      try {
+        await navigator.clipboard.writeText(lastShareText);
+        setTemporaryLabel(btnShare, 'Copied to clipboard');
+      } catch (err) {
+        showError('Could not copy the summary. You can select and copy the totals manually.');
+      }
+    }
+  });
+
+  function setTemporaryLabel(button, label) {
+    const original = button.innerHTML;
+    button.textContent = label;
+    setTimeout(() => { button.innerHTML = original; }, 2200);
   }
 
-  clearBtn.addEventListener('click', resetApp);
-  scanAnotherBtn.addEventListener('click', resetApp);
+  // ---------- Main flow ----------
+  async function handleFile(file) {
+    if (!file.type || !file.type.startsWith('image/')) {
+      showError('That file does not look like an image. Please choose a photo of your receipt.');
+      return;
+    }
+    if (file.size > 20 * 1024 * 1024) {
+      showError('That photo is quite large. Please choose a smaller photo, under 20 MB.');
+      return;
+    }
 
-  function resetApp() {
-    uploadedBase64 = null; uploadedMime = null;
-    fileInput.value = '';
-    previewImg.src = ''; previewImg.style.display = 'none';
-    scanBtn.disabled = true;
-    clearBtn.style.display = 'none';
-    loadingState.style.display = 'none';
-    resultsSection.style.display = 'none';
-    howItWorks.style.display = '';
-    hideError();
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-
-  var loadingMessages = [
-    'Reading your receipt…',
-    'Identifying food items…',
-    'Checking for gluten sources…',
-    'Calculating deductions…'
-  ];
-
-  scanBtn.addEventListener('click', runScan);
-
-  async function runScan() {
-    if (!uploadedBase64) return;
-    hideError();
-    setLoading(true);
-    howItWorks.style.display = 'none';
-
-    var msgIdx = 0;
-    var msgInterval = setInterval(function() {
-      msgIdx = (msgIdx + 1) % loadingMessages.length;
-      loadingText.textContent = loadingMessages[msgIdx];
-    }, 2200);
-
-    var prompt = 'You are a celiac disease dietary assistant and tax helper. Analyze this grocery receipt image.\n\nExtract EVERY line item visible on the receipt. For each item determine:\n1. Whether it likely contains gluten (wheat, barley, rye, malt, triticale, spelt, kamut, semolina, farro, bulgur, durum, einkorn, emmer, farina, graham flour, wheat starch, wheat bran, wheat germ, hydrolyzed wheat protein, brewers yeast). Regular oats may be cross-contaminated.\n2. Whether it is tax-deductible for a person with celiac disease: gluten-free specialty products (labeled GF, gluten-free breads, GF pasta, GF crackers, GF cereals, GF flour, etc.) that cost more than their gluten-containing equivalents qualify as a medical expense deduction. Naturally gluten-free foods (fresh produce, plain meat, rice, plain dairy, eggs) do NOT qualify because there is no price premium.\n3. The price of the item.\n\nReturn ONLY a JSON object (no markdown, no explanation) with this exact structure:\n{\n  "store": "Store name or Unknown",\n  "date": "Date on receipt or Unknown",\n  "items": [\n    {\n      "name": "Product name",\n      "price": 4.99,\n      "hasGluten": true,\n      "isTaxDeductible": false,\n      "note": "Brief reason"\n    }\n  ],\n  "receiptTotal": 0.00\n}\n\nIf price is not readable set it to 0.00. Include ALL items.';
+    showOnly(statusPanel);
+    setStatus('Reading your receipt…');
 
     try {
-      var resp = await fetch('https://api.anthropic.com/v1/messages', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-6',
-          max_tokens: 1000,
-          messages: [{
-            role: 'user',
-            content: [
-              {
-                type: 'image',
-                source: { type: 'base64', media_type: uploadedMime, data: uploadedBase64 }
-              },
-              { type: 'text', text: prompt }
-            ]
-          }]
-        })
-      });
-
-      clearInterval(msgInterval);
-
-      if (!resp.ok) {
-        var err = await resp.json().catch(function() { return {}; });
-        throw new Error((err.error && err.error.message) || ('API error ' + resp.status));
-      }
-
-      var data = await resp.json();
-      var text = data.content.map(function(b) { return b.text || ''; }).join('');
-
-      var parsed;
-      try {
-        var clean = text.replace(/```json|```/g, '').trim();
-        parsed = JSON.parse(clean);
-      } catch(e) {
-        throw new Error('Could not read the receipt clearly. Please try a brighter, clearer photo.');
-      }
-
-      setLoading(false);
-      renderResults(parsed);
-
-    } catch(err) {
-      clearInterval(msgInterval);
-      setLoading(false);
-      showError(err.message || 'Something went wrong. Please try again.');
+      const { base64, mediaType } = await fileToBase64(file);
+      setStatus('Checking each item for gluten and tax-deductible savings…');
+      const data = await analyzeReceipt(base64, mediaType);
+      renderResults(data);
+      showOnly(resultsPanel);
+      resultsPanel.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (err) {
+      console.error(err);
+      showError(err.message || 'Something went wrong while reading that receipt. Please try again with a clearer photo.');
     }
   }
 
-  function renderResults(data) {
-    var items = data.items || [];
-    var glutenItems = items.filter(function(i) { return i.hasGluten; });
-    var safeItems   = items.filter(function(i) { return !i.hasGluten; });
-    var deductItems = items.filter(function(i) { return i.isTaxDeductible; });
-
-    function sum(arr) { return arr.reduce(function(t,i) { return t + (parseFloat(i.price) || 0); }, 0); }
-
-    document.getElementById('tile-safe-count').textContent   = safeItems.length;
-    document.getElementById('tile-gluten-count').textContent = glutenItems.length;
-    document.getElementById('tile-deduct-count').textContent = deductItems.length;
-
-    renderList('gluten-list', 'gluten-section', glutenItems, 'danger');
-    renderList('safe-list',   'safe-section',   safeItems,   'sage');
-    renderList('deduct-list', 'deduct-section', deductItems, 'gold');
-
-    document.getElementById('total-safe').textContent   = fmt(sum(safeItems));
-    document.getElementById('total-gluten').textContent = fmt(sum(glutenItems));
-    document.getElementById('total-deduct').textContent = fmt(sum(deductItems));
-    document.getElementById('total-all').textContent    = fmt(data.receiptTotal || sum(items));
-
-    var dCount = deductItems.length;
-    if (dCount > 0) {
-      document.getElementById('deduct-callout-text').innerHTML =
-        'You may be able to deduct the GF premium cost of <strong>' + dCount + ' item' + (dCount > 1 ? 's' : '') + '</strong> (totalling <strong>' + fmt(sum(deductItems)) + '</strong>) as a medical expense. Save this summary and share with your tax professional.';
-    }
-
-    resultsSection.style.display = 'block';
-    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }
-
-  function renderList(listId, sectionId, items, color) {
-    var section = document.getElementById(sectionId);
-    var list = document.getElementById(listId);
-    list.innerHTML = '';
-    if (items.length === 0) { section.style.display = 'none'; return; }
-    section.style.display = 'block';
-
-    items.forEach(function(item) {
-      var row = document.createElement('div');
-      row.className = 'item-row';
-      var priceClass = color === 'danger' ? 'danger-price' : color === 'sage' ? 'sage-price' : 'gold-price';
-
-      var badges = '';
-      if (item.hasGluten) badges += '<span class="badge badge-danger">Contains Gluten</span>';
-      if (item.isTaxDeductible) badges += '<span class="badge badge-gold">Tax Deductible</span>';
-      if (!item.hasGluten && !item.isTaxDeductible) badges += '<span class="badge badge-sage">Naturally GF</span>';
-
-      row.innerHTML =
-        '<div class="item-info">' +
-          '<div class="item-name">' + escHtml(item.name) + '</div>' +
-          (item.note ? '<div class="item-note">' + escHtml(item.note) + '</div>' : '') +
-          '<div>' + badges + '</div>' +
-        '</div>' +
-        '<div class="item-price ' + priceClass + '">' + fmt(item.price) + '</div>';
-
-      list.appendChild(row);
+  function fileToBase64(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const result = reader.result; // data:image/jpeg;base64,XXXX
+        const base64 = result.split(',')[1];
+        resolve({ base64, mediaType: file.type });
+      };
+      reader.onerror = () => reject(new Error('We could not open that photo. Please try a different one.'));
+      reader.readAsDataURL(file);
     });
   }
 
-  exportBtn.addEventListener('click', function() {
-    var lines = [
-      'BREADWINNER – Receipt Scan Summary',
-      'Date: ' + new Date().toLocaleDateString(),
-      '─────────────────────────────────',
-      '✅ Gluten-Free Safe Items:  ' + document.getElementById('tile-safe-count').textContent,
-      '⚠️  Contains Gluten:        ' + document.getElementById('tile-gluten-count').textContent,
-      '💰 Tax-Deductible Items:   ' + document.getElementById('tile-deduct-count').textContent,
-      '💰 Est. Deductible Amount: ' + document.getElementById('total-deduct').textContent,
-      '🧾 Receipt Total:          ' + document.getElementById('total-all').textContent,
-      '─────────────────────────────────',
-      'Tax info is an estimate. Consult a tax professional.',
-      'Generated by Breadwinner'
-    ].join('\n');
+  // ---------- Claude API call ----------
+  const SYSTEM_PROMPT = `You are a careful assistant reading a photo of a grocery store receipt for a person with celiac disease.
 
-    if (navigator.share) {
-      navigator.share({ title: 'Breadwinner Receipt Summary', text: lines }).catch(function() {});
-    } else {
-      navigator.clipboard.writeText(lines).then(function() {
-        exportBtn.textContent = '✓ Copied to clipboard!';
-        setTimeout(function() { exportBtn.innerHTML = '📄 Save / Share Summary'; }, 2500);
-      }).catch(function() { alert(lines); });
+Read every line item you can see on the receipt. For each item, decide:
+1. "containsGluten": true if the product is a normal wheat/barley/rye-based food (regular bread, pasta, cereal, crackers, sauces with wheat, etc). false if it is naturally gluten-free (produce, meat, dairy, rice, eggs) or is clearly labeled gluten-free.
+2. "taxDeductibleGF": true ONLY if the item is a specialty gluten-free replacement product (e.g. gluten-free bread, gluten-free pasta, gluten-free flour, gluten-free crackers) since in the US the price difference between these and their regular counterparts can sometimes be a deductible medical expense for people with celiac disease. Regular naturally gluten-free whole foods (like fruit, vegetables, plain meat) are NOT tax-deductible specialty items, so mark those false.
+
+Respond with ONLY valid JSON, no markdown fences, no commentary, matching exactly this shape:
+{
+  "storeName": "string or null if not visible",
+  "date": "string as printed on receipt or null",
+  "items": [
+    { "name": "string", "price": 0.00, "containsGluten": true, "taxDeductibleGF": false }
+  ]
+}
+
+If the image is not a legible receipt, respond with exactly: {"error": "not_a_receipt"}`;
+
+  async function analyzeReceipt(base64, mediaType) {
+    const response = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        model: 'claude-sonnet-4-6',
+        max_tokens: 1000,
+        system: SYSTEM_PROMPT,
+        messages: [
+          {
+            role: 'user',
+            content: [
+              { type: 'image', source: { type: 'base64', media_type: mediaType, data: base64 } },
+              { type: 'text', text: 'Read this grocery receipt and return the JSON described in your instructions.' }
+            ]
+          }
+        ]
+      })
+    });
+
+    if (!response.ok) {
+      throw new Error('We had trouble reaching the scanning service. Please check your connection and try again.');
     }
-  });
 
-  function fmt(n) { return '$' + (parseFloat(n) || 0).toFixed(2); }
-  function escHtml(s) {
-    return String(s)
-      .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    const data = await response.json();
+    const textBlock = (data.content || []).find((block) => block.type === 'text');
+    if (!textBlock) {
+      throw new Error('We did not get a readable response. Please try again.');
+    }
+
+    const cleaned = textBlock.text.replace(/```json|```/g, '').trim();
+    let parsed;
+    try {
+      parsed = JSON.parse(cleaned);
+    } catch (err) {
+      throw new Error('We could not make sense of that receipt. Please try a clearer, well-lit photo.');
+    }
+
+    if (parsed.error === 'not_a_receipt') {
+      throw new Error('That photo does not look like a grocery receipt. Please try again with a clear photo of a receipt.');
+    }
+    if (!Array.isArray(parsed.items) || parsed.items.length === 0) {
+      throw new Error('We could not find any items on that receipt. Please try a clearer photo.');
+    }
+
+    return parsed;
   }
-  function setLoading(on) {
-    loadingState.style.display = on ? 'flex' : 'none';
-    scanBtn.disabled = on;
-    clearBtn.style.display = on ? 'none' : 'flex';
-    if (on) loadingText.textContent = loadingMessages[0];
+
+  // ---------- Rendering ----------
+  function renderResults(data) {
+    receiptStoreEl.textContent = data.storeName || 'Grocery receipt';
+    receiptDateEl.textContent = data.date || 'Date not detected';
+
+    receiptItemsEl.innerHTML = '';
+
+    let total = 0;
+    let glutenCount = 0;
+    let deductibleTotal = 0;
+
+    data.items.forEach((item) => {
+      const price = Number(item.price) || 0;
+      total += price;
+      if (item.containsGluten) glutenCount += 1;
+      if (item.taxDeductibleGF) deductibleTotal += price;
+
+      const li = document.createElement('li');
+      li.className = 'receipt__item';
+
+      const nameEl = document.createElement('span');
+      nameEl.className = 'receipt__item-name';
+      nameEl.textContent = item.name || 'Unnamed item';
+
+      const priceEl = document.createElement('span');
+      priceEl.className = 'receipt__item-price';
+      priceEl.textContent = money(price);
+
+      const tagEl = document.createElement('span');
+      if (item.taxDeductibleGF) {
+        tagEl.className = 'receipt__item-tag receipt__item-tag--deductible';
+        tagEl.textContent = 'Tax-deductible GF';
+      } else if (item.containsGluten) {
+        tagEl.className = 'receipt__item-tag receipt__item-tag--gluten';
+        tagEl.textContent = 'Contains gluten';
+      } else {
+        tagEl.className = 'receipt__item-tag receipt__item-tag--safe';
+        tagEl.textContent = 'Gluten-free safe';
+      }
+
+      li.appendChild(nameEl);
+      li.appendChild(priceEl);
+      li.appendChild(tagEl);
+      receiptItemsEl.appendChild(li);
+    });
+
+    summaryCountEl.textContent = String(data.items.length);
+    summaryTotalEl.textContent = money(total);
+    summaryGlutenEl.textContent = `${glutenCount} item${glutenCount === 1 ? '' : 's'}`;
+    summaryDeductEl.textContent = money(deductibleTotal);
+
+    lastShareText =
+      `Breadwinner receipt summary\n` +
+      `${data.storeName || 'Store'} — ${data.date || 'date unknown'}\n` +
+      `Items scanned: ${data.items.length}\n` +
+      `Receipt total: ${money(total)}\n` +
+      `Contains gluten: ${glutenCount} item(s)\n` +
+      `Tax-deductible gluten-free total: ${money(deductibleTotal)}`;
   }
-  function showError(msg) { errorBox.textContent = '⚠️ ' + msg; errorBox.style.display = 'block'; }
-  function hideError() { errorBox.style.display = 'none'; errorBox.textContent = ''; }
+
+})();

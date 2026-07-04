@@ -2,173 +2,252 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
-<title>Breadwinner – Gluten-Free Receipt Scanner</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Breadwinner — Scan your grocery receipt for gluten &amp; tax savings</title>
+<meta name="description" content="Breadwinner scans your grocery receipt, flags gluten-containing items, and totals your tax-deductible gluten-free purchases.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=Public+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-<div id="app">
 
-  <header>
-    <div class="logo-icon">🌾</div>
-    <div class="logo-text">
-      <span class="logo-title">Breadwinner</span>
-      <span class="logo-sub">Gluten-Free Receipt Scanner</span>
-    </div>
-  </header>
+<a class="skip-link" href="#main">Skip to main content</a>
 
-  <main>
+<header class="site-header">
+  <div class="wrap header-inner">
+    <a href="#top" class="logo" aria-label="Breadwinner home">
+      <svg class="logo-mark" width="40" height="40" viewBox="0 0 40 40" fill="none" aria-hidden="true">
+        <path d="M8 16C8 10.5 12.7 6 20 6C27.3 6 32 10.5 32 16C32 16 33 18 33 22C33 27.5 27.2 32 20 32C12.8 32 7 27.5 7 22C7 18 8 16 8 16Z" fill="var(--wheat)" stroke="var(--crust)" stroke-width="1.6"/>
+        <path d="M20 12V27M15 15.5V25M25 15.5V25" stroke="var(--crust)" stroke-width="1.4" stroke-linecap="round"/>
+      </svg>
+      <span class="logo-text">Breadwinner</span>
+    </a>
+    <button class="btn btn-ghost" id="settings-btn" type="button" aria-haspopup="dialog" aria-controls="settings-dialog">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 15.5a3.5 3.5 0 100-7 3.5 3.5 0 000 7z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 13.5a1.7 1.7 0 00.34 1.87l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.7 1.7 0 00-1.87-.34 1.7 1.7 0 00-1.03 1.56V20a2 2 0 11-4 0v-.09a1.7 1.7 0 00-1.03-1.56 1.7 1.7 0 00-1.87.34l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.7 1.7 0 00.34-1.87 1.7 1.7 0 00-1.56-1.03H4a2 2 0 110-4h.09a1.7 1.7 0 001.56-1.03 1.7 1.7 0 00-.34-1.87l-.06-.06a2 2 0 112.83-2.83l.06.06a1.7 1.7 0 001.87.34H10a1.7 1.7 0 001.03-1.56V4a2 2 0 114 0v.09a1.7 1.7 0 001.03 1.56 1.7 1.7 0 001.87-.34l.06-.06a2 2 0 112.83 2.83l-.06.06a1.7 1.7 0 00-.34 1.87V10a1.7 1.7 0 001.56 1.03H20a2 2 0 110 4h-.09a1.7 1.7 0 00-1.56 1.03z" stroke="currentColor" stroke-width="1.6"/></svg>
+      Settings
+    </button>
+  </div>
+</header>
 
-    <!-- Upload Card -->
-    <div class="card">
-      <div class="card-title">📷 Upload Your Receipt</div>
+<main id="main">
 
-      <div id="upload-zone" role="button" tabindex="0" aria-label="Tap to upload a receipt photo">
-        <input type="file" id="file-input" accept="image/*,image/jpeg,image/png" aria-label="Choose receipt file" capture="environment">
-        <div class="upload-icon">🧾</div>
-        <div class="upload-label">Tap to take a photo or upload</div>
-        <div class="upload-hint">Use your camera or choose a photo from your phone</div>
-        <img id="preview-img" src="" alt="Receipt preview">
-      </div>
-
-      <div class="gap-md"></div>
-
-      <button class="btn btn-primary" id="scan-btn" disabled aria-live="polite">
-        <span>🔍</span> Scan for Gluten
-      </button>
-
-      <div class="gap-sm"></div>
-
-      <button class="btn btn-secondary" id="clear-btn" style="display:none">
-        <span>✕</span> Clear &amp; Start Over
-      </button>
-
-      <div class="error-box" id="error-box" role="alert"></div>
-    </div>
-
-    <!-- Loading -->
-    <div id="loading-state">
-      <div class="spinner" aria-hidden="true"></div>
-      <div class="loading-text" id="loading-text">Reading your receipt…</div>
-    </div>
-
-    <!-- Results -->
-    <div id="results-section">
-
-      <div class="summary-bar">
-        <div class="summary-tile tile-safe">
-          <div class="tile-val" id="tile-safe-count">0</div>
-          <div class="tile-label">Safe Items</div>
-        </div>
-        <div class="summary-tile tile-gluten">
-          <div class="tile-val" id="tile-gluten-count">0</div>
-          <div class="tile-label">Has Gluten</div>
-        </div>
-        <div class="summary-tile tile-deduct">
-          <div class="tile-val" id="tile-deduct-count">0</div>
-          <div class="tile-label">Deductible</div>
+  <!-- HERO -->
+  <section class="hero" id="top">
+    <div class="wrap hero-inner">
+      <div class="hero-copy">
+        <p class="eyebrow">For people living gluten-free</p>
+        <h1>Every receipt,<br>read for your gut<br><span class="hero-and">and</span> your wallet.</h1>
+        <p class="hero-sub">Snap a photo of your grocery receipt. Breadwinner points out what has gluten, what's safe, and which gluten-free specialty items you can claim as a medical tax deduction — added up for you, automatically.</p>
+        <div class="hero-actions">
+          <button class="btn btn-primary btn-lg" id="hero-scan-btn" type="button">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8V6a2 2 0 012-2h2M18 4h2a2 2 0 012 2v2M20 16v2a2 2 0 01-2 2h-2M6 20H4a2 2 0 01-2-2v-2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="3.5" stroke="currentColor" stroke-width="2"/></svg>
+            Scan a receipt
+          </button>
+          <a class="btn btn-outline btn-lg" href="#how-it-works">See how it works</a>
         </div>
       </div>
+      <div class="hero-art" aria-hidden="true">
+        <svg viewBox="0 0 320 380" width="100%" height="100%">
+          <g transform="rotate(-4 160 190)">
+            <path d="M50 20 L270 20 L270 340 L258 350 L246 340 L234 350 L222 340 L210 350 L198 340 L186 350 L174 340 L162 350 L150 340 L138 350 L126 340 L114 350 L102 340 L90 350 L78 340 L66 350 L54 340 L50 350 Z" fill="#FFFDF8" stroke="#E4D9C3" stroke-width="1.5"/>
+            <rect x="76" y="46" width="120" height="10" rx="2" fill="#DCCFAE"/>
+            <rect x="76" y="66" width="150" height="6" rx="2" fill="#EDE4D0"/>
+            <rect x="76" y="80" width="150" height="6" rx="2" fill="#EDE4D0"/>
+            <rect x="76" y="94" width="110" height="6" rx="2" fill="#EDE4D0"/>
+            <rect x="76" y="118" width="160" height="8" rx="2" fill="#A8442E" opacity="0.85"/>
+            <rect x="76" y="134" width="130" height="8" rx="2" fill="#5F7A5A" opacity="0.85"/>
+            <rect x="76" y="150" width="150" height="8" rx="2" fill="#5F7A5A" opacity="0.85"/>
+            <rect x="76" y="166" width="120" height="8" rx="2" fill="#A8442E" opacity="0.85"/>
+            <rect x="76" y="182" width="140" height="8" rx="2" fill="#5F7A5A" opacity="0.85"/>
+            <line x1="76" y1="204" x2="244" y2="204" stroke="#DCCFAE" stroke-width="1.5" stroke-dasharray="3 4"/>
+            <rect x="76" y="216" width="90" height="10" rx="2" fill="#2B2118"/>
+            <rect x="150" y="216" width="94" height="10" rx="2" fill="#2B2118"/>
+          </g>
+          <g transform="translate(196 246)">
+            <circle cx="34" cy="34" r="30" fill="rgba(200,155,60,0.16)" stroke="#C89B3C" stroke-width="4"/>
+            <line x1="56" y1="56" x2="80" y2="80" stroke="#C89B3C" stroke-width="7" stroke-linecap="round"/>
+          </g>
+        </svg>
+      </div>
+    </div>
+  </section>
 
-      <div class="card" id="receipt-card">
+  <!-- HOW IT WORKS -->
+  <section class="how" id="how-it-works">
+    <div class="wrap">
+      <h2 class="section-title">Three steps, no squinting required</h2>
+      <ol class="how-steps">
+        <li class="how-step">
+          <span class="how-num">1</span>
+          <h3>Photograph or upload</h3>
+          <p>Use your camera or choose a photo of your paper receipt. Good lighting helps, but Breadwinner handles a little glare or crinkle just fine.</p>
+        </li>
+        <li class="how-step">
+          <span class="how-num">2</span>
+          <h3>We read every line</h3>
+          <p>Breadwinner checks each item against known gluten-containing ingredients and flags certified or labeled gluten-free specialty products.</p>
+        </li>
+        <li class="how-step">
+          <span class="how-num">3</span>
+          <h3>Get your totals</h3>
+          <p>See what to avoid, what's safe, and your tax-deductible gluten-free total — ready to save, print, or share with your accountant.</p>
+        </li>
+      </ol>
+    </div>
+  </section>
 
-        <div id="gluten-section" style="display:none">
-          <div class="section-header gluten-hdr">⚠️ Contains Gluten</div>
-          <div id="gluten-list"></div>
+  <!-- SCAN AREA -->
+  <section class="scan-section" id="scan">
+    <div class="wrap">
+      <div class="scan-card" id="scan-card">
+
+        <div class="scan-idle" id="scan-idle">
+          <div class="drop-zone" id="drop-zone" tabindex="0" role="button" aria-label="Upload a photo of your receipt">
+            <svg width="52" height="52" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 16V4M12 4l-4 4M12 4l4 4" stroke="var(--crust)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2" stroke="var(--crust)" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <p class="drop-title">Drag a receipt photo here</p>
+            <p class="drop-sub">or choose one of the options below</p>
+          </div>
+          <div class="scan-buttons">
+            <button class="btn btn-primary btn-lg" id="camera-btn" type="button">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 8h3l1.5-2h7L17 8h3a1 1 0 011 1v10a1 1 0 01-1 1H4a1 1 0 01-1-1V9a1 1 0 011-1z" stroke="currentColor" stroke-width="1.8"/><circle cx="12" cy="14" r="3.5" stroke="currentColor" stroke-width="1.8"/></svg>
+              Take a photo
+            </button>
+            <button class="btn btn-outline btn-lg" id="upload-btn" type="button">
+              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M17 8l-5-5-5 5M12 3v12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Choose a photo
+            </button>
+            <input type="file" id="file-input" accept="image/*" class="visually-hidden" aria-hidden="true">
+            <input type="file" id="camera-input" accept="image/*" capture="environment" class="visually-hidden" aria-hidden="true">
+          </div>
+          <p class="scan-note">Your receipt photo is sent securely to be read. It isn't stored anywhere by Breadwinner.</p>
         </div>
 
-        <div id="safe-section" style="display:none">
-          <div class="section-header safe-hdr" style="margin-top:8px">✅ Gluten-Free Safe</div>
-          <div id="safe-list"></div>
-        </div>
-
-        <div id="deduct-section" style="display:none">
-          <div class="section-header deduct-hdr" style="margin-top:8px">💰 Tax Deductible (GF Premium)</div>
-          <div id="deduct-list"></div>
-        </div>
-
-        <div class="totals-section">
-          <div class="total-row">
-            <span class="total-label">Gluten-free items</span>
-            <span class="total-val" id="total-safe">$0.00</span>
-          </div>
-          <div class="total-row">
-            <span class="total-label" style="color:var(--danger)">Gluten items</span>
-            <span class="total-val" id="total-gluten" style="color:var(--danger)">$0.00</span>
-          </div>
-          <div class="total-row">
-            <span class="total-label" style="color:var(--gold-dark)">Est. tax-deductible</span>
-            <span class="total-val" id="total-deduct" style="color:var(--gold-dark)">$0.00</span>
-          </div>
-          <div class="total-row big">
-            <span class="total-label">Receipt total</span>
-            <span class="total-val" id="total-all">$0.00</span>
+        <div class="scan-preview" id="scan-preview" hidden>
+          <img id="preview-image" alt="Preview of your uploaded receipt">
+          <div class="scan-preview-actions">
+            <button class="btn btn-primary btn-lg" id="analyze-btn" type="button">Read this receipt</button>
+            <button class="btn btn-ghost" id="retake-btn" type="button">Choose a different photo</button>
           </div>
         </div>
 
-        <div class="deduction-callout">
-          <div class="callout-title">💡 About Your Tax Deduction</div>
-          <div class="callout-body" id="deduct-callout-text">
-            People diagnosed with celiac disease may deduct the <em>cost difference</em> between gluten-free and regular versions of the same food as a medical expense. Save this report for your tax records.
+        <div class="scan-loading" id="scan-loading" hidden aria-live="polite">
+          <div class="spinner" aria-hidden="true"></div>
+          <p id="loading-text">Reading your receipt…</p>
+        </div>
+
+        <div class="scan-error" id="scan-error" hidden role="alert">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="12" cy="12" r="10" stroke="var(--rust)" stroke-width="1.8"/><path d="M12 8v5M12 16h.01" stroke="var(--rust)" stroke-width="2" stroke-linecap="round"/></svg>
+          <p id="error-text">Something went wrong reading that receipt.</p>
+          <button class="btn btn-outline" id="error-retry-btn" type="button">Try again</button>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- RESULTS -->
+  <section class="results-section" id="results-section" hidden>
+    <div class="wrap">
+      <h2 class="section-title" id="results-heading">Your receipt, decoded</h2>
+
+      <div class="summary-cards" id="summary-cards">
+        <div class="summary-card summary-card--gluten">
+          <span class="summary-label">Contains gluten</span>
+          <span class="summary-value" id="gluten-total">$0.00</span>
+          <span class="summary-count" id="gluten-count">0 items</span>
+        </div>
+        <div class="summary-card summary-card--safe">
+          <span class="summary-label">Gluten-free &amp; safe</span>
+          <span class="summary-value" id="safe-total">$0.00</span>
+          <span class="summary-count" id="safe-count">0 items</span>
+        </div>
+        <div class="summary-card summary-card--deductible">
+          <span class="summary-label">Tax-deductible GF specialty</span>
+          <span class="summary-value" id="deductible-total">$0.00</span>
+          <span class="summary-count" id="deductible-count">0 items</span>
+        </div>
+      </div>
+
+      <div class="receipt-tape" id="receipt-tape">
+        <div class="receipt-tape-inner">
+          <div class="receipt-header">
+            <p class="receipt-store" id="receipt-store">Grocery Receipt</p>
+            <p class="receipt-date" id="receipt-date"></p>
+          </div>
+
+          <div class="receipt-group" id="group-gluten">
+            <p class="receipt-group-title receipt-group-title--gluten">Contains gluten</p>
+            <ul class="receipt-list" id="list-gluten"></ul>
+          </div>
+
+          <div class="receipt-group" id="group-safe">
+            <p class="receipt-group-title receipt-group-title--safe">Gluten-free &amp; safe</p>
+            <ul class="receipt-list" id="list-safe"></ul>
+          </div>
+
+          <div class="receipt-group" id="group-deductible">
+            <p class="receipt-group-title receipt-group-title--deductible">Tax-deductible GF specialty</p>
+            <p class="receipt-group-hint">The extra cost of certified gluten-free specialty foods over their regular equivalent can qualify as a medical expense. Keep this receipt for your records.</p>
+            <ul class="receipt-list" id="list-deductible"></ul>
+          </div>
+
+          <div class="receipt-barcode" aria-hidden="true">
+            <svg viewBox="0 0 300 40" preserveAspectRatio="none" width="100%" height="40">
+              <rect x="0" y="0" width="2" height="40" fill="#2B2118"/><rect x="5" y="0" width="1" height="40" fill="#2B2118"/><rect x="9" y="0" width="3" height="40" fill="#2B2118"/><rect x="15" y="0" width="1" height="40" fill="#2B2118"/><rect x="19" y="0" width="2" height="40" fill="#2B2118"/><rect x="24" y="0" width="1" height="40" fill="#2B2118"/><rect x="28" y="0" width="4" height="40" fill="#2B2118"/><rect x="35" y="0" width="1" height="40" fill="#2B2118"/><rect x="39" y="0" width="2" height="40" fill="#2B2118"/><rect x="44" y="0" width="1" height="40" fill="#2B2118"/><rect x="48" y="0" width="3" height="40" fill="#2B2118"/><rect x="54" y="0" width="1" height="40" fill="#2B2118"/><rect x="58" y="0" width="2" height="40" fill="#2B2118"/><rect x="63" y="0" width="1" height="40" fill="#2B2118"/><rect x="67" y="0" width="4" height="40" fill="#2B2118"/><rect x="74" y="0" width="1" height="40" fill="#2B2118"/><rect x="78" y="0" width="2" height="40" fill="#2B2118"/><rect x="83" y="0" width="1" height="40" fill="#2B2118"/><rect x="87" y="0" width="3" height="40" fill="#2B2118"/><rect x="93" y="0" width="1" height="40" fill="#2B2118"/><rect x="97" y="0" width="2" height="40" fill="#2B2118"/>
+            </svg>
+          </div>
+
+          <div class="receipt-total-row">
+            <span>Grand total</span>
+            <span id="grand-total">$0.00</span>
           </div>
         </div>
       </div>
 
-      <button class="btn btn-secondary" id="export-btn" style="margin-top:0">
-        📄 Save / Share Summary
-      </button>
-      <button class="btn btn-secondary" id="scan-another-btn" style="margin-top:0">
-        📷 Scan Another Receipt
-      </button>
-
-    </div>
-
-    <!-- How it works -->
-    <div class="card" id="how-it-works">
-      <div class="card-title">How Breadwinner Works</div>
-      <div class="steps">
-        <div class="step">
-          <div class="step-num">1</div>
-          <div class="step-text">
-            <strong>Take a photo of your receipt</strong>
-            <span>Tap the box above and use your camera, or choose a photo from your phone.</span>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">2</div>
-          <div class="step-text">
-            <strong>We scan for gluten ingredients</strong>
-            <span>Our AI reads every item and checks it against known gluten-containing foods.</span>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">3</div>
-          <div class="step-text">
-            <strong>See what's safe — and what's deductible</strong>
-            <span>Gluten-free items are listed separately, with eligible tax deductions highlighted in gold.</span>
-          </div>
-        </div>
-        <div class="step">
-          <div class="step-num">4</div>
-          <div class="step-text">
-            <strong>Save your report</strong>
-            <span>Keep a record for your doctor or tax advisor with one tap.</span>
-          </div>
-        </div>
+      <div class="results-actions">
+        <button class="btn btn-primary btn-lg" id="share-btn" type="button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><circle cx="18" cy="5" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="6" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><circle cx="18" cy="19" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M8.6 10.6l6.8-4.2M8.6 13.4l6.8 4.2" stroke="currentColor" stroke-width="1.8"/></svg>
+          Share
+        </button>
+        <button class="btn btn-outline btn-lg" id="print-btn" type="button">Print / save as PDF</button>
+        <button class="btn btn-ghost btn-lg" id="scan-another-btn" type="button">Scan another receipt</button>
       </div>
     </div>
+  </section>
 
-  </main>
+</main>
 
-  <footer>
-    <strong>Breadwinner</strong> — Made for the celiac community<br>
-    <span style="font-size:11px">Tax information is for guidance only. Consult a tax professional regarding medical expense deductions.</span>
-  </footer>
+<footer class="site-footer">
+  <div class="wrap footer-inner">
+    <p>Breadwinner is a reading tool, not medical or tax advice. Always confirm ingredients and deductions that matter to your health with your doctor, dietitian, or tax preparer.</p>
+  </div>
+</footer>
+
+<!-- SETTINGS DIALOG -->
+<div class="dialog-backdrop" id="settings-backdrop" hidden></div>
+<div class="dialog" id="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title" hidden>
+  <div class="dialog-content">
+    <h2 id="settings-title">Settings</h2>
+    <p class="dialog-sub">Breadwinner needs a Claude API key to read your receipts. Your key stays on this device — it's never sent anywhere except directly to Anthropic.</p>
+    <label class="field-label" for="api-key-input">Claude API key</label>
+    <input type="password" id="api-key-input" class="text-input" autocomplete="off" placeholder="sk-ant-...">
+    <div class="field-row">
+      <label class="checkbox-row">
+        <input type="checkbox" id="show-key-checkbox">
+        Show key
+      </label>
+    </div>
+    <p class="field-hint">Don't have one? Create a key at <span class="mono">console.anthropic.com</span>.</p>
+    <div class="dialog-actions">
+      <button class="btn btn-primary btn-lg" id="save-key-btn" type="button">Save</button>
+      <button class="btn btn-ghost" id="close-settings-btn" type="button">Cancel</button>
+    </div>
+  </div>
 </div>
 
+<div class="visually-hidden" role="status" aria-live="polite" id="live-region"></div>
 
-
-
-<script src="app.js"></script>
+<script src="script.js"></script>
 </body>
 </html>
