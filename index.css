@@ -56,7 +56,7 @@ body { overflow-x: hidden; }
 .hero__title-accent {
   background: linear-gradient(100deg, var(--green-dark) 10%, var(--green-bright) 50%, var(--green) 90%);
   -webkit-background-clip: text; background-clip: text; color: transparent;
-  font-style: italic;
+  font-style: normal;
 }
 .hero__slogan {
   font-family: var(--font-body); font-weight: 500; font-size: 1.05rem; color: var(--text-on-ink-muted);
