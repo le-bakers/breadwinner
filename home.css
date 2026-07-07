@@ -9,6 +9,7 @@ body {
   scrollbar-color: var(--green) transparent;
 }
 body::-webkit-scrollbar { width: 8px; }
+body::-webkit-scrollbar-button { display: none; }
 body::-webkit-scrollbar-track { background: transparent; }
 body::-webkit-scrollbar-thumb {
   background: var(--green);
@@ -131,6 +132,7 @@ body::-webkit-scrollbar-thumb:hover {
   scrollbar-color: var(--green) transparent;
 }
 .modal__panel::-webkit-scrollbar { width: 6px; }
+.modal__panel::-webkit-scrollbar-button { display: none; }
 .modal__panel::-webkit-scrollbar-track { background: transparent; }
 .modal__panel::-webkit-scrollbar-thumb {
   background: var(--green);
