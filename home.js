@@ -132,6 +132,8 @@
   }
 
   function openReceipt(id) {
+    modalClose.focus();
+
     const r = MOCK_RECEIPTS.find((x) => x.id === id);
     if (!r) return;
 
@@ -156,7 +158,6 @@
     `;
 
 
-    modalClose.focus();
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
 
