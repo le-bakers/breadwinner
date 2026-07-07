@@ -100,7 +100,12 @@ body { background: var(--ink); }
 .modal.is-open { opacity: 1; pointer-events: auto; }
 
 .modal__backdrop {
-  position: absolute; inset: 0; background: rgba(45, 58, 42, 0.7); backdrop-filter: blur(6px);
+  position: absolute; inset: 0; background: rgba(45, 58, 42, 0.7);
+  backdrop-filter: blur(0px);
+  transition: backdrop-filter var(--dur-med) var(--ease-out);
+}
+.modal.is-open .modal__backdrop {
+  backdrop-filter: blur(6px);
 }
 
 .modal__panel {
