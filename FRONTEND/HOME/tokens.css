@@ -1,0 +1,89 @@
+/* ============================================================
+   BREADWINNER — DESIGN TOKENS
+   Palette: espresso-dark ledger paper with antique gold foil.
+   Signature motif: the receipt itself — perforated edges,
+   monospace figures, a gold scan-line.
+   ============================================================ */
+
+:root {
+  /* ---- Color: ink & surfaces ---- */
+  --ink:          #14100D;   /* page background, deep roasted espresso */
+  --surface:      #1E1811;   /* card background on dark */
+  --surface-2:    #2A2119;   /* raised / hover surface on dark */
+  --hairline:     #3A2F22;   /* subtle borders on dark */
+
+  /* ---- Color: paper ---- */
+  --paper:        #F6F0E3;   /* parchment / receipt paper */
+  --paper-dim:    #EDE4D0;   /* paper shadowed area */
+  --paper-line:   #D8CBAE;   /* paper hairline / perforation */
+
+  /* ---- Color: accents ---- */
+  --gold:         #C9A24B;   /* primary accent, antique gold foil */
+  --gold-bright:  #E8C97A;   /* hover / highlight gold */
+  --bronze:       #8B6F3E;   /* secondary accent, muted */
+  --rose:         #B5533C;   /* contains-gluten flag, muted brick */
+  --sage:         #6E8562;   /* gluten-free & deductible flag */
+
+  /* ---- Text ---- */
+  --text-on-ink:        #F3ECDD;
+  --text-on-ink-muted:  #A99C86;
+  --text-on-paper:      #201A12;
+  --text-on-paper-muted:#6B5F4D;
+
+  /* ---- Type ---- */
+  --font-display: 'Instrument Serif', serif;
+  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-mono:    'Space Mono', 'IBM Plex Mono', monospace;
+
+  /* ---- Motion ---- */
+  --ease-out:     cubic-bezier(0.16, 1, 0.3, 1);
+  --ease-in-out:  cubic-bezier(0.65, 0, 0.35, 1);
+  --dur-fast:     180ms;
+  --dur-med:      420ms;
+  --dur-slow:     900ms;
+
+  /* ---- Layout ---- */
+  --radius-s:  10px;
+  --radius-m:  16px;
+  --radius-l:  28px;
+  --max-w:     1180px;
+}
+
+* { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+body {
+  margin: 0;
+  background: var(--ink);
+  color: var(--text-on-ink);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+button { font-family: inherit; cursor: pointer; }
+
+::selection {
+  background: var(--gold);
+  color: var(--ink);
+}
+
+/* Focus visibility — never suppressed */
+:focus-visible {
+  outline: 2px solid var(--gold-bright);
+  outline-offset: 3px;
+  border-radius: 4px;
+}
