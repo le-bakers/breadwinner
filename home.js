@@ -155,9 +155,11 @@
       </div>
     `;
 
+
+    modalClose.focus();
     modal.classList.add('is-open');
     modal.setAttribute('aria-hidden', 'false');
-    modalClose.focus();
+
   }
 
   function closeModal() {
