@@ -52,9 +52,28 @@
   box-shadow: 0 0 0 4px rgba(160, 199, 139, 0.18);
 }
 
+.btn {
+  display: inline-flex; align-items: center; justify-content: center;
+  border: 1.5px solid transparent; padding: 14px 24px;
+  border-radius: var(--radius-m);
+  font-weight: 600; font-size: 1rem;
+  transition: background var(--dur-fast) var(--ease-out),
+              border-color var(--dur-fast) var(--ease-out),
+              box-shadow var(--dur-fast) var(--ease-out);
+}
 .btn--block { width: 100%; margin-top: 4px; }
-.btn--google { display: inline-flex; align-items: center; justify-content: center; gap: 10px; color: var(--text-on-paper) !important; border-color: var(--paper-line); }
-.btn--google:hover { background: var(--paper-dim); }
+.btn--gold {
+  background: var(--green); color: #fff; border-color: var(--green);
+}
+.btn--gold:hover {
+  background: var(--green-dark); border-color: var(--green-dark);
+}
+.btn--google {
+  display: inline-flex; align-items: center; justify-content: center; gap: 10px;
+  color: var(--text-on-paper) !important; border-color: var(--paper-line);
+  background: #fff;
+}
+.btn--google:hover { background: var(--paper-dim); border-color: var(--hairline); }
 
 .auth__divider {
   display: flex; align-items: center; gap: 14px; margin: 22px 0;
