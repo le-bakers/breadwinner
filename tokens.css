@@ -1,38 +1,43 @@
 /* ============================================================
    BREADWINNER — DESIGN TOKENS
-   Palette: espresso-dark ledger paper with antique gold foil.
+   Palette: White & pastel green — clean, minimal, modern.
    Signature motif: the receipt itself — perforated edges,
-   monospace figures, a gold scan-line.
+   monospace figures, a green scan-line.
    ============================================================ */
 
 :root {
   /* ---- Color: ink & surfaces ---- */
-  --ink:          #14100D;   /* page background, deep roasted espresso */
-  --surface:      #1E1811;   /* card background on dark */
-  --surface-2:    #2A2119;   /* raised / hover surface on dark */
-  --hairline:     #3A2F22;   /* subtle borders on dark */
+  --ink:          #FFFFFF;   /* page background, clean white */
+  --surface:      #F4FBF1;   /* card background, ultra-light pastel green */
+  --surface-2:    #EAF5E4;   /* raised / hover surface */
+  --hairline:     #C8E0BD;   /* subtle borders */
 
   /* ---- Color: paper ---- */
-  --paper:        #F6F0E3;   /* parchment / receipt paper */
-  --paper-dim:    #EDE4D0;   /* paper shadowed area */
-  --paper-line:   #D8CBAE;   /* paper hairline / perforation */
+  --paper:        #FFFFFF;   /* parchment / receipt paper */
+  --paper-dim:    #F2F7EF;   /* paper shadowed area */
+  --paper-line:   #DCE8D6;   /* paper hairline / perforation */
 
   /* ---- Color: accents ---- */
-  --gold:         #C9A24B;   /* primary accent, antique gold foil */
-  --gold-bright:  #E8C97A;   /* hover / highlight gold */
-  --bronze:       #8B6F3E;   /* secondary accent, muted */
+  --green:        #A0C78B;   /* primary accent, pastel green */
+  --green-bright: #B7EDC5;   /* hover / highlight green */
+  --green-dark:   #8AB577;   /* secondary accent, muted */
   --rose:         #B5533C;   /* contains-gluten flag, muted brick */
-  --sage:         #6E8562;   /* gluten-free & deductible flag */
+
+  /* backward-compat aliases */
+  --gold:         var(--green);
+  --gold-bright:  var(--green-bright);
+  --bronze:       var(--green-dark);
+  --sage:         #A0C78B;
 
   /* ---- Text ---- */
-  --text-on-ink:        #F3ECDD;
-  --text-on-ink-muted:  #A99C86;
-  --text-on-paper:      #201A12;
+  --text-on-ink:        #2D3A2A;   /* dark green-grey on white */
+  --text-on-ink-muted:  #6B7F63;   /* muted green-grey */
+  --text-on-paper:      #201A12;   /* dark on paper */
   --text-on-paper-muted:#6B5F4D;
 
   /* ---- Type ---- */
-  --font-display: 'Instrument Serif', serif;
-  --font-body:    'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+  --font-display: 'Lexend Deca', sans-serif;
+  --font-body:    'Montserrat', -apple-system, BlinkMacSystemFont, sans-serif;
   --font-mono:    'Space Mono', 'IBM Plex Mono', monospace;
 
   /* ---- Motion ---- */
@@ -77,13 +82,13 @@ a { color: inherit; text-decoration: none; }
 button { font-family: inherit; cursor: pointer; }
 
 ::selection {
-  background: var(--gold);
-  color: var(--ink);
+  background: var(--green);
+  color: #fff;
 }
 
 /* Focus visibility — never suppressed */
 :focus-visible {
-  outline: 2px solid var(--gold-bright);
+  outline: 2px solid var(--green-bright);
   outline-offset: 3px;
   border-radius: 4px;
 }

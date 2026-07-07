@@ -6,7 +6,7 @@ body { background: var(--ink); }
 
 .nav {
   position: sticky; top: 0; z-index: 40;
-  background: rgba(20, 16, 13, 0.85); backdrop-filter: blur(14px);
+  background: rgba(255, 255, 255, 0.85); backdrop-filter: blur(14px);
   border-bottom: 1px solid var(--hairline);
 }
 .nav__inner {
@@ -27,8 +27,8 @@ body { background: var(--ink); }
 .dash { max-width: var(--max-w); margin: 0 auto; padding: 48px 28px 100px; }
 .dash__head { margin-bottom: 40px; opacity: 0; animation: rise 600ms var(--ease-out) forwards; }
 .eyebrow {
-  font-family: var(--font-mono); font-size: 0.75rem; letter-spacing: 0.14em;
-  text-transform: uppercase; color: var(--gold); margin: 0 0 10px;
+  font-family: var(--font-body); font-weight: 600; font-size: 0.75rem; letter-spacing: 0.14em;
+  text-transform: uppercase; color: var(--green); margin: 0 0 10px;
 }
 .dash__title { font-family: var(--font-display); font-weight: 400; font-size: clamp(2rem, 4vw, 2.7rem); margin: 0; }
 
@@ -45,18 +45,18 @@ body { background: var(--ink); }
   animation: rise 640ms var(--ease-out) forwards;
   transition: border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
-.stat-card:hover { border-color: var(--bronze); transform: translateY(-3px); }
+.stat-card:hover { border-color: var(--green-dark); transform: translateY(-3px); }
 .stat-card__label {
-  font-family: var(--font-mono); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
+  font-family: var(--font-body); font-weight: 600; font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase;
   color: var(--text-on-ink-muted); margin: 0 0 14px;
 }
 .stat-card__value {
-  font-family: var(--font-mono); font-weight: 700; font-size: 2.2rem; color: var(--gold-bright);
+  font-family: var(--font-mono); font-weight: 700; font-size: 2.2rem; color: var(--green);
   margin: 0; line-height: 1;
 }
 .stat-card__unit { font-size: 1.1rem; color: var(--text-on-ink-muted); font-weight: 400; }
 .stat-card__glyph {
-  position: absolute; right: 18px; top: 18px; font-size: 1.3rem; color: var(--bronze); opacity: 0.6;
+  position: absolute; right: 18px; top: 18px; font-size: 1.3rem; color: var(--green-dark); opacity: 0.6;
 }
 
 /* ---------- RECEIPTS LIST ---------- */
@@ -74,7 +74,7 @@ body { background: var(--ink); }
   padding: 16px 20px; text-align: left; width: 100%;
   transition: border-color var(--dur-fast) var(--ease-out), background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
 }
-.receipt-row:hover { border-color: var(--gold); background: var(--surface-2); transform: translateY(-2px); }
+.receipt-row:hover { border-color: var(--green); background: var(--surface-2); transform: translateY(-2px); }
 
 .receipt-row__thumb {
   width: 52px; height: 52px; border-radius: 10px; background: var(--paper);
@@ -86,7 +86,7 @@ body { background: var(--ink); }
 
 .receipt-row__count { font-family: var(--font-mono); font-size: 0.85rem; color: var(--text-on-ink-muted); white-space: nowrap; }
 .receipt-row__overcharge { font-family: var(--font-mono); font-weight: 700; color: var(--rose); white-space: nowrap; }
-.receipt-row__chevron { color: var(--bronze); font-size: 1.1rem; }
+.receipt-row__chevron { color: var(--green-dark); font-size: 1.1rem; }
 
 .receipts__empty { color: var(--text-on-ink-muted); text-align: center; padding: 40px 0; }
 
@@ -100,7 +100,7 @@ body { background: var(--ink); }
 .modal.is-open { opacity: 1; pointer-events: auto; }
 
 .modal__backdrop {
-  position: absolute; inset: 0; background: rgba(10, 8, 6, 0.7); backdrop-filter: blur(6px);
+  position: absolute; inset: 0; background: rgba(45, 58, 42, 0.7); backdrop-filter: blur(6px);
 }
 
 .modal__panel {
@@ -145,8 +145,8 @@ body { background: var(--ink); }
   text-transform: uppercase; padding: 4px 9px; border-radius: 100px; white-space: nowrap;
 }
 .badge--gluten { background: rgba(181, 83, 60, 0.14); color: var(--rose); }
-.badge--deductible { background: rgba(110, 133, 98, 0.16); color: var(--sage); }
-.badge--gf { background: rgba(139, 111, 62, 0.16); color: var(--bronze); }
+.badge--deductible { background: rgba(160, 199, 139, 0.16); color: var(--green); }
+.badge--gf { background: rgba(138, 181, 119, 0.16); color: var(--green-dark); }
 
 .modal__summary {
   display: flex; justify-content: space-between; margin-top: 20px; padding-top: 18px;
