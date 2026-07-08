@@ -2,7 +2,23 @@
    BREADWINNER — SIGNIN
    ============================================================ */
 
-.signin-body { overflow: hidden; height: 100vh; }
+.signin-body { overflow: hidden; height: 100vh; position: relative; }
+
+.splash-incoming {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: linear-gradient(135deg, var(--green-bright), var(--green) 65%, var(--green-dark));
+  pointer-events: none;
+  clip-path: circle(150% at 50% 50%);
+  transition: clip-path 600ms var(--ease-out);
+}
+.splash-incoming.is-shrinking {
+  clip-path: circle(0% at 50% 50%);
+}
+.splash-incoming.is-hidden {
+  display: none;
+}
 
 .split {
   display: grid; grid-template-columns: 1fr 1fr;

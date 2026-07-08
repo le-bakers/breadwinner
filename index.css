@@ -10,6 +10,20 @@ body { overflow-x: hidden; }
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
 }
 
+/* ---------- SPLASH OVERLAY ---------- */
+.splash {
+  position: fixed;
+  inset: 0;
+  z-index: 999;
+  background: linear-gradient(135deg, var(--green-bright), var(--green) 65%, var(--green-dark));
+  pointer-events: none;
+  clip-path: circle(0% at 50% 50%);
+  transition: clip-path 600ms var(--ease-out);
+}
+.splash.is-expanded {
+  clip-path: circle(150% at var(--splash-x, 50%) var(--splash-y, 50%));
+}
+
 /* ---------- NAV ---------- */
 .nav {
   position: sticky; top: 0; z-index: 40;
@@ -197,21 +211,6 @@ body { overflow-x: hidden; }
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
 }
 .footer p { color: var(--text-on-ink-muted); font-size: 0.85rem; max-width: 46ch; margin: 0; }
-
-/* ---------- SPLASH TRANSITION ---------- */
-.splash {
-  position: fixed; z-index: 999; pointer-events: none;
-  border-radius: 50%;
-  background: var(--green);
-  transform: translate(-50%, -50%) scale(0);
-  opacity: 0;
-  transition: none;
-}
-.splash.is-active {
-  opacity: 1;
-  transform: translate(-50%, -50%) scale(1);
-  transition: transform 600ms var(--ease-out), opacity 600ms var(--ease-out);
-}
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 900px) {

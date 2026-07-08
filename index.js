@@ -45,42 +45,28 @@
     lines.forEach((line) => line.classList.add('is-scanned'));
   }
 
-  // ---------- SPLASH TRANSITION on "Start free" clicks ----------
+  // ---------- Splash overlay on "Start free" clicks ----------
   const splash = document.getElementById('splash');
-  const startButtons = document.querySelectorAll('a.btn--gold');
+  const startFreeBtns = document.querySelectorAll('.btn--gold');
 
-  startButtons.forEach((btn) => {
+  startFreeBtns.forEach((btn) => {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
 
-      const href = btn.getAttribute('href');
-
-      // Get button center position relative to viewport
       const rect = btn.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2 + window.scrollX;
-      const cy = rect.top + rect.height / 2 + window.scrollY;
+      const cx = rect.left + rect.width / 2;
+      const cy = rect.top + rect.height / 2;
+      const xPct = (cx / window.innerWidth) * 100;
+      const yPct = (cy / window.innerHeight) * 100;
 
-      // Calculate a scale that covers the full viewport diagonal
-      const maxDim = Math.max(window.innerWidth, window.innerHeight);
-      const scale = (maxDim * 1.5) / Math.max(rect.width, rect.height);
+      splash.style.setProperty('--splash-x', xPct + '%');
+      splash.style.setProperty('--splash-y', yPct + '%');
+      splash.classList.add('is-expanded');
 
-      // Set initial small size at the button center
-      splash.style.left = cx + 'px';
-      splash.style.top = cy + 'px';
-      splash.style.width = Math.max(rect.width, rect.height) + 'px';
-      splash.style.height = Math.max(rect.width, rect.height) + 'px';
-
-      // Force reflow before adding the active class
-      splash.offsetWidth;
-
-      // Expand to cover the screen
-      splash.style.transform = `translate(-50%, -50%) scale(${scale})`;
-      splash.classList.add('is-active');
-
-      // Navigate after the animation completes
+      // Navigate after expand animation finishes (transition is 600ms)
       setTimeout(() => {
-        window.location.href = href;
-      }, 620);
+        window.location.href = btn.getAttribute('href') + '?fromSplash=true';
+      }, 650);
     });
   });
 })();

@@ -6,6 +6,27 @@
 // ============================================================
 
 (function () {
+  // ---------- Splash shrink (landing page transition) ----------
+  const splash = document.getElementById('splash-incoming');
+  const urlParams = new URLSearchParams(window.location.search);
+  if (splash && urlParams.get('fromSplash') === 'true') {
+    // Let the splash sit full-screen for a frame, then shrink it
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        splash.classList.add('is-shrinking');
+        const body = document.querySelector('.signin-body');
+        // After shrink finishes, hide splash and set body to scroll normally
+        setTimeout(() => {
+          splash.classList.add('is-hidden');
+          body.style.overflow = 'hidden';
+          body.style.height = '100vh';
+        }, 650);
+      });
+    });
+  } else if (splash) {
+    splash.classList.add('is-hidden');
+  }
+
   // ---------- Tabs: sign in vs create account ----------
   const tabSignin = document.getElementById('tab-signin');
   const tabSignup = document.getElementById('tab-signup');
