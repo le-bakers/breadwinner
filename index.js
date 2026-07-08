@@ -6,6 +6,48 @@
 // ============================================================
 
 (function () {
+  // ---------- Splash transition on "Start free" clicks ----------
+  const splash = document.getElementById('splash');
+
+  document.querySelectorAll('.btn--gold').forEach((btn) => {
+    btn.addEventListener('click', function (e) {
+      // Only animate if the button links to signin.html
+      const href = this.getAttribute('href');
+      if (href && href === 'signin.html') {
+        e.preventDefault();
+
+        const rect = this.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+
+        // Position splash at the button center
+        splash.style.left = cx + 'px';
+        splash.style.top = cy + 'px';
+
+        // Force a layout tick so the 0-state is painted before adding classes
+        void splash.offsetWidth;
+
+        // Grow the pill to cover the screen
+        splash.classList.add('is-active');
+
+        // After the growth completes, flatten the border-radius
+        requestAnimationFrame(() => {
+          splash.classList.add('is-cover');
+        });
+
+        // Fade out, then navigate
+        setTimeout(() => {
+          splash.classList.add('is-fading');
+        }, 600);
+
+        setTimeout(() => {
+          window.location.href = 'signin.html';
+        }, 800);
+      }
+    });
+  });
+
+  // ---------- Scroll reveal ----------
   const revealTargets = document.querySelectorAll('.how__step, .feature-card');
 
   if ('IntersectionObserver' in window) {
