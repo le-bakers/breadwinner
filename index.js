@@ -6,48 +6,6 @@
 // ============================================================
 
 (function () {
-  // ---------- Splash transition on "Start free" clicks ----------
-  const splash = document.getElementById('splash');
-
-  document.querySelectorAll('.btn--gold').forEach((btn) => {
-    btn.addEventListener('click', function (e) {
-      // Only animate if the button links to signin.html
-      const href = this.getAttribute('href');
-      if (href && href === 'signin.html') {
-        e.preventDefault();
-
-        const rect = this.getBoundingClientRect();
-        const cx = rect.left + rect.width / 2;
-        const cy = rect.top + rect.height / 2;
-
-        // Position splash at the button center
-        splash.style.left = cx + 'px';
-        splash.style.top = cy + 'px';
-
-        // Force a layout tick so the 0-state is painted before adding classes
-        void splash.offsetWidth;
-
-        // Grow the pill to cover the screen
-        splash.classList.add('is-active');
-
-        // After the growth completes, flatten the border-radius
-        requestAnimationFrame(() => {
-          splash.classList.add('is-cover');
-        });
-
-        // Fade out, then navigate
-        setTimeout(() => {
-          splash.classList.add('is-fading');
-        }, 1000);
-
-        setTimeout(() => {
-          window.location.href = 'signin.html';
-        }, 1300);
-      }
-    });
-  });
-
-  // ---------- Scroll reveal ----------
   const revealTargets = document.querySelectorAll('.how__step, .feature-card');
 
   if ('IntersectionObserver' in window) {
@@ -86,4 +44,43 @@
   } else {
     lines.forEach((line) => line.classList.add('is-scanned'));
   }
+
+  // ---------- SPLASH TRANSITION on "Start free" clicks ----------
+  const splash = document.getElementById('splash');
+  const startButtons = document.querySelectorAll('a.btn--gold');
+
+  startButtons.forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+
+      const href = btn.getAttribute('href');
+
+      // Get button center position relative to viewport
+      const rect = btn.getBoundingClientRect();
+      const cx = rect.left + rect.width / 2 + window.scrollX;
+      const cy = rect.top + rect.height / 2 + window.scrollY;
+
+      // Calculate a scale that covers the full viewport diagonal
+      const maxDim = Math.max(window.innerWidth, window.innerHeight);
+      const scale = (maxDim * 1.5) / Math.max(rect.width, rect.height);
+
+      // Set initial small size at the button center
+      splash.style.left = cx + 'px';
+      splash.style.top = cy + 'px';
+      splash.style.width = Math.max(rect.width, rect.height) + 'px';
+      splash.style.height = Math.max(rect.width, rect.height) + 'px';
+
+      // Force reflow before adding the active class
+      splash.offsetWidth;
+
+      // Expand to cover the screen
+      splash.style.transform = `translate(-50%, -50%) scale(${scale})`;
+      splash.classList.add('is-active');
+
+      // Navigate after the animation completes
+      setTimeout(() => {
+        window.location.href = href;
+      }, 620);
+    });
+  });
 })();

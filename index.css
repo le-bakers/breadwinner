@@ -190,32 +190,6 @@ body { overflow-x: hidden; }
 }
 .closing__sub { color: var(--text-on-ink-muted); margin: -30px 0 34px; font-size: 1.05rem; }
 
-/* ---------- SPLASH TRANSITION ---------- */
-.splash {
-  position: fixed; z-index: 200;
-  pointer-events: none;
-  width: 300vmax; height: 300vmax;
-  margin-left: -150vmax; margin-top: -150vmax;
-  background: radial-gradient(circle at center, var(--green-bright), var(--green) 40%, var(--green-dark));
-  border-radius: 200vmax;
-  transform: scale(0);
-  opacity: 0;
-  transition: none;
-}
-.splash.is-active {
-  opacity: 1;
-  transform: scale(1);
-  transition: transform 1100ms var(--ease-out), opacity 300ms var(--ease-out);
-  pointer-events: auto;
-}
-.splash.is-cover {
-  border-radius: 0;
-  transition: transform 1100ms var(--ease-out), opacity 300ms var(--ease-out), border-radius 400ms var(--ease-out);
-}
-.splash.is-fading {
-  opacity: 0;
-}
-
 /* ---------- FOOTER ---------- */
 .footer {
   border-top: 1px solid var(--hairline); padding: 40px 28px 60px;
@@ -223,6 +197,21 @@ body { overflow-x: hidden; }
   display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px;
 }
 .footer p { color: var(--text-on-ink-muted); font-size: 0.85rem; max-width: 46ch; margin: 0; }
+
+/* ---------- SPLASH TRANSITION ---------- */
+.splash {
+  position: fixed; z-index: 999; pointer-events: none;
+  border-radius: 50%;
+  background: var(--green);
+  transform: translate(-50%, -50%) scale(0);
+  opacity: 0;
+  transition: none;
+}
+.splash.is-active {
+  opacity: 1;
+  transform: translate(-50%, -50%) scale(1);
+  transition: transform 600ms var(--ease-out), opacity 600ms var(--ease-out);
+}
 
 /* ---------- RESPONSIVE ---------- */
 @media (max-width: 900px) {
