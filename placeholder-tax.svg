@@ -1,0 +1,35 @@
+<svg viewBox="0 0 400 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Illustration of gluten-free tax deductible items being grouped into a folder">
+  <defs>
+    <linearGradient id="bgGrad3" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#DCFCE7"/>
+      <stop offset="1" stop-color="#F8FAF8"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="400" height="340" rx="28" fill="url(#bgGrad3)"/>
+
+  <!-- floating item chips -->
+  <g>
+    <rect x="60" y="60" width="86" height="34" rx="10" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+    <rect x="72" y="72" width="42" height="7" rx="3" fill="#1F2937"/>
+    <circle cx="130" cy="77" r="8" fill="#22C55E"/>
+  </g>
+  <g>
+    <rect x="270" y="90" width="86" height="34" rx="10" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+    <rect x="282" y="102" width="42" height="7" rx="3" fill="#1F2937"/>
+    <circle cx="340" cy="107" r="8" fill="#22C55E"/>
+  </g>
+  <g>
+    <rect x="50" y="150" width="86" height="34" rx="10" fill="#FFFFFF" stroke="#E5E7EB" stroke-width="2"/>
+    <rect x="62" y="162" width="42" height="7" rx="3" fill="#1F2937"/>
+    <circle cx="120" cy="167" r="8" fill="#22C55E"/>
+  </g>
+
+  <!-- folder -->
+  <g transform="translate(140,150)">
+    <path d="M0 24 Q0 14 10 14 L48 14 L58 26 L170 26 Q180 26 180 36 L180 130 Q180 140 170 140 L10 140 Q0 140 0 130 Z" fill="#22C55E"/>
+    <path d="M0 40 Q0 32 10 32 L170 32 Q180 32 180 42 L180 130 Q180 140 170 140 L10 140 Q0 140 0 130 Z" fill="#16A34A"/>
+    <rect x="24" y="70" width="132" height="10" rx="4" fill="#FFFFFF" opacity="0.92"/>
+    <rect x="24" y="90" width="90" height="10" rx="4" fill="#FFFFFF" opacity="0.7"/>
+    <text x="90" y="120" font-family="Manrope, sans-serif" font-size="13" font-weight="700" fill="#FFFFFF" text-anchor="middle">Tax Deductible</text>
+  </g>
+</svg>

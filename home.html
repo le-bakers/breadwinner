@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Dashboard — BreadWinner</title>
+<meta name="description" content="Your BreadWinner dashboard — receipts, gluten-free totals, and tax-deductible spending at a glance.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="home.css">
+</head>
+<body>
+
+<a class="sr-only" href="#main-content">Skip to main content</a>
+
+<!-- ============ DASHBOARD NAV ============ -->
+<header class="navbar dash-navbar">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 9L12 4L20 9V19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V9Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M9 20V13H15V20" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+      </span>
+      BreadWinner
+    </a>
+    <nav class="nav-links" aria-label="Dashboard">
+      <a href="home.html" class="active">Dashboard</a>
+      <a href="#receipts">Receipts</a>
+      <a href="#">Profile</a>
+      <a href="#">Settings</a>
+    </nav>
+    <div class="nav-actions dash-actions">
+      <button class="icon-btn" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1112 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9z" stroke="#374151" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 17a2.5 2.5 0 005 0" stroke="#374151" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span class="notif-dot" aria-hidden="true"></span>
+      </button>
+      <button class="profile-pill" aria-label="Account menu">
+        <span class="avatar-circle">JM</span>
+      </button>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="home.html">Dashboard</a>
+    <a href="#receipts">Receipts</a>
+    <a href="#">Profile</a>
+    <a href="#">Settings</a>
+  </div>
+</header>
+
+<main id="main-content" class="dashboard">
+  <div class="container">
+
+    <!-- ============ HEADER ============ -->
+    <section class="dash-header">
+      <div>
+        <h1>Welcome back, Jordan!</h1>
+        <p>Here's how your gluten-free spending looks this month.</p>
+      </div>
+      <a href="#receipts" class="btn btn-secondary">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+        Add Receipt
+      </a>
+    </section>
+
+    <!-- ============ STATS ============ -->
+    <section class="stats-grid" aria-label="Summary statistics">
+      <div class="stat-card reveal">
+        <div class="stat-top">
+          <span class="stat-icon" style="background:#DCFCE7">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <span class="stat-trend up">+12%</span>
+        </div>
+        <p class="stat-value" data-counter data-target="47" data-prefix="">0</p>
+        <p class="stat-label">Receipts Scanned</p>
+      </div>
+
+      <div class="stat-card reveal">
+        <div class="stat-top">
+          <span class="stat-icon" style="background:#DCFCE7">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#16A34A" stroke-width="1.8"/><path d="M8.5 12.5l2.5 2.5l5-5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <span class="stat-trend up">+8%</span>
+        </div>
+        <p class="stat-value" data-counter data-target="312" data-prefix="">0</p>
+        <p class="stat-label">Gluten-Free Items</p>
+      </div>
+
+      <div class="stat-card reveal">
+        <div class="stat-top">
+          <span class="stat-icon" style="background:#FEF3F2">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke="#DC2626" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#DC2626" stroke-width="1.8"/></svg>
+          </span>
+          <span class="stat-trend down">-4%</span>
+        </div>
+        <p class="stat-value" data-counter data-target="184.32" data-prefix="$" data-decimals="2">$0.00</p>
+        <p class="stat-label">Total Overcharge</p>
+      </div>
+
+      <div class="stat-card reveal">
+        <div class="stat-top">
+          <span class="stat-icon" style="background:#EFF6FF">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3V21M7 7H15.5C17 7 18 8 18 9.5C18 11 17 12 15.5 12H8.5C7 12 6 13 6 14.5C6 16 7 17 8.5 17H17" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <span class="stat-trend up">+2%</span>
+        </div>
+        <p class="stat-value" data-counter data-target="3.92" data-prefix="$" data-decimals="2">$0.00</p>
+        <p class="stat-label">Average Overcharge</p>
+      </div>
+    </section>
+
+    <!-- ============ RECEIPT HISTORY ============ -->
+    <section class="receipts-section" id="receipts">
+      <div class="receipts-toolbar">
+        <h2>Receipt History</h2>
+        <div class="toolbar-controls">
+          <div class="search-box">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#6B7280" stroke-width="1.8"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <input type="search" id="receiptSearch" placeholder="Search receipts…" aria-label="Search receipts">
+          </div>
+          <div class="select-wrap">
+            <select id="sortSelect" aria-label="Sort receipts">
+              <option value="newest">Newest</option>
+              <option value="oldest">Oldest</option>
+              <option value="savings">Highest Savings</option>
+              <option value="items">Most Items</option>
+            </select>
+            <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </div>
+        </div>
+      </div>
+
+      <div class="receipt-table" id="receiptTable">
+        <div class="receipt-row receipt-row-head" role="row">
+          <span>Receipt Name</span>
+          <span>Date</span>
+          <span>Items</span>
+          <span>GF Items</span>
+          <span>Overcharge</span>
+          <span>Status</span>
+          <span>Actions</span>
+        </div>
+        <!-- Rows injected by home.js from placeholder data -->
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<!-- ============ FLOATING UPLOAD BUTTON ============ -->
+<button class="fab" id="fabUpload" aria-label="Upload a new receipt">
+  <svg class="fab-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+  <span class="fab-label">Upload Receipt</span>
+</button>
+
+<!-- Row template used by JS -->
+<template id="rowTemplate">
+  <div class="receipt-row" role="row" tabindex="0">
+    <span class="cell-name">
+      <span class="receipt-thumb" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </span>
+      <span class="cell-name-text"></span>
+    </span>
+    <span class="cell-date"></span>
+    <span class="cell-items"></span>
+    <span class="cell-gf"></span>
+    <span class="cell-overcharge"></span>
+    <span class="cell-status"></span>
+    <span class="cell-actions">
+      <button class="row-expand-btn" aria-label="Expand receipt details">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </span>
+  </div>
+  <div class="receipt-expand" role="region">
+    <div class="expand-inner">
+      <img class="expand-receipt-img" src="assets/placeholder-receipt.svg" alt="Placeholder scanned receipt image">
+      <div class="expand-items">
+        <h4>Items</h4>
+        <ul class="expand-item-list"></ul>
+      </div>
+    </div>
+  </div>
+</template>
+
+<script src="shared.js"></script>
+<script src="home.js"></script>
+</body>
+</html>

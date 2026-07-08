@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Sign In — BreadWinner</title>
+<meta name="description" content="Sign in to your BreadWinner account to manage your gluten-free grocery receipts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="signin.css">
+</head>
+<body>
+
+<a class="sr-only" href="#signin-form">Skip to sign in form</a>
+
+<div class="signin-page">
+
+  <!-- ============ LEFT: FORM ============ -->
+  <section class="signin-panel">
+    <a class="logo" href="index.html">
+      <span class="logo-mark" aria-hidden="true">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M4 9L12 4L20 9V19C20 19.5523 19.5523 20 19 20H5C4.44772 20 4 19.5523 4 19V9Z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><path d="M9 20V13H15V20" stroke="#fff" stroke-width="2" stroke-linejoin="round"/></svg>
+      </span>
+      BreadWinner
+    </a>
+
+    <div class="signin-form-wrap">
+      <h1>Welcome Back</h1>
+      <p class="signin-sub">Sign in to keep your gluten-free receipts organized.</p>
+
+      <button type="button" class="btn btn-secondary btn-google">
+        <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.64-.06-1.25-.16-1.84H9v3.48h4.84a4.14 4.14 0 01-1.8 2.72v2.26h2.9c1.7-1.56 2.7-3.87 2.7-6.62z"/><path fill="#34A853" d="M9 18c2.43 0 4.47-.8 5.96-2.18l-2.9-2.26c-.8.54-1.84.86-3.06.86-2.35 0-4.34-1.59-5.05-3.72H.95v2.33A9 9 0 009 18z"/><path fill="#FBBC05" d="M3.95 10.7A5.4 5.4 0 013.68 9c0-.59.1-1.17.27-1.7V4.97H.95A9 9 0 000 9c0 1.45.35 2.83.95 4.03l3-2.33z"/><path fill="#EA4335" d="M9 3.58c1.32 0 2.51.46 3.44 1.35l2.58-2.58C13.46.89 11.43 0 9 0A9 9 0 00.95 4.97l3 2.33C4.66 5.17 6.65 3.58 9 3.58z"/></svg>
+        Continue with Google
+      </button>
+
+      <div class="divider"><span>or sign in with email</span></div>
+
+      <form id="signin-form" novalidate>
+        <div class="field-group">
+          <input type="email" id="email" name="email" required placeholder=" " autocomplete="email">
+          <label for="email">Email address</label>
+          <p class="field-error" id="email-error" role="alert"></p>
+        </div>
+
+        <div class="field-group">
+          <input type="password" id="password" name="password" required placeholder=" " autocomplete="current-password" minlength="8">
+          <label for="password">Password</label>
+          <button type="button" class="toggle-password" aria-label="Show password">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="#6B7280" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="1.7"/></svg>
+          </button>
+          <p class="field-error" id="password-error" role="alert"></p>
+        </div>
+
+        <div class="field-row">
+          <label class="checkbox">
+            <input type="checkbox" id="remember" name="remember">
+            <span class="checkbox-box" aria-hidden="true"></span>
+            Remember me
+          </label>
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-lg btn-full">
+          <span class="btn-text">Sign In</span>
+        </button>
+      </form>
+
+      <p class="signup-prompt">
+        Don't have an account?
+        <a href="#" class="btn btn-secondary btn-sm">Create Account</a>
+      </p>
+    </div>
+
+    <p class="signin-footnote">&copy; 2026 BreadWinner. All rights reserved.</p>
+  </section>
+
+  <!-- ============ RIGHT: CAROUSEL ============ -->
+  <section class="carousel-panel" aria-label="Product facts">
+    <div class="carousel-blobs" aria-hidden="true">
+      <span class="c-blob c-blob-1"></span>
+      <span class="c-blob c-blob-2"></span>
+    </div>
+
+    <div class="carousel" id="factCarousel">
+      <div class="carousel-track" id="carouselTrack">
+
+        <article class="carousel-slide" aria-hidden="false">
+          <div class="slide-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3V21M7 7H15.5C17 7 18 8 18 9.5C18 11 17 12 15.5 12H8.5C7 12 6 13 6 14.5C6 16 7 17 8.5 17H17" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <img class="slide-illustration" src="assets/placeholder-tax.svg" alt="" loading="lazy">
+          <h2>Fact</h2>
+          <p>People with celiac disease may qualify for tax deductions on eligible gluten-free foods.</p>
+        </article>
+
+        <article class="carousel-slide" aria-hidden="true">
+          <div class="slide-icon">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#fff" stroke-width="1.8"/><path d="M8 2v4M16 2v4M4 10h16" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <img class="slide-illustration" src="assets/placeholder-scan.svg" alt="" loading="lazy">
+          <h2>Fact</h2>
+          <p>Organizing receipts throughout the year makes filing your taxes much easier.</p>
+        </article>
+
+        <article class="carousel-slide" aria-hidden="true">
+          <div class="slide-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <img class="slide-illustration" src="assets/placeholder-detect.svg" alt="" loading="lazy">
+          <h2>Fact</h2>
+          <p>BreadWinner automatically keeps every gluten-free purchase organized for you.</p>
+        </article>
+
+        <article class="carousel-slide" aria-hidden="true">
+          <div class="slide-icon">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M12 20V4M20 20V14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </div>
+          <img class="slide-illustration" src="assets/placeholder-dashboard.svg" alt="" loading="lazy">
+          <h2>Fact</h2>
+          <p>No more spreadsheets — see all your spending in one organized dashboard.</p>
+        </article>
+
+      </div>
+
+      <div class="carousel-dots" id="carouselDots" role="tablist" aria-label="Carousel slides"></div>
+    </div>
+  </section>
+
+</div>
+
+<script src="shared.js"></script>
+<script src="signin.js"></script>
+</body>
+</html>
