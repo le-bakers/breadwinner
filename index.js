@@ -44,29 +44,4 @@
   } else {
     lines.forEach((line) => line.classList.add('is-scanned'));
   }
-
-  // ---------- Splash overlay on "Start free" clicks ----------
-  const splash = document.getElementById('splash');
-  const startFreeBtns = document.querySelectorAll('.btn--gold');
-
-  startFreeBtns.forEach((btn) => {
-    btn.addEventListener('click', (e) => {
-      e.preventDefault();
-
-      const rect = btn.getBoundingClientRect();
-      const cx = rect.left + rect.width / 2;
-      const cy = rect.top + rect.height / 2;
-      const xPct = (cx / window.innerWidth) * 100;
-      const yPct = (cy / window.innerHeight) * 100;
-
-      splash.style.setProperty('--splash-x', xPct + '%');
-      splash.style.setProperty('--splash-y', yPct + '%');
-      splash.classList.add('is-expanded');
-
-      // Navigate after expand animation finishes (transition is 600ms)
-      setTimeout(() => {
-        window.location.href = btn.getAttribute('href') + '?fromSplash=true';
-      }, 650);
-    });
-  });
 })();
