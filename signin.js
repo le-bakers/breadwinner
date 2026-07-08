@@ -27,10 +27,13 @@
     },
   };
 
+  const pill = document.getElementById('toggle-pill');
+
   function setMode(mode) {
     const isSignup = mode === 'signup';
     tabSignin.classList.toggle('is-active', !isSignup);
     tabSignup.classList.toggle('is-active', isSignup);
+    pill.classList.toggle('is-right', isSignup);
     tabSignin.setAttribute('aria-selected', String(!isSignup));
     tabSignup.setAttribute('aria-selected', String(isSignup));
     nameField.hidden = !isSignup;
