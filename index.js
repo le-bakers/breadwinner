@@ -38,11 +38,11 @@
         // Fade out, then navigate
         setTimeout(() => {
           splash.classList.add('is-fading');
-        }, 600);
+        }, 1000);
 
         setTimeout(() => {
           window.location.href = 'signin.html';
-        }, 800);
+        }, 1300);
       }
     });
   });
