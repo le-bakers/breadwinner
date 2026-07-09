@@ -243,10 +243,12 @@ input, select { font-family: inherit; }
   display: none;
   position: fixed;
   inset: 0;
-  top: 65px;
+  top: 0;
   z-index: 99;
-  padding: 20px 24px;
-  background: #ffffff;
+  padding: 85px 24px 20px;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   transform: translateY(-12px);
   opacity: 0;
   pointer-events: none;
