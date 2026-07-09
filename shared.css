@@ -265,6 +265,7 @@ input, select { font-family: inherit; }
   font-weight: 600;
   border-bottom: 1px solid var(--border);
   color: var(--text);
+  text-align: center;
 }
 .mobile-menu .nav-actions {
   flex-direction: column;
