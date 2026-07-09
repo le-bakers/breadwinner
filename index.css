@@ -141,9 +141,7 @@
 @media (max-width: 980px) {
   .hero-inner { grid-template-columns: 1fr; }
   .hero-copy { max-width: 100%; text-align: left; }
-  .hero-visual { margin-top: 20px; }
-  .floating-chip { position: static; margin-top: 14px; display: inline-flex; }
-  .chip-overcharge, .chip-deduction { display: none; }
+  .hero-visual { display: none; }
 }
 
 /* ---------- How it works ---------- */
