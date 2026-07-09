@@ -270,9 +270,12 @@ input, select { font-family: inherit; }
 }
 .mobile-menu .nav-actions {
   flex-direction: column;
-  align-items: stretch;
+  align-items: center;
   margin-top: 24px;
   gap: 12px;
+}
+.mobile-menu .nav-actions .btn {
+  max-width: 280px;
 }
 .mobile-menu .btn {
   width: 100%;
