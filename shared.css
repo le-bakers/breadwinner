@@ -243,13 +243,11 @@ input, select { font-family: inherit; }
   display: none;
   position: fixed;
   inset: 0;
-  top: 0;
+  top: 65px;
+  background: rgba(248, 250, 248, 0.98);
+  backdrop-filter: blur(10px);
   z-index: 99;
-  padding: 85px 24px 20px;
-  background: rgba(248, 250, 248, 0.78);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border-bottom: 1px solid var(--border);
+  padding: 20px 24px;
   transform: translateY(-12px);
   opacity: 0;
   pointer-events: none;
@@ -266,22 +264,15 @@ input, select { font-family: inherit; }
   font-size: 18px;
   font-weight: 600;
   border-bottom: 1px solid var(--border);
-  color: #1F2937;
+  color: var(--text);
 }
 .mobile-menu .nav-actions {
   flex-direction: column;
-  align-items: center;
+  align-items: stretch;
   margin-top: 24px;
   gap: 12px;
 }
-.mobile-menu .nav-actions .btn {
-  max-width: 280px;
-}
-.mobile-menu .btn {
-  width: 100%;
-  text-align: center;
-  justify-content: center;
-}
+.mobile-menu .btn { width: 100%; }
 
 @media (max-width: 860px) {
   .nav-links { display: none; }
