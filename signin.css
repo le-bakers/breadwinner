@@ -259,9 +259,8 @@
 /* ---------- Responsive ---------- */
 @media (max-width: 980px) {
   .signin-page { grid-template-columns: 1fr; }
-  .carousel-panel { order: 2; min-height: 480px; padding: 56px 24px; }
-  .signin-panel { order: 1; padding: 32px 28px; min-height: auto; }
-  .carousel-track { height: 420px; }
+  .carousel-panel { display: none; }
+  .signin-panel { order: 1; padding: 32px 28px; min-height: 100vh; }
 }
 @media (max-width: 480px) {
   .signin-panel { padding: 26px 20px; }
