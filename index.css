@@ -141,7 +141,7 @@
 @media (max-width: 980px) {
   .hero-inner { grid-template-columns: 1fr; }
   .hero-copy { max-width: 100%; text-align: left; }
-  .hero-visual { display: none; }
+  .hero-visual { display: none !important; }
 }
 
 /* ---------- How it works ---------- */
