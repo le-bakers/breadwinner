@@ -44,6 +44,11 @@
 }
 
 .hero-copy { max-width: 540px; }
+.hero-title-img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
 .hero-title {
   font-size: clamp(44px, 6vw, 68px);
   font-weight: 800;
