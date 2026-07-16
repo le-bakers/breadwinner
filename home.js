@@ -206,14 +206,99 @@
     window.BreadWinner.staggerReveal('.stat-card', 80);
   }
 
-  /* ---------- FAB (no backend functionality) ---------- */
+  /* ---------- FAB menu ---------- */
   const fab = document.getElementById('fabUpload');
-  if (fab) {
-    fab.addEventListener('click', () => {
-      fab.animate(
-        [{ transform: 'scale(1)' }, { transform: 'scale(0.92)' }, { transform: 'scale(1)' }],
-        { duration: 260, easing: 'ease-out' }
-      );
+  const fabMenu = document.getElementById('fabMenu');
+  const fileInput = document.getElementById('fileInput');
+
+  if (fab && fabMenu) {
+    fab.addEventListener('click', (e) => {
+      e.stopPropagation();
+      fabMenu.classList.toggle('open');
     });
+
+    // Close menu when clicking outside
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.fab-container')) {
+        fabMenu.classList.remove('open');
+      }
+    });
+
+    // Upload Image option
+    document.getElementById('fabUploadImage').addEventListener('click', () => {
+      fabMenu.classList.remove('open');
+      fileInput.click();
+    });
+
+    // Take a Picture option
+    document.getElementById('fabTakePhoto').addEventListener('click', () => {
+      fabMenu.classList.remove('open');
+      openCamera();
+    });
+  }
+
+  /* ---------- File upload ---------- */
+  if (fileInput) {
+    fileInput.addEventListener('change', function () {
+      if (this.files && this.files[0]) {
+        const file = this.files[0];
+        const reader = new FileReader();
+        reader.onload = function (e) {
+          console.log('Image uploaded:', file.name);
+          // Here you would typically send the image to your backend
+          // For now we just show a confirmation
+          alert('Receipt "' + file.name + '" uploaded successfully!');
+        };
+        reader.readAsDataURL(file);
+      }
+      this.value = ''; // reset so same file can be chosen again
+    });
+  }
+
+  /* ---------- Camera ---------- */
+  let cameraStream = null;
+  const cameraOverlay = document.getElementById('cameraOverlay');
+  const cameraPreview = document.getElementById('cameraPreview');
+  const cameraCapture = document.getElementById('cameraCapture');
+  const cameraClose = document.getElementById('cameraClose');
+
+  async function openCamera() {
+    try {
+      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+      cameraPreview.srcObject = cameraStream;
+      cameraOverlay.classList.add('open');
+    } catch (err) {
+      alert('Could not access the camera. Please make sure camera permissions are granted.\n\nError: ' + err.message);
+    }
+  }
+
+  function closeCamera() {
+    if (cameraStream) {
+      cameraStream.getTracks().forEach(track => track.stop());
+      cameraStream = null;
+    }
+    cameraPreview.srcObject = null;
+    cameraOverlay.classList.remove('open');
+  }
+
+  function capturePhoto() {
+    const canvas = document.createElement('canvas');
+    canvas.width = cameraPreview.videoWidth;
+    canvas.height = cameraPreview.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(cameraPreview, 0, 0);
+    canvas.toBlob(function (blob) {
+      closeCamera();
+      console.log('Photo captured:', blob.size, 'bytes');
+      // Here you would typically send the image to your backend
+      alert('Photo captured successfully!');
+    }, 'image/png');
+  }
+
+  if (cameraCapture) {
+    cameraCapture.addEventListener('click', capturePhoto);
+  }
+  if (cameraClose) {
+    cameraClose.addEventListener('click', closeCamera);
   }
 })();

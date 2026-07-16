@@ -242,11 +242,17 @@
 }
 
 /* ---------- FAB ---------- */
-.fab {
+.fab-container {
   position: fixed;
   bottom: 28px;
   right: 28px;
   z-index: 90;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 12px;
+}
+.fab {
   height: 58px;
   border-radius: var(--radius-full);
   border: none;
@@ -257,7 +263,8 @@
   gap: 10px;
   padding: 0 20px;
   box-shadow: var(--shadow-glow);
-  transition: background 0.25s, box-shadow 0.35s var(--ease-out), transform 0.35s var(--ease-out), padding 0.35s var(--ease-out);
+  transition: background 0.25s, box-shadow 0.35s var(--ease-out), padding 0.35s var(--ease-out);
+  cursor: pointer;
 }
 .fab-label {
   max-width: 0;
@@ -269,12 +276,82 @@
 }
 .fab:hover {
   background: var(--primary-hover);
-  transform: translateY(-3px);
   box-shadow: 0 0 0 1px rgba(34,197,94,0.1), 0 18px 36px -8px rgba(34,197,94,0.4);
 }
 .fab:hover .fab-label { max-width: 160px; }
 .fab:active { transform: scale(0.96); }
 
-@media (max-width: 560px) {
-  .fab { bottom: 20px; right: 20px; height: 54px; }
+.fab-menu {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(10px) scale(0.95);
+  pointer-events: none;
+  transition: opacity 0.25s var(--ease-out), transform 0.25s var(--ease-out);
 }
+.fab-menu.open {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  pointer-events: auto;
+}
+.fab-option {
+  height: 48px;
+  border-radius: var(--radius-full);
+  border: none;
+  background: var(--primary-hover);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 0 18px;
+  font-weight: 600;
+  font-size: 14px;
+  font-family: var(--font-body);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  cursor: pointer;
+  transition: background 0.2s, transform 0.2s;
+}
+.fab-option:hover { background: #15803D; }
+.fab-option:active { transform: scale(0.96); }
+
+@media (max-width: 560px) {
+  .fab-container { bottom: 20px; right: 20px; }
+  .fab { height: 54px; }
+  .fab-option { height: 44px; font-size: 13px; }
+}
+
+/* ---------- Camera overlay ---------- */
+.camera-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,0.85);
+  align-items: center;
+  justify-content: center;
+}
+.camera-overlay.open { display: flex; }
+.camera-view {
+  max-width: 500px;
+  width: 90%;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  background: #000;
+  box-shadow: 0 24px 48px rgba(0,0,0,0.5);
+}
+.camera-view video {
+  width: 100%;
+  height: auto;
+  display: block;
+  max-height: 70vh;
+  object-fit: contain;
+}
+.camera-controls {
+  display: flex;
+  gap: 12px;
+  padding: 16px 20px;
+  justify-content: center;
+  background: #111;
+}
+.camera-controls .btn { flex: 1; }
