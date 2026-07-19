@@ -67,7 +67,10 @@
     nextBtn.hidden = isAccountStep || isDoneStep;
 
     if (!isAccountStep && !isDoneStep) {
-      nextBtn.querySelector('svg') && (nextBtn.textContent = ''); // no-op guard
+      // Ensure the next button shows "Next" text
+      if (!nextBtn.textContent.trim() || nextBtn.textContent.trim() === '') {
+        nextBtn.innerHTML = 'Next <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+      }
     }
 
     updateProgress();
