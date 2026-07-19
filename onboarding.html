@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Create Your Account — BreadWinner</title>
+<meta name="description" content="Create your BreadWinner account and learn how to track your gluten-free grocery spending.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="onboarding.css">
+<link rel="icon" type="image/x-icon" href="breadwinner_icon.png">
+</head>
+<body>
+
+<a class="sr-only" href="#onboarding-main">Skip to main content</a>
+
+<!-- ============ TOPBAR ============ -->
+<header class="onboard-topbar">
+  <div class="onboard-topbar-inner">
+    <a class="logo" href="index.html">
+      <img src="breadwinner_logo.svg" alt="BreadWinner" height="32">
+    </a>
+
+    <div class="progress-meta">
+      <span class="progress-label" id="progressLabel">Step 1 of 2</span>
+      <div class="progress-track" role="progressbar" aria-label="Onboarding progress" aria-valuemin="0" aria-valuemax="100" aria-valuenow="20" id="progressBar">
+        <div class="progress-fill" id="progressFill"></div>
+      </div>
+    </div>
+
+    <a href="signin.html" class="topbar-link">Already have an account? <strong>Sign In</strong></a>
+  </div>
+</header>
+
+<main id="onboarding-main" class="onboard-main">
+  <div class="onboard-shell">
+
+    <!-- ============ STEP 1: ACCOUNT DETAILS ============ -->
+    <section class="step-panel active" id="stepAccount" data-step="0" aria-labelledby="accountHeading">
+      <div class="step-copy">
+        <p class="eyebrow">Create your account</p>
+        <h1 id="accountHeading">Let's get you set up</h1>
+        <p class="step-sub">Just a few details and you'll be organizing gluten-free receipts in minutes.</p>
+      </div>
+
+      <form id="accountForm" novalidate>
+        <div class="field-row-2">
+          <div class="field-group">
+            <input type="text" id="fullName" name="fullName" required placeholder=" " autocomplete="name">
+            <label for="fullName">Full name</label>
+            <p class="field-error" id="fullName-error" role="alert"></p>
+          </div>
+
+          <div class="field-group">
+            <input type="date" id="dob" name="dob" required placeholder=" " autocomplete="bday">
+            <label for="dob" class="static-label">Date of birth</label>
+            <p class="field-error" id="dob-error" role="alert"></p>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <input type="email" id="email" name="email" required placeholder=" " autocomplete="email">
+          <label for="email">Email address</label>
+          <p class="field-error" id="email-error" role="alert"></p>
+        </div>
+
+        <div class="field-group">
+          <input type="password" id="password" name="password" required placeholder=" " autocomplete="new-password" minlength="8">
+          <label for="password">Password</label>
+          <button type="button" class="toggle-password" data-target="password" aria-label="Show password">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="#6B7280" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="1.7"/></svg>
+          </button>
+          <p class="field-error" id="password-error" role="alert"></p>
+        </div>
+
+        <div class="password-strength" id="passwordStrength" aria-hidden="true">
+          <span class="strength-bar" data-level="1"></span>
+          <span class="strength-bar" data-level="2"></span>
+          <span class="strength-bar" data-level="3"></span>
+          <span class="strength-bar" data-level="4"></span>
+          <span class="strength-label" id="strengthLabel"></span>
+        </div>
+
+        <div class="field-group">
+          <input type="password" id="confirmPassword" name="confirmPassword" required placeholder=" " autocomplete="new-password">
+          <label for="confirmPassword">Confirm password</label>
+          <button type="button" class="toggle-password" data-target="confirmPassword" aria-label="Show password">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="#6B7280" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="1.7"/></svg>
+          </button>
+          <p class="field-error" id="confirmPassword-error" role="alert"></p>
+        </div>
+
+        <label class="checkbox terms-checkbox">
+          <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
+          <span class="checkbox-box" aria-hidden="true"></span>
+          I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+        </label>
+        <p class="field-error" id="agreeTerms-error" role="alert"></p>
+
+        <button type="submit" class="btn btn-primary btn-lg btn-full">
+          <span class="btn-text">Create Account</span>
+        </button>
+      </form>
+    </section>
+
+    <!-- ============ TUTORIAL STEPS ============ -->
+    <section class="step-panel" id="stepTour1" data-step="1" aria-labelledby="tour1Heading" hidden>
+      <div class="tour-grid">
+        <div class="tour-copy">
+          <span class="tour-badge">Quick tour · 1 of 4</span>
+          <h2 id="tour1Heading">Upload receipts in seconds</h2>
+          <p>Snap a photo right at checkout, or upload one later. The floating button is always within reach at the bottom of your dashboard.</p>
+          <ul class="tour-points">
+            <li>Take a photo straight from your phone</li>
+            <li>Or upload an existing image</li>
+            <li>BreadWinner keeps every receipt organized automatically</li>
+          </ul>
+        </div>
+        <div class="tour-visual">
+          <div class="mock-frame">
+            <div class="mock-dashboard-bg"></div>
+            <div class="mock-fab-demo">
+              <div class="mock-fab-option">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Upload Image
+              </div>
+              <div class="mock-fab-option">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#fff" stroke-width="2" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#fff" stroke-width="2"/></svg>
+                Take Photo
+              </div>
+              <div class="mock-fab-main">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step-panel" id="stepTour2" data-step="2" aria-labelledby="tour2Heading" hidden>
+      <div class="tour-grid reverse">
+        <div class="tour-copy">
+          <span class="tour-badge">Quick tour · 2 of 4</span>
+          <h2 id="tour2Heading">See your stats at a glance</h2>
+          <p>Your dashboard header shows exactly how your gluten-free spending is trending — receipts scanned, gluten-free items found, and any overcharges caught.</p>
+          <ul class="tour-points">
+            <li>Track receipts and gluten-free items over time</li>
+            <li>Spot overcharges before they add up</li>
+            <li>Numbers update automatically as you add receipts</li>
+          </ul>
+        </div>
+        <div class="tour-visual">
+          <div class="mock-frame">
+            <div class="mock-stats-grid">
+              <div class="mock-stat-card">
+                <span class="mock-stat-icon" style="background:#DCFCE7">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
+                </span>
+                <span class="mock-stat-value" data-tour-counter data-target="47">0</span>
+                <span class="mock-stat-label">Receipts Scanned</span>
+              </div>
+              <div class="mock-stat-card">
+                <span class="mock-stat-icon" style="background:#FEF3F2">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke="#DC2626" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#DC2626" stroke-width="1.8"/></svg>
+                </span>
+                <span class="mock-stat-value" data-tour-counter data-target="184" data-prefix="$">$0</span>
+                <span class="mock-stat-label">Total Overcharge</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step-panel" id="stepTour3" data-step="3" aria-labelledby="tour3Heading" hidden>
+      <div class="tour-grid">
+        <div class="tour-copy">
+          <span class="tour-badge">Quick tour · 3 of 4</span>
+          <h2 id="tour3Heading">Browse your organized receipt history</h2>
+          <p>Every receipt lands in one searchable table. Tap any row to see the full breakdown — which items are gluten-free, which qualify as tax deductible, and what you paid.</p>
+          <ul class="tour-points">
+            <li>Expand a receipt to see item-by-item detail</li>
+            <li>Gluten-free and tax-deductible items are badged clearly</li>
+            <li>Status shows what's processed and what needs review</li>
+          </ul>
+        </div>
+        <div class="tour-visual">
+          <div class="mock-frame">
+            <div class="mock-receipt-row">
+              <span class="mock-receipt-thumb">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
+              </span>
+              <span class="mock-receipt-name">Whole Foods Market</span>
+              <span class="mock-status-pill">Processed</span>
+            </div>
+            <div class="mock-expand-items">
+              <div class="mock-item">
+                <span class="mock-item-mark yes">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="mock-item-name">GF Bread Loaf</span>
+                <span class="mock-badge gf">GF</span>
+                <span class="mock-badge tax">Tax</span>
+              </div>
+              <div class="mock-item">
+                <span class="mock-item-mark no">
+                  <svg width="9" height="9" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>
+                </span>
+                <span class="mock-item-name">Wheat Crackers</span>
+              </div>
+              <div class="mock-item">
+                <span class="mock-item-mark yes">
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                </span>
+                <span class="mock-item-name">GF All-Purpose Flour</span>
+                <span class="mock-badge gf">GF</span>
+                <span class="mock-badge tax">Tax</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="step-panel" id="stepTour4" data-step="4" aria-labelledby="tour4Heading" hidden>
+      <div class="tour-grid reverse">
+        <div class="tour-copy">
+          <span class="tour-badge">Quick tour · 4 of 4</span>
+          <h2 id="tour4Heading">Search and sort anytime</h2>
+          <p>Looking for one specific trip to the store? Search by name or sort by newest, oldest, highest savings, or most items — no spreadsheets required.</p>
+          <ul class="tour-points">
+            <li>Instant search across every receipt</li>
+            <li>Sort by date, savings, or item count</li>
+            <li>Perfect for pulling records together at tax time</li>
+          </ul>
+        </div>
+        <div class="tour-visual">
+          <div class="mock-frame">
+            <div class="mock-toolbar">
+              <div class="mock-search-box">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#6B7280" stroke-width="1.8"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg>
+                <span>Trader Joe's</span>
+              </div>
+              <div class="mock-select">
+                Highest Savings
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              </div>
+            </div>
+            <div class="mock-mini-row"><span>Trader Joe's</span><span class="mock-amount">$6.80</span></div>
+            <div class="mock-mini-row"><span>Costco Wholesale</span><span class="mock-amount">$11.40</span></div>
+            <div class="mock-mini-row"><span>Kroger</span><span class="mock-amount">$3.55</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ============ DONE ============ -->
+    <section class="step-panel" id="stepDone" data-step="5" aria-labelledby="doneHeading" hidden>
+      <div class="done-panel">
+        <div class="done-icon">
+          <svg width="32" height="32" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+        <p class="eyebrow">You're all set</p>
+        <h2 id="doneHeading">Welcome to BreadWinner, <span id="doneNamePlaceholder">there</span></h2>
+        <p class="step-sub">Your account is ready. Head to your dashboard to upload your first receipt.</p>
+        <a href="home.html" class="btn btn-primary btn-lg">
+          Go to Dashboard
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </a>
+      </div>
+    </section>
+
+    <!-- ============ NAV CONTROLS ============ -->
+    <div class="step-nav" id="stepNav">
+      <button type="button" class="btn btn-secondary" id="backBtn" hidden>Back</button>
+      <div class="step-dots" id="stepDots" aria-hidden="true"></div>
+      <button type="button" class="btn btn-primary" id="nextBtn" hidden>
+        Next
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+    </div>
+
+  </div>
+</main>
+
+<script src="shared.js"></script>
+<script src="onboarding.js"></script>
+</body>
+</html>
