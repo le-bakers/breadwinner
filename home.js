@@ -206,99 +206,69 @@
     window.BreadWinner.staggerReveal('.stat-card', 80);
   }
 
-  /* ---------- FAB menu ---------- */
+  /* ---------- FAB expand / collapse ---------- */
   const fab = document.getElementById('fabUpload');
-  const fabMenu = document.getElementById('fabMenu');
+  const fabOptions = document.getElementById('fabOptions');
   const fileInput = document.getElementById('fileInput');
+  const cameraInput = document.getElementById('cameraInput');
+  let isOpen = false;
 
-  if (fab && fabMenu) {
-    fab.addEventListener('click', (e) => {
-      e.stopPropagation();
-      fabMenu.classList.toggle('open');
-    });
+  function toggleFab(e) {
+    e.stopPropagation();
+    isOpen = !isOpen;
+    fabOptions.classList.toggle('open', isOpen);
+    fab.setAttribute('aria-expanded', isOpen);
+  }
 
-    // Close menu when clicking outside
+  function closeFab() {
+    isOpen = false;
+    fabOptions.classList.remove('open');
+    fab.setAttribute('aria-expanded', 'false');
+  }
+
+  if (fab && fabOptions) {
+    fab.addEventListener('click', toggleFab);
+
+    // Close when clicking outside
     document.addEventListener('click', (e) => {
-      if (!e.target.closest('.fab-container')) {
-        fabMenu.classList.remove('open');
+      const wrapper = document.getElementById('fabWrapper');
+      if (isOpen && wrapper && !wrapper.contains(e.target)) {
+        closeFab();
       }
     });
+  }
 
-    // Upload Image option
-    document.getElementById('fabUploadImage').addEventListener('click', () => {
-      fabMenu.classList.remove('open');
+  /* ---------- Upload Image ---------- */
+  const uploadBtn = document.getElementById('fabUploadImage');
+  if (uploadBtn && fileInput) {
+    uploadBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeFab();
       fileInput.click();
     });
-
-    // Take a Picture option
-    document.getElementById('fabTakePhoto').addEventListener('click', () => {
-      fabMenu.classList.remove('open');
-      openCamera();
-    });
-  }
-
-  /* ---------- File upload ---------- */
-  if (fileInput) {
-    fileInput.addEventListener('change', function () {
-      if (this.files && this.files[0]) {
-        const file = this.files[0];
-        const reader = new FileReader();
-        reader.onload = function (e) {
-          console.log('Image uploaded:', file.name);
-          // Here you would typically send the image to your backend
-          // For now we just show a confirmation
-          alert('Receipt "' + file.name + '" uploaded successfully!');
-        };
-        reader.readAsDataURL(file);
+    fileInput.addEventListener('change', () => {
+      if (fileInput.files.length > 0) {
+        // Simulate upload — in production, send to server
+        console.log('File selected:', fileInput.files[0].name);
+        fileInput.value = '';
       }
-      this.value = ''; // reset so same file can be chosen again
     });
   }
 
-  /* ---------- Camera ---------- */
-  let cameraStream = null;
-  const cameraOverlay = document.getElementById('cameraOverlay');
-  const cameraPreview = document.getElementById('cameraPreview');
-  const cameraCapture = document.getElementById('cameraCapture');
-  const cameraClose = document.getElementById('cameraClose');
-
-  async function openCamera() {
-    try {
-      cameraStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-      cameraPreview.srcObject = cameraStream;
-      cameraOverlay.classList.add('open');
-    } catch (err) {
-      alert('Could not access the camera. Please make sure camera permissions are granted.\n\nError: ' + err.message);
-    }
-  }
-
-  function closeCamera() {
-    if (cameraStream) {
-      cameraStream.getTracks().forEach(track => track.stop());
-      cameraStream = null;
-    }
-    cameraPreview.srcObject = null;
-    cameraOverlay.classList.remove('open');
-  }
-
-  function capturePhoto() {
-    const canvas = document.createElement('canvas');
-    canvas.width = cameraPreview.videoWidth;
-    canvas.height = cameraPreview.videoHeight;
-    const ctx = canvas.getContext('2d');
-    ctx.drawImage(cameraPreview, 0, 0);
-    canvas.toBlob(function (blob) {
-      closeCamera();
-      console.log('Photo captured:', blob.size, 'bytes');
-      // Here you would typically send the image to your backend
-      alert('Photo captured successfully!');
-    }, 'image/png');
-  }
-
-  if (cameraCapture) {
-    cameraCapture.addEventListener('click', capturePhoto);
-  }
-  if (cameraClose) {
-    cameraClose.addEventListener('click', closeCamera);
+  /* ---------- Take Photo ---------- */
+  const photoBtn = document.getElementById('fabTakePhoto');
+  if (photoBtn && cameraInput) {
+    photoBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeFab();
+      cameraInput.click();
+    });
+    cameraInput.addEventListener('change', () => {
+      if (cameraInput.files.length > 0) {
+        // Simulate photo capture — in production, send to server
+        console.log('Photo captured:', cameraInput.files[0].name);
+        cameraInput.value = '';
+      }
+    });
   }
 })();
