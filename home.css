@@ -324,3 +324,111 @@
   .fab-wrapper { bottom: 20px; right: 20px; }
   .fab { height: 54px; }
 }
+
+/* ---------- Camera overlay ---------- */
+.camera-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  background: rgba(0,0,0,0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  backdrop-filter: blur(4px);
+}
+.camera-overlay[hidden] { display: none; }
+.camera-modal {
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  width: 100%;
+  max-width: 500px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.3);
+  animation: cameraSlideUp 0.3s var(--ease-out);
+}
+@keyframes cameraSlideUp {
+  from { transform: translateY(20px) scale(0.96); opacity: 0; }
+  to { transform: translateY(0) scale(1); opacity: 1; }
+}
+.camera-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.camera-close {
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--text);
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.camera-close:hover { background: var(--text-secondary); }
+.camera-close svg { width: 18px; height: 18px; }
+.camera-title {
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--text);
+}
+.camera-viewport {
+  position: relative;
+  background: #000;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+}
+.camera-viewport video,
+.camera-viewport canvas {
+  width: 100%;
+  height: auto;
+  max-height: 60vh;
+  display: block;
+}
+.camera-placeholder {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  color: #9CA3AF;
+  font-size: 14px;
+  font-weight: 500;
+  padding: 40px;
+}
+.camera-footer {
+  display: flex;
+  justify-content: center;
+  padding: 16px 20px;
+  border-top: 1px solid var(--border);
+}
+.camera-preview {
+  padding: 16px 20px 20px;
+  border-top: 1px solid var(--border);
+}
+.camera-preview img {
+  width: 100%;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  max-height: 50vh;
+  object-fit: contain;
+  background: #F3F4F6;
+}
+.camera-preview-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 14px;
+  justify-content: center;
+}
+.camera-preview-actions .btn { min-width: 130px; }

@@ -169,9 +169,47 @@
   </button>
 </div>
 
-<!-- Hidden file inputs -->
+<!-- Hidden file input for upload -->
 <input type="file" id="fileInput" accept="image/*" style="display:none">
-<input type="file" id="cameraInput" accept="image/*" capture="environment" style="display:none">
+
+<!-- ============ CAMERA OVERLAY ============ -->
+<div class="camera-overlay" id="cameraOverlay" hidden>
+  <div class="camera-modal">
+    <div class="camera-header">
+      <button class="camera-close" id="cameraClose" aria-label="Close camera">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+      <span class="camera-title">Take a Photo</span>
+    </div>
+    <div class="camera-viewport" id="cameraViewport">
+      <video id="cameraVideo" autoplay playsinline></video>
+      <canvas id="cameraCanvas" hidden></canvas>
+      <div class="camera-placeholder" id="cameraPlaceholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg>
+        <p>Camera loading...</p>
+      </div>
+    </div>
+    <div class="camera-footer" id="cameraFooter">
+      <button class="btn btn-primary btn-lg" id="cameraCaptureBtn">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2.4"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg>
+        Capture
+      </button>
+    </div>
+    <div class="camera-preview" id="cameraPreview" hidden>
+      <img id="cameraPreviewImg" alt="Captured receipt preview">
+      <div class="camera-preview-actions">
+        <button class="btn btn-secondary" id="cameraRetakeBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Retake
+        </button>
+        <button class="btn btn-primary" id="cameraConfirmBtn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Add Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Row template used by JS -->
 <template id="rowTemplate">

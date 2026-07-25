@@ -210,7 +210,6 @@
   const fab = document.getElementById('fabUpload');
   const fabOptions = document.getElementById('fabOptions');
   const fileInput = document.getElementById('fileInput');
-  const cameraInput = document.getElementById('cameraInput');
   let isOpen = false;
 
   function toggleFab(e) {
@@ -255,20 +254,136 @@
     });
   }
 
-  /* ---------- Take Photo ---------- */
+  /* ---------- Camera overlay (Take Photo) ---------- */
   const photoBtn = document.getElementById('fabTakePhoto');
-  if (photoBtn && cameraInput) {
+  const cameraOverlay = document.getElementById('cameraOverlay');
+  const cameraVideo = document.getElementById('cameraVideo');
+  const cameraCanvas = document.getElementById('cameraCanvas');
+  const cameraPlaceholder = document.getElementById('cameraPlaceholder');
+  const cameraCaptureBtn = document.getElementById('cameraCaptureBtn');
+  const cameraPreview = document.getElementById('cameraPreview');
+  const cameraPreviewImg = document.getElementById('cameraPreviewImg');
+  const cameraClose = document.getElementById('cameraClose');
+  const cameraRetakeBtn = document.getElementById('cameraRetakeBtn');
+  const cameraConfirmBtn = document.getElementById('cameraConfirmBtn');
+  const cameraFooter = document.getElementById('cameraFooter');
+
+  let mediaStream = null;
+  let capturedBlob = null;
+
+  async function startCamera() {
+    try {
+      mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
+      });
+      cameraVideo.srcObject = mediaStream;
+      cameraVideo.hidden = false;
+      cameraPlaceholder.hidden = true;
+      cameraFooter.hidden = false;
+      cameraPreview.hidden = true;
+    } catch (err) {
+      cameraPlaceholder.innerHTML = '<p style="color:#DC2626">Camera access denied. Please allow camera permissions.</p>';
+      console.error('Camera error:', err);
+    }
+  }
+
+  function stopCamera() {
+    if (mediaStream) {
+      mediaStream.getTracks().forEach(track => track.stop());
+      mediaStream = null;
+    }
+    cameraVideo.srcObject = null;
+    cameraVideo.hidden = true;
+    cameraPlaceholder.hidden = false;
+    cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg><p>Camera loading...</p>';
+    cameraFooter.hidden = true;
+    cameraPreview.hidden = true;
+  }
+
+  function capturePhoto() {
+    const video = cameraVideo;
+    const canvas = cameraCanvas;
+    canvas.width = video.videoWidth;
+    canvas.height = video.videoHeight;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(video, 0, 0);
+    canvas.toBlob((blob) => {
+      if (!blob) return;
+      capturedBlob = blob;
+      const url = URL.createObjectURL(blob);
+      cameraPreviewImg.src = url;
+      cameraVideo.hidden = true;
+      cameraPreview.hidden = false;
+      cameraFooter.hidden = true;
+    }, 'image/jpeg', 0.92);
+  }
+
+  function retakePhoto() {
+    capturedBlob = null;
+    cameraPreview.hidden = true;
+    cameraVideo.hidden = false;
+    cameraFooter.hidden = false;
+  }
+
+  function confirmAndAddReceipt() {
+    if (!capturedBlob) return;
+
+    // Create a new receipt entry
+    const now = new Date();
+    const dateStr = now.toISOString().split('T')[0];
+    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    const storeName = 'Captured Receipt';
+
+    const newReceipt = {
+      name: storeName,
+      date: dateStr,
+      items: 0,
+      gfItems: 0,
+      overcharge: 0,
+      status: 'review',
+      lines: []
+    };
+
+    // Add to beginning of RECEIPTS
+    RECEIPTS.unshift(newReceipt);
+
+    // Re-render the table
+    applyFilters();
+
+    // Close camera
+    stopCamera();
+    cameraOverlay.hidden = true;
+
+    // Brief success feedback
+    const fab = document.getElementById('fabUpload');
+    fab.style.background = '#10B981';
+    setTimeout(() => { fab.style.background = ''; }, 800);
+
+    capturedBlob = null;
+  }
+
+  if (photoBtn && cameraOverlay) {
     photoBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       closeFab();
-      cameraInput.click();
+      cameraOverlay.hidden = false;
+      startCamera();
     });
-    cameraInput.addEventListener('change', () => {
-      if (cameraInput.files.length > 0) {
-        // Simulate photo capture — in production, send to server
-        console.log('Photo captured:', cameraInput.files[0].name);
-        cameraInput.value = '';
+
+    cameraClose.addEventListener('click', () => {
+      stopCamera();
+      cameraOverlay.hidden = true;
+    });
+
+    cameraOverlay.addEventListener('click', (e) => {
+      if (e.target === cameraOverlay) {
+        stopCamera();
+        cameraOverlay.hidden = true;
       }
     });
+
+    cameraCaptureBtn.addEventListener('click', capturePhoto);
+    cameraRetakeBtn.addEventListener('click', retakePhoto);
+    cameraConfirmBtn.addEventListener('click', confirmAndAddReceipt);
   }
 })();
