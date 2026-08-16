@@ -13,7 +13,7 @@
 <link rel="icon" type="image/x-icon" href="breadwinner_icon.png">
 </head>
 <body>
-
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <a class="sr-only" href="#main-content">Skip to main content</a>
 
 <!-- ============ NAVBAR ============ -->
@@ -46,11 +46,6 @@
   </div>
 </header>
 
-
-
-
-
-
 <main id="main-content">
 
   <!-- ============ HERO ============ -->
@@ -66,7 +61,7 @@
         <img src="breadwinner_logo.svg" alt="BreadWinner" class="hero-title-img">
         <p class="hero-subtitle">Conveniently Track Gluten-Free Costs</p>
         <p class="hero-desc">
-          Snap a photo of any grocery receipt and BreadWinner sorts every item: 
+          Snap a photo of any grocery receipt and BreadWinner sorts every item:
           gluten-free finds, everyday staples, and the specialty products that
           qualify as tax deductions, so your celiac expenses stay organized
           all year long.
@@ -87,11 +82,6 @@
               </linearGradient>
             </defs>
             <ellipse cx="150" cy="400" rx="140" ry="18" fill="url(#cardShadowGrad)"/>
-
-
-
-
-
 
             <!-- RECEIPT ANIMATION-->
             <!-- receipt body -->
@@ -242,7 +232,7 @@
 
 </main>
 
-<!-- ============ FOOTER ============ --> 
+<!-- ============ FOOTER ============ -->
 <footer class="footer">
   <div class="container">
     <div class="footer-inner">
@@ -282,8 +272,29 @@
   </div>
 </footer>
 
-
 <script src="shared.js"></script>
 <script src="index.js"></script>
+<script>
+  function handleCredentialResponse(response) {
+    console.log("Encoded JWT ID token: " + response.credential);
+    // Add your login success handling here (e.g., redirecting to a dashboard)
+  }
+
+  window.onload = function () {
+    google.accounts.id.initialize({
+      client_id: "1097872808556-r9f8e34uq40s10v3hu3aaomdqi0vq6ft.apps.googleusercontent.com",
+      callback: handleCredentialResponse
+    });
+
+    // If you have a button container element with id="buttonDiv" on your page:
+    const buttonElement = document.getElementById("buttonDiv");
+    if (buttonElement) {
+      google.accounts.id.renderButton(
+        buttonElement,
+        { theme: "outline", size: "large" }
+      );
+    }
+  }
+</script>
 </body>
 </html>
