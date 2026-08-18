@@ -244,10 +244,15 @@
       ];
 
       if (validations.every(Boolean)) {
-        // No backend — store the first name locally for the "done" screen greeting
-        const firstName = fullName.value.trim().split(' ')[0];
+        // No backend — store the full name locally for the "done" screen greeting and dashboard
+        const fullNameValue = fullName.value.trim();
+        const firstName = fullNameValue.split(' ')[0];
         const doneNameEl = document.getElementById('doneNamePlaceholder');
         if (doneNameEl && firstName) doneNameEl.textContent = firstName;
+
+        try {
+          localStorage.setItem('breadwinner_user_name', fullNameValue);
+        } catch (e) { /* storage unavailable */ }
 
         const submitBtn = accountForm.querySelector('button[type="submit"] .btn-text');
         if (submitBtn) submitBtn.textContent = 'Creating account…';

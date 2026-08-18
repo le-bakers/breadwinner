@@ -5,6 +5,32 @@
 (function () {
   'use strict';
 
+  /* ---------- User profile ---------- */
+  const storedName = (function () {
+    try {
+      return localStorage.getItem('breadwinner_user_name') || '';
+    } catch (e) { return ''; }
+  })();
+
+  function getInitials(name) {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return 'JM';
+    const first = parts[0].charAt(0).toUpperCase();
+    const last = parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() : '';
+    return first + last;
+  }
+
+  const avatarEl = document.querySelector('.avatar-circle');
+  if (avatarEl) {
+    avatarEl.textContent = getInitials(storedName);
+  }
+
+  const welcomeHeading = document.querySelector('.dash-header h1');
+  if (welcomeHeading && storedName) {
+    const firstName = storedName.trim().split(/\s+/)[0];
+    welcomeHeading.textContent = 'Welcome back, ' + firstName + '!';
+  }
+
   /* ---------- Placeholder data ---------- */
   const RECEIPTS = [
     {
