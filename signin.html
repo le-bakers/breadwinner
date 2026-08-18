@@ -31,7 +31,7 @@
       <p class="signin-sub">Sign in to keep your gluten-free receipts organized.</p>
 
       <!-- Google Sign-In Button Container -->
-      <div id="buttonDiv" style="margin-bottom: 1.5rem; display: flex; justify-content: center;"></div>
+      <div id="buttonDiv"></div>
 
       <div class="divider"><span>or sign in with email</span></div>
 
@@ -144,7 +144,7 @@
 
     google.accounts.id.renderButton(
       document.getElementById("buttonDiv"),
-      { theme: "outline", size: "large", width: "100%" }
+      { theme: "outline", size: "large", shape: "pill", text: "signin_with", logo_alignment: "left" }
     );
   }
 </script>
