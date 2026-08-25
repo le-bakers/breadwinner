@@ -76,14 +76,14 @@
   font-family: var(--font-display);
   font-size: clamp(19px, 2.4vw, 24px);
   font-weight: 700;
-  color: var(--text);
+  color: rgba(212, 212, 212, 0.85);
   margin-top: 14px;
 }
 .hero-desc {
   margin-top: 20px;
   font-size: 16.5px;
   line-height: 1.75;
-  color: rgba(182, 183, 185, 0.85);
+  color: rgba(212, 212, 212, 0.85);
   max-width: 480px;
 }
 .hero-actions { display: flex; gap: 14px; margin-top: 34px; flex-wrap: wrap; }
