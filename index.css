@@ -16,11 +16,19 @@
   position: relative;
   overflow: hidden;
   padding: 76px 0 90px;
-  background-image: url('images/hero-background.jpg'); 
+  min-height: 100vh;
+}
+/* Blurred/dimmed background only — text and blobs stay sharp on top */
+.hero::before {
+  content: '';
+  position: absolute;
+  /* extend a bit beyond the hero so the blur edges don't leave a light halo */
+  inset: -24px;
+  z-index: 0;
+  background-image: url('images/hero-background.jpg');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
-  min-height: 100vh;
   filter: blur(8px) brightness(50%);
 }
 .hero-blobs { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
@@ -75,7 +83,7 @@
   margin-top: 20px;
   font-size: 16.5px;
   line-height: 1.75;
-  color: var(--text-secondary);
+  color: rgba(182, 183, 185, 0.85);
   max-width: 480px;
 }
 .hero-actions { display: flex; gap: 14px; margin-top: 34px; flex-wrap: wrap; }
