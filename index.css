@@ -16,13 +16,12 @@
   position: relative;
   overflow: hidden;
   padding: 76px 0 90px;
-  min-height: 100vh;
+  min-height: 90vh;
 }
-/* Blurred/dimmed background only — text and blobs stay sharp on top */
+
 .hero::before {
   content: '';
   position: absolute;
-  /* extend a bit beyond the hero so the blur edges don't leave a light halo */
   inset: -24px;
   z-index: 0;
   background-image: url('images/hero-background.jpg');
