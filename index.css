@@ -21,6 +21,7 @@
   background-position: center center;
   background-repeat: no-repeat;
   min-height: 100vh;
+  filter: blur(8px) brightness(50%);
 }
 .hero-blobs { position: absolute; inset: 0; z-index: 0; overflow: hidden; }
 .blob {
