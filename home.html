@@ -54,99 +54,104 @@
 <main id="main-content" class="dashboard">
   <div class="container">
 
-    <!-- ============ HEADER ============ -->
-    <section class="dash-header">
-      <div>
-        <h1>Welcome back, Jordan!</h1>
-        <p>Here's how your gluten-free spending looks this month.</p>
-      </div>
-      <a href="#receipts" class="btn btn-secondary">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-        Add Receipt
-      </a>
-    </section>
-
-    <!-- ============ STATS ============ -->
-    <section class="stats-grid" aria-label="Summary statistics">
-      <div class="stat-card reveal">
-        <div class="stat-top">
-          <span class="stat-icon" style="background:#DCFCE7">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </span>
-          <span class="stat-trend up">+12%</span>
+    <!-- ============ DASHBOARD VIEW ============ -->
+    <div class="mobile-view" id="dashboardView">
+      <!-- ============ HEADER ============ -->
+      <section class="dash-header">
+        <div>
+          <h1>Welcome back, Jordan!</h1>
+          <p>Here's how your gluten-free spending looks this month.</p>
         </div>
-        <p class="stat-value" data-counter data-target="47" data-prefix="">0</p>
-        <p class="stat-label">Receipts Scanned</p>
-      </div>
+        <a href="#receipts" class="btn btn-secondary">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
+          Add Receipt
+        </a>
+      </section>
 
-      <div class="stat-card reveal">
-        <div class="stat-top">
-          <span class="stat-icon" style="background:#DCFCE7">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#16A34A" stroke-width="1.8"/><path d="M8.5 12.5l2.5 2.5l5-5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          </span>
-          <span class="stat-trend up">+8%</span>
-        </div>
-        <p class="stat-value" data-counter data-target="312" data-prefix="">0</p>
-        <p class="stat-label">Gluten-Free Items</p>
-      </div>
-
-      <div class="stat-card reveal">
-        <div class="stat-top">
-          <span class="stat-icon" style="background:#FEF3F2">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke="#DC2626" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#DC2626" stroke-width="1.8"/></svg>
-          </span>
-          <span class="stat-trend down">-4%</span>
-        </div>
-        <p class="stat-value" data-counter data-target="184.32" data-prefix="$" data-decimals="2">$0.00</p>
-        <p class="stat-label">Total Overcharge</p>
-      </div>
-
-      <div class="stat-card reveal">
-        <div class="stat-top">
-          <span class="stat-icon" style="background:#EFF6FF">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3V21M7 7H15.5C17 7 18 8 18 9.5C18 11 17 12 15.5 12H8.5C7 12 6 13 6 14.5C6 16 7 17 8.5 17H17" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </span>
-          <span class="stat-trend up">+2%</span>
-        </div>
-        <p class="stat-value" data-counter data-target="3.92" data-prefix="$" data-decimals="2">$0.00</p>
-        <p class="stat-label">Average Overcharge</p>
-      </div>
-    </section>
-
-    <!-- ============ RECEIPT HISTORY ============ -->
-    <section class="receipts-section" id="receipts">
-      <div class="receipts-toolbar">
-        <h2>Receipt History</h2>
-        <div class="toolbar-controls">
-          <div class="search-box">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#6B7280" stroke-width="1.8"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg>
-            <input type="search" id="receiptSearch" placeholder="Search receipts…" aria-label="Search receipts">
+      <!-- ============ STATS ============ -->
+      <section class="stats-grid" aria-label="Summary statistics">
+        <div class="stat-card reveal">
+          <div class="stat-top">
+            <span class="stat-icon" style="background:#DCFCE7">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </span>
+            <span class="stat-trend up">+12%</span>
           </div>
-          <div class="select-wrap">
-            <select id="sortSelect" aria-label="Sort receipts">
-              <option value="newest">Newest</option>
-              <option value="oldest">Oldest</option>
-              <option value="savings">Highest Savings</option>
-              <option value="items">Most Items</option>
-            </select>
-            <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <p class="stat-value" data-counter data-target="47" data-prefix="">0</p>
+          <p class="stat-label">Receipts Scanned</p>
+        </div>
+
+        <div class="stat-card reveal">
+          <div class="stat-top">
+            <span class="stat-icon" style="background:#DCFCE7">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#16A34A" stroke-width="1.8"/><path d="M8.5 12.5l2.5 2.5l5-5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </span>
+            <span class="stat-trend up">+8%</span>
+          </div>
+          <p class="stat-value" data-counter data-target="312" data-prefix="">0</p>
+          <p class="stat-label">Gluten-Free Items</p>
+        </div>
+
+        <div class="stat-card reveal">
+          <div class="stat-top">
+            <span class="stat-icon" style="background:#FEF3F2">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke="#DC2626" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#DC2626" stroke-width="1.8"/></svg>
+            </span>
+            <span class="stat-trend down">-4%</span>
+          </div>
+          <p class="stat-value" data-counter data-target="184.32" data-prefix="$" data-decimals="2">$0.00</p>
+          <p class="stat-label">Total Overcharge</p>
+        </div>
+
+        <div class="stat-card reveal">
+          <div class="stat-top">
+            <span class="stat-icon" style="background:#EFF6FF">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3V21M7 7H15.5C17 7 18 8 18 9.5C18 11 17 12 15.5 12H8.5C7 12 6 13 6 14.5C6 16 7 17 8.5 17H17" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round"/></svg>
+            </span>
+            <span class="stat-trend up">+2%</span>
+          </div>
+          <p class="stat-value" data-counter data-target="3.92" data-prefix="$" data-decimals="2">$0.00</p>
+          <p class="stat-label">Average Overcharge</p>
+        </div>
+      </section>
+    </div>
+
+    <!-- ============ RECEIPT VIEW ============ -->
+    <div class="mobile-view" id="receiptView" hidden>
+      <section class="receipts-section" id="receipts">
+        <div class="receipts-toolbar">
+          <h2>Receipt History</h2>
+          <div class="toolbar-controls">
+            <div class="search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#6B7280" stroke-width="1.8"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input type="search" id="receiptSearch" placeholder="Search receipts…" aria-label="Search receipts">
+            </div>
+            <div class="select-wrap">
+              <select id="sortSelect" aria-label="Sort receipts">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="savings">Highest Savings</option>
+                <option value="items">Most Items</option>
+              </select>
+              <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
           </div>
         </div>
-      </div>
 
-      <div class="receipt-table" id="receiptTable">
-        <div class="receipt-row receipt-row-head" role="row">
-          <span>Receipt Name</span>
-          <span>Date</span>
-          <span>Items</span>
-          <span>GF Items</span>
-          <span>Overcharge</span>
-          <span>Status</span>
-          <span>Actions</span>
+        <div class="receipt-table" id="receiptTable">
+          <div class="receipt-row receipt-row-head" role="row">
+            <span>Receipt Name</span>
+            <span>Date</span>
+            <span>Items</span>
+            <span>GF Items</span>
+            <span>Overcharge</span>
+            <span>Status</span>
+            <span>Actions</span>
+          </div>
+          <!-- Rows injected by home.js from placeholder data -->
         </div>
-        <!-- Rows injected by home.js from placeholder data -->
-      </div>
-    </section>
+      </section>
+    </div>
 
   </div>
 </main>
@@ -171,6 +176,23 @@
 
 <!-- Hidden file input for upload -->
 <input type="file" id="fileInput" accept="image/*" style="display:none">
+
+<!-- ============ MOBILE BOTTOM NAVBAR ============ -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile navigation">
+  <div class="bottom-nav-pill" id="bottomNavPill" aria-hidden="true"></div>
+  <a href="home.html" class="bottom-nav-item active" data-nav="dashboard" aria-label="Dashboard">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="12" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="16" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+  </a>
+  <a href="#receipts" class="bottom-nav-item" data-nav="receipt" aria-label="Receipts">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M6 2h12v20l-2-1.5L14 22l-2-1.5L10 22l-2-1.5L6 22V2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 7h6M9 11h6M9 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </a>
+  <a href="#" class="bottom-nav-item" data-nav="profile" aria-label="Profile">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </a>
+  <a href="#" class="bottom-nav-item" data-nav="settings" aria-label="Settings">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+  </a>
+</nav>
 
 <!-- ============ CAMERA OVERLAY ============ -->
 <div class="camera-overlay" id="cameraOverlay" hidden>

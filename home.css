@@ -432,3 +432,91 @@
   justify-content: center;
 }
 .camera-preview-actions .btn { min-width: 130px; }
+
+/* ---------- Mobile views (desktop: show both together) ---------- */
+@media (min-width: 861px) {
+  .mobile-view[hidden] { display: block; }
+}
+
+/* ---------- Mobile bottom navbar ---------- */
+.mobile-bottom-nav {
+  display: none;
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 95;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(14px) saturate(160%);
+  -webkit-backdrop-filter: blur(14px) saturate(160%);
+  border-top: 1px solid var(--border);
+  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
+  box-shadow: 0 -8px 24px rgba(31, 41, 55, 0.06);
+}
+
+.bottom-nav-pill {
+  position: absolute;
+  left: 0;
+  top: 8px;
+  bottom: calc(8px + env(safe-area-inset-bottom));
+  width: 48px;
+  border-radius: var(--radius-full);
+  background: var(--accent-light);
+  border: 1px solid rgba(34, 197, 94, 0.18);
+  opacity: 0;
+  transition: opacity 0.3s var(--ease-out);
+  pointer-events: none;
+}
+.bottom-nav-pill.visible {
+  opacity: 1;
+}
+
+.bottom-nav-item {
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 4px;
+  border-radius: var(--radius-full);
+  color: var(--text-secondary);
+  transition: color 0.3s var(--ease-out);
+  -webkit-tap-highlight-color: transparent;
+}
+
+.bottom-nav-item svg {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.35s var(--ease-out);
+}
+
+.bottom-nav-item.active {
+  color: var(--primary-hover);
+}
+
+.bottom-nav-item.active svg {
+  transform: translateY(-1px) scale(1.08);
+}
+
+.bottom-nav-item:active svg {
+  transform: scale(0.9);
+}
+
+@media (max-width: 860px) {
+  .mobile-bottom-nav {
+    display: flex;
+  }
+  .dashboard { padding-bottom: 200px; }
+  .fab-wrapper { bottom: 88px; }
+  .dash-navbar .nav-toggle { display: none; }
+  .dash-navbar .mobile-menu { display: none; }
+
+  /* Mobile view switching */
+  .mobile-view[hidden] { display: none; }
+  .mobile-view { animation: mobileViewFade 0.3s var(--ease-out); }
+  @keyframes mobileViewFade {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+}

@@ -412,4 +412,101 @@
     cameraRetakeBtn.addEventListener('click', retakePhoto);
     cameraConfirmBtn.addEventListener('click', confirmAndAddReceipt);
   }
+
+  /* ---------- Mobile bottom navbar sliding pill ---------- */
+  const bottomNav = document.getElementById('mobileBottomNav');
+  const bottomNavPill = document.getElementById('bottomNavPill');
+
+  function positionBottomNavPill(item) {
+    if (!bottomNavPill || !item) return;
+    const navRect = bottomNav.getBoundingClientRect();
+    const itemRect = item.getBoundingClientRect();
+    const pillWidth = bottomNavPill.offsetWidth;
+    const itemCenter = itemRect.left + itemRect.width / 2;
+    const offset = itemCenter - navRect.left - pillWidth / 2;
+    bottomNavPill.style.transform = 'translateX(' + offset + 'px)';
+  }
+
+  function initBottomNavPill() {
+    if (!bottomNav || !bottomNavPill) return;
+    const activeItem = bottomNav.querySelector('.bottom-nav-item.active');
+    positionBottomNavPill(activeItem || bottomNav.querySelector('.bottom-nav-item'));
+    bottomNavPill.classList.add('visible');
+  }
+
+  const dashboardView = document.getElementById('dashboardView');
+  const receiptView = document.getElementById('receiptView');
+
+  function switchMobileView(viewName) {
+    if (!dashboardView || !receiptView) return;
+    const isMobile = window.matchMedia('(max-width: 860px)').matches;
+    if (!isMobile) return;
+
+    if (viewName === 'receipt') {
+      dashboardView.hidden = true;
+      receiptView.hidden = false;
+    } else {
+      dashboardView.hidden = false;
+      receiptView.hidden = true;
+    }
+    window.scrollTo(0, 0);
+  }
+
+  // "Add Receipt" button in dashboard header should open the receipt view on mobile
+  const addReceiptBtn = document.querySelector('.dash-header .btn-secondary');
+  if (addReceiptBtn) {
+    addReceiptBtn.addEventListener('click', (e) => {
+      if (window.matchMedia('(max-width: 860px)').matches) {
+        e.preventDefault();
+        switchMobileView('receipt');
+        // Also update the bottom nav active state
+        const receiptNavItem = bottomNav.querySelector('.bottom-nav-item[data-nav="receipt"]');
+        if (receiptNavItem) {
+          bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
+          receiptNavItem.classList.add('active');
+          positionBottomNavPill(receiptNavItem);
+        }
+      }
+    });
+  }
+
+  if (bottomNav) {
+    bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => {
+      item.addEventListener('click', (e) => {
+        // Allow default anchor navigation, but update active state + pill
+        bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
+        item.classList.add('active');
+        positionBottomNavPill(item);
+        switchMobileView(item.dataset.nav);
+      });
+    });
+
+    // Only position the pill when the mobile breakpoint is active,
+    // since the nav is display:none at desktop width (zero-size rects)
+    const mobileQuery = window.matchMedia('(max-width: 860px)');
+
+    function handleMobileChange(e) {
+      if (e.matches) {
+        requestAnimationFrame(initBottomNavPill);
+        setTimeout(initBottomNavPill, 100);
+      } else {
+        bottomNavPill.classList.remove('visible');
+      }
+    }
+
+    if (mobileQuery.matches) {
+      requestAnimationFrame(initBottomNavPill);
+      setTimeout(initBottomNavPill, 100);
+      setTimeout(initBottomNavPill, 300);
+    }
+
+    if (mobileQuery.addEventListener) {
+      mobileQuery.addEventListener('change', handleMobileChange);
+    } else if (mobileQuery.addListener) {
+      mobileQuery.addListener(handleMobileChange);
+    }
+
+    window.addEventListener('resize', initBottomNavPill);
+    window.addEventListener('load', initBottomNavPill);
+  }
 })();
