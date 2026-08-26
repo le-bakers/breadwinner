@@ -3,12 +3,12 @@
    ============================================ */
 
 .eyebrow {
-  font-size: 13px;
+  font-size: clamp(12px, 0.8vw, 17px);
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--primary-hover);
-  margin-bottom: 14px;
+  margin-bottom: clamp(10px, 0.9vw, 18px);
 }
 
 /* ---------- Hero ---------- */
@@ -56,9 +56,9 @@
   align-items: center;
 }
 
-.hero-copy { max-width: 540px; }
+.hero-copy { max-width: clamp(500px, 42vw, 620px); }
 .hero-title-img {
-  max-width: 100%;
+  width: clamp(260px, 38vw, 560px);
   height: auto;
   display: block;
 }
@@ -73,20 +73,23 @@
 }
 .hero-subtitle {
   font-family: var(--font-display);
-  font-size: clamp(19px, 2.4vw, 24px);
+  font-size: clamp(18px, 2.1vw, 40px);
   font-weight: 700;
   color: rgba(212, 212, 212, 0.85);
-  margin-top: 14px;
+  margin-top: clamp(10px, 1vw, 20px);
 }
 .hero-desc {
-  margin-top: 20px;
-  font-size: 16.5px;
+  margin-top: clamp(14px, 1.4vw, 26px);
+  font-size: clamp(15px, 1.15vw, 21px);
   line-height: 1.75;
   color: rgba(212, 212, 212, 0.85);
-  max-width: 480px;
+  max-width: clamp(440px, 34vw, 560px);
 }
-.hero-actions { display: flex; gap: 14px; margin-top: 34px; flex-wrap: wrap; }
-.btn-lg { padding: 15px 30px; font-size: 15.5px; }
+.hero-actions { display: flex; gap: clamp(12px, 1vw, 18px); margin-top: clamp(24px, 2.4vw, 44px); flex-wrap: wrap; }
+.btn-lg {
+  padding: clamp(13px, 1vw, 18px) clamp(24px, 2.2vw, 34px);
+  font-size: clamp(14px, 1vw, 18px);
+}
 
 .hero-trust { display: flex; align-items: center; gap: 12px; margin-top: 36px; }
 .avatar-stack { display: flex; }
