@@ -81,18 +81,16 @@
   };
 
   /* ============================================
-     Sitewide settings (theme, name, avatar color, notifications)
-     Read from localStorage on every page via this file, so a change
-     made once on settings.html/profile.html shows up everywhere.
+     Identity (name, email, avatar color, diagnosis info)
+     Distinct from Settings below: this is "who you are", not "how the app behaves".
      ============================================ */
   const STORAGE = {
-    theme: 'breadwinner_theme',            // 'light' | 'dark' | 'system'
-    notifications: 'breadwinner_notifications', // 'on' | 'off'
     name: 'breadwinner_user_name',
     email: 'breadwinner_user_email',
     avatarColor: 'breadwinner_avatar_color',
     diagnosisConfirmed: 'breadwinner_diagnosis_confirmed',
-    diagnosisDate: 'breadwinner_diagnosis_date'
+    diagnosisDate: 'breadwinner_diagnosis_date',
+    memberSince: 'breadwinner_member_since'
   };
 
   function safeGet(key, fallback) {
@@ -121,22 +119,108 @@
     return first + last;
   }
 
-  function applyTheme(pref) {
-    const value = pref || safeGet(STORAGE.theme, 'system');
-    const isDark = value === 'dark' || (value === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    document.documentElement.setAttribute('data-theme', isDark ? 'dark' : 'light');
+  window.BreadWinner.STORAGE = STORAGE;
+  window.BreadWinner.safeGet = safeGet;
+  window.BreadWinner.safeSet = safeSet;
+  window.BreadWinner.getInitials = getInitials;
+
+  /* ============================================
+     Settings — the ONE sitewide settings system.
+     Single JSON blob in localStorage under SETTINGS_KEY. Every page loads
+     shared.js, so getSettings()/applySettings() are always available, and a
+     change saved on settings.html shows up immediately everywhere else.
+     ============================================ */
+  const SETTINGS_KEY = 'breadwinner_settings';
+  const SETTINGS_DEFAULTS = {
+    theme: 'light',                // 'light' | 'dark' | 'system' — defaults to light until the user picks otherwise
+    accentColor: 'green',         // key into ACCENT_COLORS
+    notifications: {
+      reminders: true,            // receipt / price-check nudges -> drives the navbar notif dot
+      matchConfirmations: true    // "this GF match needs a second look" nudges
+    },
+    reduceMotion: false,          // mirrors prefers-reduced-motion, but user-controlled
+    currency: 'USD',              // display symbol only — no conversion, single-currency prototype
+    dateFormat: 'MDY'             // 'MDY' | 'DMY' | 'ISO'
+  };
+  const ACCENT_COLORS = {
+    green: ['#22C55E', '#16A34A'],   // brand default
+    blue: ['#3B82F6', '#2563EB'],
+    purple: ['#A855F7', '#9333EA'],
+    orange: ['#F97316', '#EA580C'],
+    pink: ['#EC4899', '#DB2777']
+  };
+  const CURRENCY_SYMBOLS = { USD: '$', EUR: '€', GBP: '£' };
+
+  function deepMerge(base, patch) {
+    const out = Object.assign({}, base);
+    Object.keys(patch || {}).forEach((k) => {
+      if (patch[k] && typeof patch[k] === 'object' && !Array.isArray(patch[k]) && base[k]) {
+        out[k] = deepMerge(base[k], patch[k]);
+      } else {
+        out[k] = patch[k];
+      }
+    });
+    return out;
   }
 
-  function setTheme(value) {
-    safeSet(STORAGE.theme, value);
-    applyTheme(value);
+  function getSettings() {
+    let stored = {};
+    try {
+      stored = JSON.parse(localStorage.getItem(SETTINGS_KEY) || '{}');
+    } catch (e) { stored = {}; }
+    return deepMerge(SETTINGS_DEFAULTS, stored);
   }
 
-  function applySitewideSettings() {
-    // Theme (in case this page has no anti-flash inline script, or the OS preference changed)
-    applyTheme();
+  function saveSettings(next) {
+    try { localStorage.setItem(SETTINGS_KEY, JSON.stringify(next)); } catch (e) { /* storage unavailable */ }
+    applySettings();
+    return next;
+  }
 
-    // Avatar initials + gradient color, wherever an avatar-circle/avatar-xl exists on this page
+  // updateSetting('theme', 'dark') or updateSetting('notifications.reminders', false)
+  function updateSetting(path, value) {
+    const current = getSettings();
+    const keys = path.split('.');
+    let cursor = current;
+    for (let i = 0; i < keys.length - 1; i++) cursor = cursor[keys[i]];
+    cursor[keys[keys.length - 1]] = value;
+    return saveSettings(current);
+  }
+
+  function resetSettings() {
+    try { localStorage.removeItem(SETTINGS_KEY); } catch (e) { /* storage unavailable */ }
+    applySettings();
+    return getSettings();
+  }
+
+  function applySettings() {
+    const s = getSettings();
+    const root = document.documentElement;
+
+    // Theme
+    const isDark = s.theme === 'dark' || (s.theme === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+    root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
+    // Accent color — override the brand green everywhere it's used via var(--primary*);
+    // leave the two vars alone for the default so dark-theme's own accent tuning still applies.
+    if (s.accentColor && s.accentColor !== 'green' && ACCENT_COLORS[s.accentColor]) {
+      const [primary, hover] = ACCENT_COLORS[s.accentColor];
+      root.style.setProperty('--primary', primary);
+      root.style.setProperty('--primary-hover', hover);
+    } else {
+      root.style.removeProperty('--primary');
+      root.style.removeProperty('--primary-hover');
+    }
+
+    // Reduce motion (in addition to the OS-level prefers-reduced-motion media query)
+    root.setAttribute('data-reduce-motion', s.reduceMotion ? 'true' : 'false');
+
+    // Notification dot in the top navbar
+    document.querySelectorAll('.notif-dot').forEach((el) => {
+      el.style.display = s.notifications.reminders ? '' : 'none';
+    });
+
+    // Avatar initials + gradient (personal identity, not a "setting", but rendered alongside it)
     const name = safeGet(STORAGE.name, '');
     const colorKey = safeGet(STORAGE.avatarColor, 'green');
     const colors = AVATAR_COLORS[colorKey] || AVATAR_COLORS.green;
@@ -152,22 +236,45 @@
       welcomeHeading.textContent = 'Welcome back, ' + firstName + '!';
     }
 
-    // Notification dot — hidden sitewide when the user turns notifications off in Settings
-    const notifOn = safeGet(STORAGE.notifications, 'on') !== 'off';
-    document.querySelectorAll('.notif-dot').forEach((el) => {
-      el.style.display = notifOn ? '' : 'none';
-    });
+    return s;
   }
 
-  applySitewideSettings();
-  window.addEventListener('storage', applySitewideSettings); // sync across open tabs
+  function formatDate(dateInput) {
+    const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    const { dateFormat } = getSettings();
+    if (dateFormat === 'ISO') return d.toISOString().split('T')[0];
+    if (dateFormat === 'DMY') return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d); // MDY default
+  }
 
-  window.BreadWinner.STORAGE = STORAGE;
-  window.BreadWinner.safeGet = safeGet;
-  window.BreadWinner.safeSet = safeSet;
-  window.BreadWinner.getInitials = getInitials;
-  window.BreadWinner.setTheme = setTheme;
-  window.BreadWinner.applySitewideSettings = applySitewideSettings;
+  function formatMoney(n) {
+    const { currency } = getSettings();
+    const symbol = CURRENCY_SYMBOLS[currency] || '$';
+    return symbol + Number(n).toFixed(2);
+  }
+
+  applySettings();
+  window.addEventListener('storage', applySettings); // sync across open tabs
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (getSettings().theme === 'system') applySettings();
+  });
+
+  window.BreadWinner.Settings = {
+    DEFAULTS: SETTINGS_DEFAULTS,
+    ACCENT_COLORS: ACCENT_COLORS,
+    getSettings,
+    saveSettings,
+    updateSetting,
+    resetSettings,
+    applySettings
+  };
+  window.BreadWinner.formatDate = formatDate;
+  window.BreadWinner.formatMoney = formatMoney;
+  window.BreadWinner.currencySymbol = function () {
+    return CURRENCY_SYMBOLS[getSettings().currency] || '$';
+  };
+  // Back-compat alias used by older page scripts
+  window.BreadWinner.applySitewideSettings = applySettings;
 
   /* ---------- Toast helper (used by settings.js / profile.js) ---------- */
   window.BreadWinner.toast = function (message) {

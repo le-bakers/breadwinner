@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var t=localStorage.getItem('breadwinner_theme')||'system';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<script>try{var s=JSON.parse(localStorage.getItem('breadwinner_settings')||'{}');var t=s.theme||'light';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Settings — BreadWinner</title>
 <meta name="description" content="Manage your BreadWinner appearance, notifications, and privacy settings.">
@@ -105,6 +105,22 @@
             </div>
           </div>
         </div>
+
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Accent color</strong>
+            <span>Recolors buttons and highlights across the app. Default matches the BreadWinner brand green.</span>
+          </div>
+          <div class="form-row-control">
+            <div class="accent-swatches" id="accentSwatches" role="group" aria-label="Accent color">
+              <button type="button" class="avatar-swatch active" data-accent="green" style="background:linear-gradient(135deg,#22C55E,#16A34A)" aria-label="Green (default)"></button>
+              <button type="button" class="avatar-swatch" data-accent="blue" style="background:linear-gradient(135deg,#3B82F6,#2563EB)" aria-label="Blue"></button>
+              <button type="button" class="avatar-swatch" data-accent="purple" style="background:linear-gradient(135deg,#A855F7,#9333EA)" aria-label="Purple"></button>
+              <button type="button" class="avatar-swatch" data-accent="orange" style="background:linear-gradient(135deg,#F97316,#EA580C)" aria-label="Orange"></button>
+              <button type="button" class="avatar-swatch" data-accent="pink" style="background:linear-gradient(135deg,#EC4899,#DB2777)" aria-label="Pink"></button>
+            </div>
+          </div>
+        </div>
       </section>
 
       <!-- ============ NOTIFICATIONS ============ -->
@@ -140,6 +156,79 @@
           <div class="form-row-control">
             <label class="switch">
               <input type="checkbox" id="matchToggle">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PREFERENCES ============ -->
+      <section class="section-card">
+        <div class="section-card-header">
+          <span class="section-icon" style="background:#ECFDF5;color:#059669">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 1v22M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h2>Preferences</h2>
+            <p>Currency changes the symbol shown next to dollar amounts (display only — no conversion).</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Currency</strong>
+            <span>Applies to receipt totals and overcharge amounts.</span>
+          </div>
+          <div class="form-row-control">
+            <div class="select-inline">
+              <select id="currencySelect" aria-label="Currency">
+                <option value="USD">USD ($)</option>
+                <option value="EUR">EUR (€)</option>
+                <option value="GBP">GBP (£)</option>
+              </select>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Date format</strong>
+            <span>Applies to receipt dates and account dates everywhere.</span>
+          </div>
+          <div class="form-row-control">
+            <div class="select-inline">
+              <select id="dateFormatSelect" aria-label="Date format">
+                <option value="MDY">Jul 3, 2026</option>
+                <option value="DMY">3 Jul 2026</option>
+                <option value="ISO">2026-07-03</option>
+              </select>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ACCESSIBILITY ============ -->
+      <section class="section-card">
+        <div class="section-card-header">
+          <span class="section-icon" style="background:#FDF4FF;color:#A21CAF">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="5" r="2" stroke="currentColor" stroke-width="1.8"/><path d="M5 8.5l7 2 7-2M12 10.5V22M8 15l4-2 4 2" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h2>Accessibility</h2>
+            <p>Applies sitewide, on top of your device's own reduced-motion setting.</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Reduce motion</strong>
+            <span>Turns off non-essential animations and transitions across BreadWinner.</span>
+          </div>
+          <div class="form-row-control">
+            <label class="switch">
+              <input type="checkbox" id="reduceMotionToggle">
               <span class="switch-track"></span>
             </label>
           </div>
@@ -205,11 +294,20 @@
       <!-- ============ DANGER ZONE ============ -->
       <div class="danger-card">
         <h2>Danger Zone</h2>
-        <p>This clears everything BreadWinner has saved on this device — your name, diagnosis info, avatar, and preferences. This is a local prototype with no server yet, so there's nothing else to delete elsewhere.</p>
+        <p>This is a local prototype with no server yet, so this device is the only place any of this data lives.</p>
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Reset settings to defaults</strong>
+            <span>Restores theme, accent color, notifications, and preferences. Keeps your name, email, and diagnosis info.</span>
+          </div>
+          <div class="form-row-control">
+            <button type="button" class="btn btn-secondary btn-sm" id="resetSettingsBtn">Reset Settings</button>
+          </div>
+        </div>
         <div class="form-row">
           <div class="form-row-text">
             <strong>Clear my local data</strong>
-            <span>This cannot be undone.</span>
+            <span>Removes everything — profile, diagnosis info, and settings. This cannot be undone.</span>
           </div>
           <div class="form-row-control">
             <button type="button" class="btn btn-danger btn-sm" id="clearDataBtn">Clear Data</button>
@@ -236,6 +334,21 @@
     </div>
   </div>
 </main>
+
+<!-- ============ CONFIRM RESET SETTINGS MODAL ============ -->
+<div class="modal-overlay" id="resetSettingsModal" hidden>
+  <div class="modal-card">
+    <span class="modal-icon" style="background:#EFF6FF;color:#2563EB">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+    <h3>Reset settings to defaults?</h3>
+    <p>Theme, accent color, notifications, currency, date format, and reduce-motion go back to their defaults. Your name, email, and diagnosis info are not affected.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="resetSettingsCancel">Cancel</button>
+      <button type="button" class="btn btn-primary" id="resetSettingsConfirm">Reset Settings</button>
+    </div>
+  </div>
+</div>
 
 <!-- ============ CONFIRM CLEAR DATA MODAL ============ -->
 <div class="modal-overlay" id="clearDataModal" hidden>

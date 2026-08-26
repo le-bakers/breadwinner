@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var t=localStorage.getItem('breadwinner_theme')||'system';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<script>try{var s=JSON.parse(localStorage.getItem('breadwinner_settings')||'{}');var t=s.theme||'light';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — BreadWinner</title>
 <meta name="description" content="Your BreadWinner dashboard — receipts, gluten-free totals, and tax-deductible spending at a glance.">
@@ -73,8 +73,8 @@
       <section class="stats-grid" aria-label="Summary statistics">
         <div class="stat-card reveal">
           <div class="stat-top">
-            <span class="stat-icon" style="background:#DCFCE7">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span class="stat-icon stat-icon-accent">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
             </span>
             <span class="stat-trend up">+12%</span>
           </div>
@@ -84,8 +84,8 @@
 
         <div class="stat-card reveal">
           <div class="stat-top">
-            <span class="stat-icon" style="background:#DCFCE7">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#16A34A" stroke-width="1.8"/><path d="M8.5 12.5l2.5 2.5l5-5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="stat-icon stat-icon-accent">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 12.5l2.5 2.5l5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <span class="stat-trend up">+8%</span>
           </div>
@@ -139,15 +139,15 @@
           </div>
         </div>
 
-        <div class="receipt-table" id="receiptTable">
+        <div class="receipt-table" id="receiptTable" role="table" aria-label="Receipt history">
           <div class="receipt-row receipt-row-head" role="row">
-            <span>Receipt Name</span>
-            <span>Date</span>
-            <span>Items</span>
-            <span>GF Items</span>
-            <span>Overcharge</span>
-            <span>Status</span>
-            <span>Actions</span>
+            <span role="columnheader">Receipt Name</span>
+            <span role="columnheader">Date</span>
+            <span role="columnheader">Items</span>
+            <span role="columnheader">GF Items</span>
+            <span role="columnheader">Overcharge</span>
+            <span role="columnheader">Status</span>
+            <span role="columnheader">Actions</span>
           </div>
           <!-- Rows injected by home.js from placeholder data -->
         </div>
@@ -237,18 +237,18 @@
 <!-- Row template used by JS -->
 <template id="rowTemplate">
   <div class="receipt-row" role="row" tabindex="0">
-    <span class="cell-name">
+    <span class="cell-name" role="cell">
       <span class="receipt-thumb" aria-hidden="true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
       </span>
       <span class="cell-name-text"></span>
     </span>
-    <span class="cell-date"></span>
-    <span class="cell-items"></span>
-    <span class="cell-gf"></span>
-    <span class="cell-overcharge"></span>
-    <span class="cell-status"></span>
-    <span class="cell-actions">
+    <span class="cell-date" role="cell"></span>
+    <span class="cell-items" role="cell"></span>
+    <span class="cell-gf" role="cell"></span>
+    <span class="cell-overcharge" role="cell"></span>
+    <span class="cell-status" role="cell"></span>
+    <span class="cell-actions" role="cell">
       <button class="row-expand-btn" aria-label="Expand receipt details">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>

@@ -70,6 +70,8 @@
   display: flex; align-items: center; justify-content: center;
 }
 .stat-icon svg { width: 20px; height: 20px; }
+/* Follows the user's Settings > Accent color choice, unlike the semantic red/blue stat icons. */
+.stat-icon-accent { background: var(--accent-light); color: var(--primary-hover); }
 .stat-trend {
   font-size: 12.5px;
   font-weight: 700;
@@ -159,6 +161,7 @@
   width: 30px; height: 30px;
   border-radius: 9px;
   background: var(--accent-light);
+  color: var(--primary-hover);
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }

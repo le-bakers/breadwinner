@@ -6,45 +6,66 @@
   'use strict';
 
   const BW = window.BreadWinner || {};
-  const STORAGE = BW.STORAGE || { theme: 'breadwinner_theme', notifications: 'breadwinner_notifications' };
-  const get = BW.safeGet || ((k, f) => { try { const v = localStorage.getItem(k); return v === null ? f : v; } catch (e) { return f; } });
-  const set = BW.safeSet || ((k, v) => { try { localStorage.setItem(k, v); } catch (e) {} });
+  const Settings = BW.Settings; // getSettings, saveSettings, updateSetting, resetSettings, applySettings
 
-  /* ---------- Theme segmented control ---------- */
-  const themeButtons = document.querySelectorAll('#themeSegmented button');
-  function syncThemeButtons() {
-    const current = get(STORAGE.theme, 'system');
-    themeButtons.forEach((btn) => btn.classList.toggle('active', btn.dataset.themeValue === current));
+  /* ---------- Render all controls from current settings ---------- */
+  function renderFromSettings() {
+    const s = Settings.getSettings();
+
+    document.querySelectorAll('#themeSegmented button').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.themeValue === s.theme);
+    });
+    document.querySelectorAll('#accentSwatches .avatar-swatch').forEach((btn) => {
+      btn.classList.toggle('active', btn.dataset.accent === s.accentColor);
+    });
+
+    document.getElementById('notifToggle').checked = s.notifications.reminders;
+    document.getElementById('matchToggle').checked = s.notifications.matchConfirmations;
+    document.getElementById('reduceMotionToggle').checked = s.reduceMotion;
+    document.getElementById('currencySelect').value = s.currency;
+    document.getElementById('dateFormatSelect').value = s.dateFormat;
   }
-  syncThemeButtons();
-  themeButtons.forEach((btn) => {
+
+  /* ---------- Appearance: theme ---------- */
+  document.querySelectorAll('#themeSegmented button').forEach((btn) => {
     btn.addEventListener('click', () => {
-      const value = btn.dataset.themeValue;
-      if (BW.setTheme) BW.setTheme(value);
-      else set(STORAGE.theme, value);
-      syncThemeButtons();
-      if (BW.toast) BW.toast('Theme set to ' + value);
+      Settings.updateSetting('theme', btn.dataset.themeValue);
+      renderFromSettings();
+      if (BW.toast) BW.toast('Theme set to ' + btn.dataset.themeValue);
     });
   });
 
-  /* ---------- Notification toggles ---------- */
-  const notifToggle = document.getElementById('notifToggle');
-  const matchToggle = document.getElementById('matchToggle');
-  const MATCH_KEY = 'breadwinner_match_confirmations';
+  /* ---------- Appearance: accent color ---------- */
+  document.querySelectorAll('#accentSwatches .avatar-swatch').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      Settings.updateSetting('accentColor', btn.dataset.accent);
+      renderFromSettings();
+      if (BW.toast) BW.toast('Accent color updated');
+    });
+  });
 
-  if (notifToggle) {
-    notifToggle.checked = get(STORAGE.notifications, 'on') !== 'off';
-    notifToggle.addEventListener('change', () => {
-      set(STORAGE.notifications, notifToggle.checked ? 'on' : 'off');
-      if (BW.applySitewideSettings) BW.applySitewideSettings();
-    });
-  }
-  if (matchToggle) {
-    matchToggle.checked = get(MATCH_KEY, 'on') !== 'off';
-    matchToggle.addEventListener('change', () => {
-      set(MATCH_KEY, matchToggle.checked ? 'on' : 'off');
-    });
-  }
+  /* ---------- Notifications ---------- */
+  document.getElementById('notifToggle').addEventListener('change', (e) => {
+    Settings.updateSetting('notifications.reminders', e.target.checked);
+  });
+  document.getElementById('matchToggle').addEventListener('change', (e) => {
+    Settings.updateSetting('notifications.matchConfirmations', e.target.checked);
+  });
+
+  /* ---------- Preferences ---------- */
+  document.getElementById('currencySelect').addEventListener('change', (e) => {
+    Settings.updateSetting('currency', e.target.value);
+    if (BW.toast) BW.toast('Currency set to ' + e.target.value);
+  });
+  document.getElementById('dateFormatSelect').addEventListener('change', (e) => {
+    Settings.updateSetting('dateFormat', e.target.value);
+    if (BW.toast) BW.toast('Date format updated');
+  });
+
+  /* ---------- Accessibility ---------- */
+  document.getElementById('reduceMotionToggle').addEventListener('change', (e) => {
+    Settings.updateSetting('reduceMotion', e.target.checked);
+  });
 
   /* ---------- Export data ---------- */
   const exportBtn = document.getElementById('exportDataBtn');
@@ -54,7 +75,10 @@
       try {
         Object.keys(localStorage)
           .filter((k) => k.startsWith('breadwinner_'))
-          .forEach((k) => { data[k] = localStorage.getItem(k); });
+          .forEach((k) => {
+            const raw = localStorage.getItem(k);
+            try { data[k] = JSON.parse(raw); } catch (e) { data[k] = raw; }
+          });
       } catch (e) { /* storage unavailable */ }
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
@@ -70,38 +94,41 @@
     });
   }
 
-  /* ---------- Clear local data (danger zone) ---------- */
-  const clearModal = document.getElementById('clearDataModal');
-  const clearBtn = document.getElementById('clearDataBtn');
-  const clearCancel = document.getElementById('clearDataCancel');
-  const clearConfirm = document.getElementById('clearDataConfirm');
-  const modal = BW.confirmModal ? BW.confirmModal(clearModal) : {
-    open() { clearModal.hidden = false; },
-    close() { clearModal.hidden = true; }
-  };
+  /* ---------- Reset settings (keeps identity data) ---------- */
+  const resetModal = BW.confirmModal(document.getElementById('resetSettingsModal'));
+  document.getElementById('resetSettingsBtn').addEventListener('click', () => resetModal.open());
+  document.getElementById('resetSettingsCancel').addEventListener('click', () => resetModal.close());
+  document.getElementById('resetSettingsModal').addEventListener('click', (e) => {
+    if (e.target.id === 'resetSettingsModal') resetModal.close();
+  });
+  document.getElementById('resetSettingsConfirm').addEventListener('click', () => {
+    Settings.resetSettings();
+    renderFromSettings();
+    resetModal.close();
+    if (BW.toast) BW.toast('Settings reset to defaults');
+  });
 
-  if (clearBtn) clearBtn.addEventListener('click', () => modal.open());
-  if (clearCancel) clearCancel.addEventListener('click', () => modal.close());
-  if (clearModal) {
-    clearModal.addEventListener('click', (e) => { if (e.target === clearModal) modal.close(); });
-  }
-  if (clearConfirm) {
-    clearConfirm.addEventListener('click', () => {
-      try {
-        Object.keys(localStorage)
-          .filter((k) => k.startsWith('breadwinner_'))
-          .forEach((k) => localStorage.removeItem(k));
-      } catch (e) { /* storage unavailable */ }
-      modal.close();
-      window.location.href = 'signin.html';
-    });
-  }
+  /* ---------- Clear all local data (danger zone) ---------- */
+  const clearModal = BW.confirmModal(document.getElementById('clearDataModal'));
+  document.getElementById('clearDataBtn').addEventListener('click', () => clearModal.open());
+  document.getElementById('clearDataCancel').addEventListener('click', () => clearModal.close());
+  document.getElementById('clearDataModal').addEventListener('click', (e) => {
+    if (e.target.id === 'clearDataModal') clearModal.close();
+  });
+  document.getElementById('clearDataConfirm').addEventListener('click', () => {
+    try {
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('breadwinner_'))
+        .forEach((k) => localStorage.removeItem(k));
+    } catch (e) { /* storage unavailable */ }
+    clearModal.close();
+    window.location.href = 'signin.html';
+  });
 
   /* ---------- Sign out ---------- */
-  const signOutBtn = document.getElementById('signOutBtn');
-  if (signOutBtn) {
-    signOutBtn.addEventListener('click', () => {
-      window.location.href = 'signin.html';
-    });
-  }
+  document.getElementById('signOutBtn').addEventListener('click', () => {
+    window.location.href = 'signin.html';
+  });
+
+  renderFromSettings();
 })();

@@ -64,6 +64,13 @@
     scroll-behavior: auto !important;
   }
 }
+/* User-controlled equivalent, set from Settings > Accessibility > Reduce Motion */
+:root[data-reduce-motion="true"] *, :root[data-reduce-motion="true"] *::before, :root[data-reduce-motion="true"] *::after {
+  animation-duration: 0.001ms !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001ms !important;
+  scroll-behavior: auto !important;
+}
 
 /* ---------- Reset ---------- */
 *, *::before, *::after { box-sizing: border-box; }
@@ -389,13 +396,6 @@ input, select { font-family: inherit; }
 .badge-tax { background: #EFF6FF; color: #2563EB; }
 .badge-warn { background: #FEF3F2; color: #DC2626; }
 
-.shimmer {
-  background: linear-gradient(90deg, var(--border) 25%, #F3F4F6 37%, var(--border) 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.4s ease infinite;
-}
-@keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
-
 /* ---------- Danger button ---------- */
 .btn-danger {
   background: #FEF2F2;
@@ -435,6 +435,11 @@ input, select { font-family: inherit; }
 
 /* ---------- Account pages: shell, tabs, sections, form rows ---------- */
 .account-main { padding: 40px 0 140px; }
+@media (max-width: 860px) {
+  /* Fixed bottom nav is ~60-70px tall + safe-area-inset; no FAB on these pages
+     (unlike .dashboard, which needs 200px to also clear its floating upload button). */
+  .account-main { padding-bottom: 120px; }
+}
 .account-header { margin: 8px 0 28px; }
 .account-header h1 { font-size: clamp(24px, 3vw, 30px); font-weight: 800; }
 .account-header p { color: var(--text-secondary); margin-top: 6px; font-size: 15px; }

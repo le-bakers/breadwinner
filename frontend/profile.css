@@ -28,6 +28,39 @@
   pointer-events: none;
 }
 
-@media (max-width: 860px) {
-  .account-main { padding-bottom: 120px; }
+/* ---------- Profile summary header ---------- */
+.profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  flex-wrap: wrap;
+  margin-bottom: 22px;
+}
+.profile-summary-text { min-width: 0; }
+.profile-summary-text h2 { font-size: 20px; font-weight: 800; }
+.profile-summary-text p { color: var(--text-secondary); font-size: 14px; margin-top: 3px; }
+.profile-summary .btn { margin-left: auto; }
+@media (max-width: 560px) {
+  .profile-summary .btn { margin-left: 0; width: 100%; }
+}
+
+/* ---------- Edit-mode fields: read-only look until "Edit Profile" is clicked ---------- */
+.field-group input:disabled {
+  background: var(--bg);
+  color: var(--text-secondary);
+  cursor: default;
+}
+.switch input:disabled + .switch-track { opacity: 0.55; cursor: default; }
+
+.form-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: flex-end;
+  margin-top: 22px;
+  padding-top: 20px;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 560px) {
+  .form-actions { flex-direction: column-reverse; }
+  .form-actions .btn { width: 100%; }
 }

@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var t=localStorage.getItem('breadwinner_theme')||'system';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<script>try{var s=JSON.parse(localStorage.getItem('breadwinner_settings')||'{}');var t=s.theme||'light';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Profile — BreadWinner</title>
 <meta name="description" content="Manage your BreadWinner profile and gluten-free diagnosis information.">
@@ -71,58 +71,54 @@
 
     <div class="account-grid">
 
-      <!-- ============ IDENTITY ============ -->
-      <form class="section-card" id="identityForm">
+      <!-- ============ PROFILE SUMMARY + EDIT TOGGLE ============ -->
+      <section class="section-card">
+        <div class="profile-summary">
+          <span class="avatar-xl" id="avatarPreview">JM</span>
+          <div class="profile-summary-text">
+            <h2 id="summaryName">Your Name</h2>
+            <p id="summaryEmail">you@example.com</p>
+          </div>
+          <button type="button" class="btn btn-secondary" id="editProfileBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Edit Profile
+          </button>
+        </div>
+
+        <div>
+          <label class="swatch-label">Avatar color</label>
+          <div class="avatar-swatches" id="avatarSwatches" role="group" aria-label="Avatar color">
+            <button type="button" class="avatar-swatch active" data-color="green" style="background:linear-gradient(135deg,#22C55E,#16A34A)" aria-label="Green"></button>
+            <button type="button" class="avatar-swatch" data-color="blue" style="background:linear-gradient(135deg,#3B82F6,#2563EB)" aria-label="Blue"></button>
+            <button type="button" class="avatar-swatch" data-color="purple" style="background:linear-gradient(135deg,#A855F7,#9333EA)" aria-label="Purple"></button>
+            <button type="button" class="avatar-swatch" data-color="orange" style="background:linear-gradient(135deg,#F97316,#EA580C)" aria-label="Orange"></button>
+            <button type="button" class="avatar-swatch" data-color="pink" style="background:linear-gradient(135deg,#EC4899,#DB2777)" aria-label="Pink"></button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PERSONAL INFORMATION (Edit / Save / Cancel) ============ -->
+      <form class="section-card" id="profileForm" novalidate>
         <div class="section-card-header">
           <span class="section-icon">
             <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
           </span>
           <div>
-            <h2>Identity</h2>
-            <p>This is how your name shows up on your dashboard and receipts.</p>
-          </div>
-        </div>
-
-        <div class="avatar-xl-wrap">
-          <span class="avatar-xl" id="avatarPreview">JM</span>
-          <div>
-            <label class="swatch-label">Avatar color</label>
-            <div class="avatar-swatches" id="avatarSwatches" role="group" aria-label="Avatar color">
-              <button type="button" class="avatar-swatch active" data-color="green" style="background:linear-gradient(135deg,#22C55E,#16A34A)" aria-label="Green"></button>
-              <button type="button" class="avatar-swatch" data-color="blue" style="background:linear-gradient(135deg,#3B82F6,#2563EB)" aria-label="Blue"></button>
-              <button type="button" class="avatar-swatch" data-color="purple" style="background:linear-gradient(135deg,#A855F7,#9333EA)" aria-label="Purple"></button>
-              <button type="button" class="avatar-swatch" data-color="orange" style="background:linear-gradient(135deg,#F97316,#EA580C)" aria-label="Orange"></button>
-              <button type="button" class="avatar-swatch" data-color="pink" style="background:linear-gradient(135deg,#EC4899,#DB2777)" aria-label="Pink"></button>
-            </div>
+            <h2>Personal Information</h2>
+            <p>Click "Edit Profile" above to make changes.</p>
           </div>
         </div>
 
         <div class="field-row-2">
           <div class="field-group">
-            <input type="text" id="fullName" name="fullName" placeholder=" " autocomplete="name">
+            <input type="text" id="fullName" name="fullName" placeholder=" " autocomplete="name" disabled>
             <label for="fullName">Full name</label>
+            <p class="field-error" id="fullName-error" role="alert"></p>
           </div>
           <div class="field-group">
-            <input type="email" id="email" name="email" placeholder=" " autocomplete="email">
+            <input type="email" id="email" name="email" placeholder=" " autocomplete="email" disabled>
             <label for="email">Email address</label>
-          </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary" id="saveIdentityBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Save Changes
-        </button>
-      </form>
-
-      <!-- ============ DIAGNOSIS ============ -->
-      <form class="section-card" id="diagnosisForm">
-        <div class="section-card-header">
-          <span class="section-icon" style="background:#EFF6FF;color:#2563EB">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M9 2h6v4h4v16H5V6h4V2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 13h6M9 17h6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </span>
-          <div>
-            <h2>Celiac &amp; Diagnosis Info</h2>
-            <p>The IRS requires a physician's diagnosis or prescription for a gluten-free diet to claim this deduction.</p>
+            <p class="field-error" id="email-error" role="alert"></p>
           </div>
         </div>
 
@@ -133,14 +129,14 @@
           </div>
           <div class="form-row-control">
             <label class="switch">
-              <input type="checkbox" id="diagnosisToggle">
+              <input type="checkbox" id="diagnosisToggle" disabled>
               <span class="switch-track"></span>
             </label>
           </div>
         </div>
 
         <div class="field-group" id="diagnosisDateGroup" style="margin-top:4px;">
-          <input type="date" id="diagnosisDate" name="diagnosisDate" placeholder=" ">
+          <input type="date" id="diagnosisDate" name="diagnosisDate" placeholder=" " disabled>
           <label for="diagnosisDate" class="static-label">Diagnosis / prescription date</label>
         </div>
 
@@ -149,13 +145,16 @@
           <span>BreadWinner organizes records for you — it doesn't file taxes or give tax advice. Always confirm eligibility and totals with a tax professional.</span>
         </div>
 
-        <button type="submit" class="btn btn-primary" style="margin-top:18px;">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Save Changes
-        </button>
+        <div class="form-actions" id="formActions" hidden>
+          <button type="button" class="btn btn-secondary" id="cancelProfileBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveProfileBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Save Changes
+          </button>
+        </div>
       </form>
 
-      <!-- ============ ACCOUNT OVERVIEW ============ -->
+      <!-- ============ ACCOUNT OVERVIEW (real, non-fabricated data only) ============ -->
       <section class="section-card">
         <div class="section-card-header">
           <span class="section-icon" style="background:#FEF3F2;color:#DC2626">
@@ -175,6 +174,16 @@
           <div class="field-static">
             <label>Sign-in method</label>
             <p class="value">Email &amp; password</p>
+          </div>
+        </div>
+        <div class="field-row-2" style="margin-top:20px;">
+          <div class="field-static">
+            <label>Diagnosis status</label>
+            <p class="value" id="diagnosisStatus">Not set</p>
+          </div>
+          <div class="field-static">
+            <label>Theme</label>
+            <p class="value" id="themeStatus">System</p>
           </div>
         </div>
 

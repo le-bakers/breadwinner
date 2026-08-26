@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var t=localStorage.getItem('breadwinner_theme')||'system';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<script>try{var s=JSON.parse(localStorage.getItem('breadwinner_settings')||'{}');var t=s.theme||'light';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BreadWinner — Track Your Gluten-Free Expenses</title>
 <meta name="description" content="BreadWinner organizes your grocery receipts, flags gluten-free items, and tracks tax-deductible purchases automatically.">
@@ -277,8 +277,8 @@
 <script src="index.js"></script>
 <script>
   function handleCredentialResponse(response) {
-    console.log("Encoded JWT ID token: " + response.credential);
-    // Add your login success handling here (e.g., redirecting to a dashboard)
+    // response.credential is a signed JWT — do not log it. Wire this to real
+    // sign-in handling (e.g. redirecting to the dashboard) once the backend exists.
   }
 
   window.onload = function () {
