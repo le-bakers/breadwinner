@@ -1,9 +1,21 @@
 <!DOCTYPE html>
 <html>
 <head>
-<meta http-equiv="refresh" content="0; url=https://le-bakers.github.io/frontend/index.html">
-  
+<meta charset="UTF-8">
+<title>BreadWinner</title>
+<!--
+  Dummy landing page that redirects to the real app in /frontend.
+  A relative URL is used so it resolves correctly regardless of the
+  GitHub Pages subpath (e.g. https://<user>.github.io/breadwinner/).
+-->
+<meta http-equiv="refresh" content="0; url=frontend/index.html">
+<script>
+  // Fallback for browsers/environments that ignore meta refresh.
+  window.location.replace("frontend/index.html");
+</script>
 </head>
 <body>
+  <p>Redirecting to BreadWinner…</p>
+  <p><a href="frontend/index.html">Go to BreadWinner</a></p>
 </body>
 </html>
