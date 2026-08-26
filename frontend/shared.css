@@ -290,6 +290,9 @@ input, select { font-family: inherit; }
   color: var(--text);
   text-align: center;
 }
+.mobile-menu > a {
+  background: var(--card);
+}
 .mobile-menu .nav-actions {
   flex-direction: column;
   align-items: stretch;
@@ -301,6 +304,7 @@ input, select { font-family: inherit; }
 @media (max-width: 860px) {
   .nav-links { display: none; }
   .nav-actions .btn-ghost { display: none; }
+  .nav-inner > .nav-actions .btn-primary { display: none; }
   .nav-toggle { display: flex; }
   .mobile-menu { display: block; }
 }

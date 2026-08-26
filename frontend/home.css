@@ -239,6 +239,16 @@
   .receipt-row { grid-template-columns: 1fr auto; }
   .receipt-row-head span:not(:first-child) { display: none; }
   .cell-date, .cell-items, .cell-gf { display: none; }
+
+  /* Scale the expanded receipt dropdown to the table borders on mobile */
+  .receipt-expand .expand-inner {
+    grid-template-columns: 1fr;
+    gap: 16px;
+    padding: 0 18px;
+  }
+  .receipt-expand.open .expand-inner { padding: 18px; }
+  .expand-receipt-img { max-width: 100%; height: auto; }
+  .expand-item-list li { padding: 10px 12px; }
 }
 
 /* ---------- FAB ---------- */
