@@ -1,0 +1,33 @@
+/* ============================================
+   BreadWinner — Profile Page Styles
+   (Most layout primitives — section-card, form-row, switch,
+   account-tabs, avatar-xl — live in shared.css for reuse with Settings.)
+   ============================================ */
+
+.swatch-label {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+#diagnosisDateGroup {
+  max-height: 90px;
+  opacity: 1;
+  overflow: hidden;
+  margin-bottom: 20px;
+  transition: max-height 0.35s var(--ease-out), opacity 0.3s var(--ease-out), margin 0.35s var(--ease-out);
+}
+#diagnosisDateGroup.collapsed {
+  max-height: 0;
+  opacity: 0;
+  margin-bottom: 0;
+  pointer-events: none;
+}
+
+@media (max-width: 860px) {
+  .account-main { padding-bottom: 120px; }
+}
