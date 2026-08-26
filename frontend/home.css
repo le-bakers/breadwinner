@@ -240,6 +240,13 @@
   .receipt-row-head span:not(:first-child) { display: none; }
   .cell-date, .cell-items, .cell-gf { display: none; }
 }
+@media (max-width: 560px) {
+  /* Scale the receipts toolbar controls to the container's borders on mobile */
+  .toolbar-controls { width: 100%; gap: 10px; }
+  .search-box { min-width: 0; width: 100%; }
+  .select-wrap { width: 100%; }
+  .select-wrap select { width: 100%; }
+}
 
 /* ---------- FAB ---------- */
 .fab-wrapper {
