@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>try{var t=localStorage.getItem('breadwinner_theme')||'system';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Settings — BreadWinner</title>
+<meta name="description" content="Manage your BreadWinner appearance, notifications, and privacy settings.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<link rel="stylesheet" href="settings.css">
+<link rel="icon" type="image/x-icon" href="images/breadwinner_icon.png">
+</head>
+<body>
+
+<a class="sr-only" href="#main-content">Skip to main content</a>
+
+<!-- ============ DASHBOARD NAV ============ -->
+<header class="navbar dash-navbar">
+  <div class="nav-inner">
+    <a class="logo" href="index.html">
+      <img src="images/breadwinner_logo_black.png" alt="BreadWinner" height="36">
+    </a>
+    <nav class="nav-links" aria-label="Dashboard">
+      <a href="home.html">Dashboard</a>
+      <a href="home.html#receipts">Receipts</a>
+      <a href="profile.html">Profile</a>
+      <a href="settings.html" class="active">Settings</a>
+    </nav>
+    <div class="nav-actions dash-actions">
+      <button class="icon-btn" aria-label="Notifications">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1112 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9z" stroke="#374151" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 17a2.5 2.5 0 005 0" stroke="#374151" stroke-width="1.7" stroke-linecap="round"/></svg>
+        <span class="notif-dot" aria-hidden="true"></span>
+      </button>
+      <button class="profile-pill" aria-label="Account menu">
+        <span class="avatar-circle">JM</span>
+      </button>
+    </div>
+    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+      <span></span><span></span><span></span>
+    </button>
+  </div>
+  <div class="mobile-menu" id="mobileMenu">
+    <a href="home.html">Dashboard</a>
+    <a href="home.html#receipts">Receipts</a>
+    <a href="profile.html">Profile</a>
+    <a href="settings.html">Settings</a>
+  </div>
+</header>
+
+<main id="main-content" class="account-main">
+  <div class="container">
+
+    <section class="account-header">
+      <h1>Settings</h1>
+      <p>Appearance, notifications, and how your data is stored on this device.</p>
+    </section>
+
+    <nav class="account-tabs" aria-label="Account sections">
+      <a href="profile.html">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Profile
+      </a>
+      <a href="settings.html" class="active">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+        Settings
+      </a>
+    </nav>
+
+    <div class="account-grid">
+
+      <!-- ============ APPEARANCE ============ -->
+      <section class="section-card">
+        <div class="section-card-header">
+          <span class="section-icon">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <div>
+            <h2>Appearance</h2>
+            <p>Changes apply immediately, across every BreadWinner page.</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Theme</strong>
+            <span>Light, dark, or match your device setting.</span>
+          </div>
+          <div class="form-row-control">
+            <div class="segmented" id="themeSegmented" role="group" aria-label="Theme">
+              <button type="button" data-theme-value="light">
+                <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                Light
+              </button>
+              <button type="button" data-theme-value="dark">
+                <svg viewBox="0 0 24 24" fill="none"><path d="M20 14.5A8.5 8.5 0 019.5 4a8.5 8.5 0 1010.5 10.5z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+                Dark
+              </button>
+              <button type="button" data-theme-value="system">
+                <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="13" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M8 21h8M12 17v4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+                System
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ NOTIFICATIONS ============ -->
+      <section class="section-card">
+        <div class="section-card-header">
+          <span class="section-icon" style="background:#FEF3F2;color:#DC2626">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M6 9a6 6 0 1112 0c0 4 1.5 5.5 1.5 5.5H4.5S6 13 6 9z" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M9.5 17a2.5 2.5 0 005 0" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>
+          </span>
+          <div>
+            <h2>Notifications</h2>
+            <p>Controls the notification dot in the top navigation bar.</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Reminders &amp; price-check alerts</strong>
+            <span>Nudges to scan a receipt or confirm a cached store price.</span>
+          </div>
+          <div class="form-row-control">
+            <label class="switch">
+              <input type="checkbox" id="notifToggle">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Product-match confirmations</strong>
+            <span>Let us know when a gluten-free match needs a second look.</span>
+          </div>
+          <div class="form-row-control">
+            <label class="switch">
+              <input type="checkbox" id="matchToggle">
+              <span class="switch-track"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PRIVACY & DATA ============ -->
+      <section class="section-card" id="privacy">
+        <div class="section-card-header">
+          <span class="section-icon" style="background:#EFF6FF;color:#2563EB">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3l7 3v6c0 4.5-3 7.5-7 9-4-1.5-7-4.5-7-9V6l7-3z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h2>Privacy &amp; Data</h2>
+            <p>Your receipts and diagnosis info are sensitive — you're always in control of them.</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Export my data</strong>
+            <span>Download everything BreadWinner has stored on this device as a JSON file.</span>
+          </div>
+          <div class="form-row-control">
+            <button type="button" class="btn btn-secondary btn-sm" id="exportDataBtn">
+              <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 3v12M7 10l5 5 5-5M5 21h14" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+              Export
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ ACCOUNT ============ -->
+      <section class="section-card">
+        <div class="section-card-header">
+          <span class="section-icon" style="background:#F3F4F6;color:#374151">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M15 17l5-5-5-5M20 12H9M9 21H5a2 2 0 01-2-2V5a2 2 0 012-2h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          </span>
+          <div>
+            <h2>Account</h2>
+            <p>Legal pages, and signing out of this device.</p>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Legal</strong>
+            <span><a href="privacy.html" style="color:var(--primary-hover);font-weight:600;">Privacy Policy</a> &nbsp;·&nbsp; <a href="terms.html" style="color:var(--primary-hover);font-weight:600;">Terms of Service</a></span>
+          </div>
+        </div>
+
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Sign out</strong>
+            <span>You'll need to sign back in to view your dashboard.</span>
+          </div>
+          <div class="form-row-control">
+            <button type="button" class="btn btn-secondary btn-sm" id="signOutBtn">Sign Out</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ DANGER ZONE ============ -->
+      <div class="danger-card">
+        <h2>Danger Zone</h2>
+        <p>This clears everything BreadWinner has saved on this device — your name, diagnosis info, avatar, and preferences. This is a local prototype with no server yet, so there's nothing else to delete elsewhere.</p>
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Clear my local data</strong>
+            <span>This cannot be undone.</span>
+          </div>
+          <div class="form-row-control">
+            <button type="button" class="btn btn-danger btn-sm" id="clearDataBtn">Clear Data</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============ ABOUT ============ -->
+      <section class="section-card">
+        <div class="section-card-header">
+          <span class="section-icon" style="background:#F5F3FF;color:#7C3AED">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 16v-4M12 8h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
+          </span>
+          <div>
+            <h2>About BreadWinner</h2>
+            <p>v0.1 — prototype · built for the Congressional App Challenge</p>
+          </div>
+        </div>
+        <p style="font-size:13.5px;color:var(--text-secondary);line-height:1.7;">
+          The interface (layout, styling, this Settings page) is AI-assisted using Claude Code. The receipt scanning, gluten-free item detection, product matching, and deduction math are hand-coded and not yet connected. BreadWinner never files taxes or gives tax advice.
+        </p>
+      </section>
+
+    </div>
+  </div>
+</main>
+
+<!-- ============ CONFIRM CLEAR DATA MODAL ============ -->
+<div class="modal-overlay" id="clearDataModal" hidden>
+  <div class="modal-card">
+    <span class="modal-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </span>
+    <h3>Clear all local data?</h3>
+    <p>This removes your name, email, diagnosis info, avatar color, and preferences from this device. Your dashboard will reset to its default state. This can't be undone.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="clearDataCancel">Cancel</button>
+      <button type="button" class="btn btn-danger" id="clearDataConfirm">Clear Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ MOBILE BOTTOM NAVBAR ============ -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile navigation">
+  <div class="bottom-nav-pill" id="bottomNavPill" aria-hidden="true"></div>
+  <a href="home.html" class="bottom-nav-item" data-nav="dashboard" aria-label="Dashboard">
+    <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="12" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="16" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+  </a>
+  <a href="home.html#receipts" class="bottom-nav-item" data-nav="receipt" aria-label="Receipts">
+    <svg viewBox="0 0 24 24" fill="none"><path d="M6 2h12v20l-2-1.5L14 22l-2-1.5L10 22l-2-1.5L6 22V2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 7h6M9 11h6M9 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </a>
+  <a href="profile.html" class="bottom-nav-item" data-nav="profile" aria-label="Profile">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </a>
+  <a href="settings.html" class="bottom-nav-item active" data-nav="settings" aria-label="Settings">
+    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+  </a>
+</nav>
+
+<script src="shared.js"></script>
+<script src="settings.js"></script>
+</body>
+</html>

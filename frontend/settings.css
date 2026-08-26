@@ -1,0 +1,14 @@
+/* ============================================
+   BreadWinner — Settings Page Styles
+   (Layout primitives — section-card, form-row, switch, segmented,
+   modal, danger-card — live in shared.css for reuse with Profile.)
+   ============================================ */
+
+.danger-card + .section-card,
+.section-card + .danger-card {
+  margin-top: 0;
+}
+
+@media (max-width: 860px) {
+  .account-main { padding-bottom: 120px; }
+}
