@@ -5,7 +5,7 @@
 <script>try{var s=JSON.parse(localStorage.getItem('breadwinner_settings')||'{}');var t=s.theme||'light';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Profile | BreadWinner</title>
-<meta name="description" content="Manage your BreadWinner profile and gluten-free diagnosis information.">
+<meta name="description" content="Manage your BreadWinner profile and contact information.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
@@ -41,7 +41,7 @@
 
     <div class="account-header">
       <h1>Your Profile</h1>
-      <p>Your name, contact info, and gluten-free diagnosis details.</p>
+      <p>Your name and contact info.</p>
     </div>
 
     <div class="account-grid">
@@ -95,30 +95,6 @@
             <p class="field-error" id="email-error" role="alert"></p>
           </div>
         </div>
-
-        <div class="form-row">
-          <div class="form-row-text">
-            <strong>Physician-confirmed diagnosis</strong>
-            <span>Turn this on once you have a doctor's written diagnosis on file.</span>
-          </div>
-          <div class="form-row-control">
-            <label class="switch">
-              <input type="checkbox" id="diagnosisToggle" disabled>
-              <span class="switch-track"></span>
-            </label>
-          </div>
-        </div>
-
-        <div class="field-group" id="diagnosisDateGroup" style="margin-top:4px;">
-          <input type="date" id="diagnosisDate" name="diagnosisDate" placeholder=" " disabled>
-          <label for="diagnosisDate" class="static-label">Diagnosis / prescription date</label>
-        </div>
-
-        <div class="disclaimer-note">
-          <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M12 8v5M12 16h.01" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg>
-          <span>BreadWinner organizes records for you — it doesn't file taxes or give tax advice. Always confirm eligibility and totals with a tax professional.</span>
-        </div>
-
         <div class="form-actions" id="formActions" hidden>
           <button type="button" class="btn btn-secondary" id="cancelProfileBtn">Cancel</button>
           <button type="submit" class="btn btn-primary" id="saveProfileBtn">
@@ -150,10 +126,6 @@
           </div>
         </div>
         <div class="field-row-2" style="margin-top:20px;">
-          <div class="field-static">
-            <label>Diagnosis status</label>
-            <p class="value" id="diagnosisStatus">Not set</p>
-          </div>
           <div class="field-static">
             <label>Theme</label>
             <p class="value" id="themeStatus">—</p>

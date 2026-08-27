@@ -9,8 +9,6 @@
     name: 'breadwinner_user_name',
     email: 'breadwinner_user_email',
     avatarColor: 'breadwinner_avatar_color',
-    diagnosisConfirmed: 'breadwinner_diagnosis_confirmed',
-    diagnosisDate: 'breadwinner_diagnosis_date',
     memberSince: 'breadwinner_member_since'
   };
   const get = BW.safeGet || ((k, f) => { try { const v = localStorage.getItem(k); return v === null ? f : v; } catch (e) { return f; } });
@@ -39,9 +37,6 @@
   const emailInput = document.getElementById('email');
   const fullNameError = document.getElementById('fullName-error');
   const emailError = document.getElementById('email-error');
-  const diagnosisToggle = document.getElementById('diagnosisToggle');
-  const diagnosisDateGroup = document.getElementById('diagnosisDateGroup');
-  const diagnosisDateInput = document.getElementById('diagnosisDate');
   const profileForm = document.getElementById('profileForm');
   const editBtn = document.getElementById('editProfileBtn');
   const cancelBtn = document.getElementById('cancelProfileBtn');
@@ -50,9 +45,8 @@
   const summaryEmail = document.getElementById('summaryEmail');
   const avatarPreview = document.getElementById('avatarPreview');
   const memberSinceEl = document.getElementById('memberSince');
-  const diagnosisStatusEl = document.getElementById('diagnosisStatus');
   const themeStatusEl = document.getElementById('themeStatus');
-  const editableFields = [fullNameInput, emailInput, diagnosisToggle, diagnosisDateInput];
+  const editableFields = [fullNameInput, emailInput];
 
   let snapshot = null; // values captured when Edit is clicked, restored on Cancel
 
@@ -65,8 +59,6 @@
 
     if (avatarPreview) avatarPreview.textContent = getInitials(name);
 
-    const confirmed = get(STORAGE.diagnosisConfirmed, 'false') === 'true';
-    diagnosisStatusEl.textContent = confirmed ? 'Physician-confirmed' : 'Not set';
 
     if (BW.Settings) {
       const s = BW.Settings.getSettings();
@@ -76,14 +68,8 @@
   function loadFieldsFromStorage() {
     fullNameInput.value = get(STORAGE.name, '');
     emailInput.value = get(STORAGE.email, '');
-    diagnosisToggle.checked = get(STORAGE.diagnosisConfirmed, 'false') === 'true';
-    diagnosisDateInput.value = get(STORAGE.diagnosisDate, '');
-    syncDiagnosisDateVisibility();
   }
 
-  function syncDiagnosisDateVisibility() {
-    diagnosisDateGroup.classList.toggle('collapsed', !diagnosisToggle.checked);
-  }
 
   /* ---------- Avatar color swatches (always live, not gated by Edit mode) ---------- */
   const swatches = document.querySelectorAll('.avatar-swatch');
@@ -107,8 +93,6 @@
     snapshot = {
       name: fullNameInput.value,
       email: emailInput.value,
-      diagnosis: diagnosisToggle.checked,
-      diagnosisDate: diagnosisDateInput.value
     };
     editableFields.forEach((el) => { el.disabled = false; });
     formActions.hidden = false;
@@ -177,15 +161,11 @@
       if (snapshot) {
         fullNameInput.value = snapshot.name;
         emailInput.value = snapshot.email;
-        diagnosisToggle.checked = snapshot.diagnosis;
-        diagnosisDateInput.value = snapshot.diagnosisDate;
-        syncDiagnosisDateVisibility();
       }
       exitEditMode();
     });
   }
 
-  if (diagnosisToggle) diagnosisToggle.addEventListener('change', syncDiagnosisDateVisibility);
 
   if (profileForm) {
     profileForm.addEventListener('submit', (e) => {
@@ -194,8 +174,6 @@
 
       set(STORAGE.name, fullNameInput.value.trim());
       set(STORAGE.email, emailInput.value.trim());
-      set(STORAGE.diagnosisConfirmed, String(diagnosisToggle.checked));
-      set(STORAGE.diagnosisDate, diagnosisDateInput.value);
 
       renderSummary();
       exitEditMode();

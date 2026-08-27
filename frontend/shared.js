@@ -107,8 +107,6 @@ window.BreadWinner = window.BreadWinner || {};
     name: 'breadwinner_user_name',
     email: 'breadwinner_user_email',
     avatarColor: 'breadwinner_avatar_color',
-    diagnosisConfirmed: 'breadwinner_diagnosis_confirmed',
-    diagnosisDate: 'breadwinner_diagnosis_date',
     memberSince: 'breadwinner_member_since'
   };
   /* ---------- Sitewide Settings (persisted under breadwinner_settings) ---------- */
