@@ -26,8 +26,6 @@
       btn.classList.toggle('active', btn.dataset.accent === s.accentColor);
     });
 
-    document.getElementById('notifToggle').checked = s.notifications.reminders;
-    document.getElementById('matchToggle').checked = s.notifications.matchConfirmations;
     document.getElementById('reduceMotionToggle').checked = s.reduceMotion;
     document.getElementById('currencySelect').value = s.currency;
     document.getElementById('dateFormatSelect').value = s.dateFormat;
@@ -49,14 +47,6 @@
       renderFromSettings();
       if (BW.toast) BW.toast('Accent color updated');
     });
-  });
-
-  /* ---------- Notifications ---------- */
-  document.getElementById('notifToggle').addEventListener('change', (e) => {
-    api.update('notifications.reminders', e.target.checked);
-  });
-  document.getElementById('matchToggle').addEventListener('change', (e) => {
-    api.update('notifications.matchConfirmations', e.target.checked);
   });
 
   /* ---------- Preferences ---------- */
