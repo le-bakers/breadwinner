@@ -80,3 +80,204 @@
     });
   };
 })();
+
+/* ============================================
+   Identity + Sitewide Settings + UI helpers
+   (used by profile.html and settings.html)
+   ============================================ */
+window.BreadWinner = window.BreadWinner || {};
+(function (BW) {
+  'use strict';
+
+  /* ---------- Safe localStorage wrappers ---------- */
+  BW.safeGet = function (key, fallback) {
+    try { const v = localStorage.getItem(key); return v === null ? fallback : v; }
+    catch (e) { return fallback; }
+  };
+  BW.safeSet = function (key, value) {
+    try { localStorage.setItem(key, value); return true; }
+    catch (e) { return false; }
+  };
+  BW.safeRemove = function (key) {
+    try { localStorage.removeItem(key); return true; } catch (e) { return false; }
+  };
+
+  /* ---------- Identity ("who you are") ---------- */
+  BW.STORAGE = {
+    name: 'breadwinner_user_name',
+    email: 'breadwinner_user_email',
+    avatarColor: 'breadwinner_avatar_color',
+    diagnosisConfirmed: 'breadwinner_diagnosis_confirmed',
+    diagnosisDate: 'breadwinner_diagnosis_date',
+    memberSince: 'breadwinner_member_since'
+  };
+  /* ---------- Sitewide Settings (persisted under breadwinner_settings) ---------- */
+  const SETTINGS_KEY = 'breadwinner_settings';
+  const SETTINGS_DEFAULTS = {
+    theme: 'light',              // light | dark | system
+    accentColor: 'green',        // key into ACCENT_COLORS
+    notifications: {
+      reminders: true,
+      matchConfirmations: false
+    },
+    currency: 'USD',             // USD | EUR | GBP | CAD | AUD
+    dateFormat: 'MDY',           // MDY | DMY | ISO
+    reduceMotion: false
+  };
+  const ACCENT_COLORS = {
+    green: ['#22C55E', '#16A34A'],
+    blue: ['#3B82F6', '#2563EB'],
+    purple: ['#A855F7', '#9333EA'],
+    orange: ['#F97316', '#EA580C'],
+    pink: ['#EC4899', '#DB2777']
+  };
+  const CURRENCY_SYMBOLS = { USD: '$', EUR: '\u20AC', GBP: '\u00A3', CAD: 'CA$', AUD: 'AU$' };
+
+  function deepMerge(base, patch) {
+    const out = Array.isArray(base) ? base.slice() : Object.assign({}, base);
+    if (!patch || typeof patch !== 'object') return out;
+    Object.keys(patch).forEach((k) => {
+      const v = patch[k];
+      if (v && typeof v === 'object' && !Array.isArray(v) && base && typeof base[k] === 'object' && !Array.isArray(base[k])) {
+        out[k] = deepMerge(base[k], v);
+      } else if (v !== undefined) {
+        out[k] = typeof v === typeof base[k] || base[k] === undefined ? v : base[k];
+      }
+    });
+    return out;
+  }
+
+  function getSettings() {
+    let parsed = {};
+    try { parsed = JSON.parse(BW.safeGet(SETTINGS_KEY, '{}')) || {}; } catch (e) { parsed = {}; }
+    return deepMerge(SETTINGS_DEFAULTS, parsed);
+  }
+
+  function saveSettings(next) {
+    BW.safeSet(SETTINGS_KEY, JSON.stringify(next));
+  }
+
+  function updateSetting(keyPath, value) {
+    const s = getSettings();
+    const parts = String(keyPath).split('.');
+    let node = s;
+    for (let i = 0; i < parts.length - 1; i++) node = node[parts[i]];
+    node[parts[parts.length - 1]] = value;
+    saveSettings(s);
+    applySettings();
+    window.dispatchEvent(new CustomEvent('breadwinner:settings-changed', { detail: { key: keyPath, value: value } }));
+  }
+
+  function resetSettings() {
+    saveSettings(JSON.parse(JSON.stringify(SETTINGS_DEFAULTS)));
+    applySettings();
+  }
+
+  function applySettings() {
+    const s = getSettings();
+    const root = document.documentElement;
+
+    // Theme — respects prefers-color-scheme when set to "system"
+    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const isDark = s.theme === 'dark' || (s.theme === 'system' && prefersDark);
+    root.setAttribute('data-theme', isDark ? 'dark' : 'light');
+
+    // Swap the top navbar logo for the active theme.
+    const navLogo = isDark ? 'images/breadwinner_logo_white.png' : 'images/breadwinner_logo_black.png';
+    document.querySelectorAll('.navbar .logo img').forEach((img) => { img.setAttribute('src', navLogo); });
+
+    // Accent color — overrides brand green everywhere var(--primary*) is used.
+    // Left alone for the default so each theme's own accent tuning still applies.
+    if (s.accentColor && s.accentColor !== 'green' && ACCENT_COLORS[s.accentColor]) {
+      root.style.setProperty('--primary', ACCENT_COLORS[s.accentColor][0]);
+      root.style.setProperty('--primary-hover', ACCENT_COLORS[s.accentColor][1]);
+    } else {
+      root.style.removeProperty('--primary');
+      root.style.removeProperty('--primary-hover');
+    }
+
+    root.setAttribute('data-reduce-motion', s.reduceMotion ? 'true' : 'false');
+  }
+  /* ---------- Formatting helpers (respect current Settings) ---------- */
+  function formatDate(dateInput) {
+    const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
+    const { dateFormat } = getSettings();
+    if (dateFormat === 'ISO') return d.toISOString().split('T')[0];
+    if (dateFormat === 'DMY') return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
+    return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d); // MDY default
+  }
+
+  function formatMoney(n) {
+    const { currency } = getSettings();
+    const symbol = CURRENCY_SYMBOLS[currency] || '$';
+    return symbol + Number(n).toFixed(2);
+  }
+
+  BW.formatDate = formatDate;
+  BW.formatMoney = formatMoney;
+  BW.currencySymbol = function () { return CURRENCY_SYMBOLS[getSettings().currency] || '$'; };
+
+  /* ---------- Apply on load + live sync across tabs + system theme changes ---------- */
+  applySettings();
+  window.addEventListener('storage', applySettings); // cross-tab sync
+  window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+    if (getSettings().theme === 'system') applySettings();
+  });
+
+  /* ---------- Expose the manager ---------- */
+  BW.Settings = {
+    DEFAULTS: SETTINGS_DEFAULTS,
+    ACCENT_COLORS: ACCENT_COLORS,
+    getSettings: getSettings,
+    saveSettings: saveSettings,
+    updateSetting: updateSetting,
+    resetSettings: resetSettings,
+    applySettings: applySettings
+  };
+  BW.applySitewideSettings = applySettings; // back-compat alias
+
+  /* ---------- Toast ---------- */
+  BW.toast = function (message) {
+    let wrap = document.querySelector('.toast-wrap');
+    if (!wrap) {
+      wrap = document.createElement('div');
+      wrap.className = 'toast-wrap';
+      wrap.innerHTML = '<div class="toast-wrap"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="toast-text"></span></div>';
+      wrap = wrap.firstElementChild;
+      document.body.appendChild(wrap);
+    }
+    wrap.querySelector('.toast-text').textContent = message;
+    wrap.classList.add('show');
+    clearTimeout(wrap._hideTimer);
+    wrap._hideTimer = setTimeout(() => wrap.classList.remove('show'), 2600);
+  };
+
+  /* ---------- Confirm dialog helper ---------- */
+  BW.confirmModal = function (overlayEl) {
+    return {
+      open() { overlayEl.hidden = false; document.body.style.overflow = 'hidden'; },
+      close() { overlayEl.hidden = true; document.body.style.overflow = ''; }
+    };
+  };
+
+  /* ---------- Mobile bottom-nav pill (simple pages) ---------- */
+  const simpleBottomNav = document.getElementById('mobileBottomNav');
+  if (simpleBottomNav && !document.getElementById('dashboardView')) {
+    const pill = document.getElementById('bottomNavPill');
+    const position = (item) => {
+      if (!pill || !item) return;
+      const navRect = simpleBottomNav.getBoundingClientRect();
+      const itemRect = item.getBoundingClientRect();
+      const offset = itemRect.left + itemRect.width / 2 - navRect.left - pill.offsetWidth / 2;
+      pill.style.transform = 'translateX(' + offset + 'px)';
+    };
+    const init = () => {
+      const active = simpleBottomNav.querySelector('.bottom-nav-item.active') || simpleBottomNav.querySelector('.bottom-nav-item');
+      position(active);
+      if (pill) pill.classList.add('visible');
+    };
+    requestAnimationFrame(init);
+    setTimeout(init, 100);
+    window.addEventListener('resize', init);
+  }
+})(window.BreadWinner);

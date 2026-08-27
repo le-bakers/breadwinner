@@ -1,0 +1,13 @@
+/* ============================================
+   BreadWinner — Settings page styles
+   (sits on top of shared.css)
+   ============================================ */
+
+/* Keep accent swatches from wrapping awkwardly on narrow screens */
+.accent-swatches { gap: 12px; }
+
+/* Settings controls take a comfortably wide tap target on touch devices */
+@media (max-width: 560px) {
+  .form-row-control .select { width: 100%; }
+  .segmented { flex-wrap: wrap; }
+}
