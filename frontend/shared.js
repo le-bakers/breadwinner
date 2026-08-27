@@ -320,11 +320,24 @@ window.BreadWinner = window.BreadWinner || {};
 /* ---------- Avatar color + swatch backgrounds (shared across pages) ---------- */
   // Apply the user's saved avatar color to every avatar element — the navbar
   // profile pill on home/profile/settings and the large profile preview.
-  (function applyAvatarColor() {
+  (function applyAvatarIdentity() {
     const color = BW.safeGet(BW.STORAGE.avatarColor, 'green');
     const bg = avatarGradient(color);
     document.querySelectorAll('.avatar-circle, .avatar-xl').forEach((el) => {
       el.style.background = bg;
+    });
+
+    // Initials from the saved name, so the pill letters match the profile
+    // across every page (home, profile, settings).
+    const getInitials = (name) => {
+      const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
+      if (!parts.length) return 'JM';
+      if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
+      return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
+    };
+    const initials = getInitials(BW.safeGet(BW.STORAGE.name, ''));
+    document.querySelectorAll('.avatar-circle, .avatar-xl').forEach((el) => {
+      el.textContent = initials;
     });
   })();
 

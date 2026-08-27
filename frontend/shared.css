@@ -1,5 +1,5 @@
-/* ============================================
-   BreadWinner — Shared Design System
+﻿/* ============================================
+   BreadWinner â€” Shared Design System
    Tokens, reset, nav, buttons, footer, utilities
    ============================================ */
 
@@ -391,7 +391,7 @@ input, select { font-family: inherit; }
 }
 @keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 /* ============================================
-   BreadWinner — Account + Settings design tokens,
+   BreadWinner â€” Account + Settings design tokens,
    theme system, mobile nav, and UI controls.
    Appended to the shared design system.
    ============================================ */
@@ -436,29 +436,6 @@ input, select { font-family: inherit; }
 .account-header h1 { font-size: clamp(24px, 3vw, 30px); font-weight: 800; }
 .account-header p { color: var(--text-secondary); margin-top: 6px; font-size: 15px; }
 
-.account-tabs {
-  display: inline-flex;
-  gap: 4px;
-  padding: 4px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-full);
-  margin: 0 0 28px;
-}
-.account-tabs a {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-  padding: 9px 18px;
-  border-radius: var(--radius-full);
-  font-size: 14px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  transition: color 0.2s, background 0.2s;
-}
-.account-tabs a svg { width: 16px; height: 16px; }
-.account-tabs a:hover { color: var(--text); }
-.account-tabs a.active { background: var(--primary); color: #fff; }
 
 .account-grid {
   display: grid;
@@ -743,7 +720,7 @@ input, select { font-family: inherit; }
 @media (max-width: 860px) { .toast-wrap { bottom: 96px; } }
 
 /* ============================================
-   Mobile bottom navbar (shared — Home, Profile, Settings)
+   Mobile bottom navbar (shared â€” Home, Profile, Settings)
    ============================================ */
 .mobile-bottom-nav {
   display: none;
