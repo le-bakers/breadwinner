@@ -24,7 +24,8 @@
   background: #EF4444;
   border: 1.5px solid var(--card);
 }
-.profile-pill { background: none; border: none; padding: 0; }
+.profile-pill { background: none; border: none; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: inherit; text-decoration: none; cursor: pointer; border-radius: 50%; transition: transform 0.2s, box-shadow 0.2s; }
+.profile-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 12px -2px rgba(34,197,94,0.4); }
 .avatar-circle {
   width: 40px; height: 40px;
   border-radius: 50%;
