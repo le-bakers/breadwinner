@@ -429,9 +429,28 @@
 
   function initBottomNavPill() {
     if (!bottomNav || !bottomNavPill) return;
-    const activeItem = bottomNav.querySelector('.bottom-nav-item.active');
+    // If we landed with #receipts (e.g. from the mobile bottom nav on
+    // profile/settings), the pill should sit on Receipts, not Dashboard.
+    let activeItem = bottomNav.querySelector('.bottom-nav-item.active');
+    const hash = window.location.hash || '';
+    if (hash === '#receipts') {
+      activeItem = bottomNav.querySelector('.bottom-nav-item[data-nav="receipt"]');
+      if (activeItem) {
+        bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
+        activeItem.classList.add('active');
+      }
+    }
     positionBottomNavPill(activeItem || bottomNav.querySelector('.bottom-nav-item'));
     bottomNavPill.classList.add('visible');
+  }
+
+  // Show the correct mobile view when landing on the page with a #receipts hash.
+  function applyInitialRoute() {
+    if (!bottomNav) return;
+    if ((window.location.hash || '') === '#receipts') {
+      // On desktop this is a no-op, leaving the default anchor scroll intact.
+      switchMobileView('receipt');
+    }
   }
 
   const dashboardView = document.getElementById('dashboardView');
@@ -480,6 +499,10 @@
         switchMobileView(item.dataset.nav);
       });
     });
+
+    // On first load, honor a #receipts hash (view + active pill) so the
+    // bottom nav reflects where we landed.
+    applyInitialRoute();
 
     // Only position the pill when the mobile breakpoint is active,
     // since the nav is display:none at desktop width (zero-size rects)
