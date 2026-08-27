@@ -28,7 +28,7 @@
 .signin-form-wrap h1 { font-size: 32px; font-weight: 800; }
 .signin-sub { color: var(--text-secondary); margin-top: 10px; font-size: 15px; }
 
-/* ---------- Google sign-in ---------- */
+/* ---------- Google sign-in button ---------- */
 .btn-google {
   width: 100%;
   margin: 28px 0 4px;
@@ -55,7 +55,6 @@
 }
 .btn-google:active { transform: scale(0.97); }
 .btn-google svg { flex-shrink: 0; }
-#buttonDiv { display: none; }
 
 .divider {
   display: flex;
