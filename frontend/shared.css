@@ -284,6 +284,9 @@ input, select { font-family: inherit; }
   font-size: 18px;
   font-weight: 600;
   border-bottom: 1px solid var(--border);
+  background: var(--card);
+  border-radius: var(--radius-sm, 8px);
+  margin-bottom: 6px;
   color: var(--text);
   text-align: center;
 }
