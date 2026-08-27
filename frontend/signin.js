@@ -5,6 +5,70 @@
 (function () {
   'use strict';
 
+  /* ---------- Google OAuth Handler ---------- */
+  const GOOGLE_CLIENT_ID = "1097872808556-r9f8e34uq40s10v3hu3aaomdqi0vq6ft.apps.googleusercontent.com";
+  let tokenClient = null;
+
+  function initGoogleOAuth() {
+    if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
+      // Retry if script loading is delayed
+      setTimeout(initGoogleOAuth, 100);
+      return;
+    }
+
+    tokenClient = google.accounts.oauth2.initTokenClient({
+      client_id: GOOGLE_CLIENT_ID,
+      scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
+      callback: handleGoogleTokenResponse
+    });
+
+    const googleBtn = document.getElementById('googleSignInBtn');
+    if (googleBtn) {
+      googleBtn.addEventListener('click', () => {
+        if (tokenClient) {
+          tokenClient.requestAccessToken();
+        }
+      });
+    }
+  }
+
+  function handleGoogleTokenResponse(response) {
+    if (response.error) {
+      console.error('Google OAuth Error:', response.error);
+      return;
+    }
+
+    if (response.access_token) {
+      // Fetch user details from Google OAuth endpoint
+      fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+        headers: { Authorization: `Bearer ${response.access_token}` }
+      })
+      .then((res) => res.json())
+      .then((userData) => {
+        console.log('Google User Data:', userData);
+        
+        // Auto-fill email field if present
+        const emailInput = document.getElementById('email');
+        if (emailInput && userData.email) {
+          emailInput.value = userData.email;
+        }
+
+        // Redirect to main page after successful authentication
+        window.location.href = 'home.html';
+      })
+      .catch((err) => {
+        console.error('Failed to fetch Google profile info:', err);
+      });
+    }
+  }
+
+  // Initialize OAuth when DOM is ready
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initGoogleOAuth);
+  } else {
+    initGoogleOAuth();
+  }
+
   /* ---------- Fact carousel ---------- */
   const slides = Array.from(document.querySelectorAll('.carousel-slide'));
   const dotsWrap = document.getElementById('carouselDots');
@@ -52,8 +116,10 @@
 
     startTimer();
     const panel = document.querySelector('.carousel-panel');
-    panel.addEventListener('mouseenter', stopTimer);
-    panel.addEventListener('mouseleave', startTimer);
+    if (panel) {
+      panel.addEventListener('mouseenter', stopTimer);
+      panel.addEventListener('mouseleave', startTimer);
+    }
   }
 
   /* ---------- Password visibility toggle ---------- */
@@ -68,7 +134,7 @@
     });
   }
 
-  /* ---------- Form validation UI only (no backend) ---------- */
+  /* ---------- Form validation UI only ---------- */
   const form = document.getElementById('signin-form');
   if (form) {
     const email = document.getElementById('email');
@@ -102,7 +168,6 @@
       const emailValid = validateEmail();
       const passwordValid = validatePassword();
       if (emailValid && passwordValid) {
-        // No backend — simulate a friendly redirect state.
         const submitBtn = form.querySelector('button[type="submit"] .btn-text');
         if (submitBtn) submitBtn.textContent = 'Signing in…';
         setTimeout(() => {
