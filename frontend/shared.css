@@ -192,8 +192,8 @@ input, select { font-family: inherit; }
   letter-spacing: -0.02em;
 }
 /* Theme-aware top navbar logo */
-[data-theme="dark"] .navbar .logo img { content: url(images/breadwinner_logo_white.png); }
-[data-theme="light"] .navbar .logo img { content: url(images/breadwinner_logo_black.png); }
+[data-theme="dark"] .logo img { content: url(images/breadwinner_logo_white.png); }
+[data-theme="light"] .logo img { content: url(images/breadwinner_logo_black.png); }
 .logo-mark {
   width: 32px; height: 32px;
   border-radius: 9px;

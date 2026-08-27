@@ -211,9 +211,9 @@ window.BreadWinner = window.BreadWinner || {};
     const isDark = s.theme === 'dark' || (s.theme === 'system' && prefersDark);
     root.setAttribute('data-theme', isDark ? 'dark' : 'light');
 
-    // Swap the top navbar logo for the active theme.
+    // Swap every logo image for the active theme (navbar, footer, onboarding, sign-in).
     const navLogo = isDark ? 'images/breadwinner_logo_white.png' : 'images/breadwinner_logo_black.png';
-    document.querySelectorAll('.navbar .logo img').forEach((img) => { img.setAttribute('src', navLogo); });
+    document.querySelectorAll('.logo img').forEach((img) => { img.setAttribute('src', navLogo); });
 
     // Accent color — overrides brand green and the whole derived scheme
     // (primary, hover, soft-light, translucent glows, hero deep shade).
