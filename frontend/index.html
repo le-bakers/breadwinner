@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var s=JSON.parse(localStorage.getItem('breadwinner_settings')||'{}');var t=s.theme||'light';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>BreadWinner — Track Your Gluten-Free Expenses</title>
 <meta name="description" content="BreadWinner organizes your grocery receipts, flags gluten-free items, and tracks tax-deductible purchases automatically.">
@@ -118,13 +117,13 @@
           <!-- overcharge counter chip -->
           <div class="floating-chip chip-overcharge float-fast">
             <span class="chip-label">Overcharge caught</span>
-            <span class="chip-value" data-counter data-target="67">$0.00</span>
+            <span class="chip-value" data-counter data-target="13">$0.00</span>
           </div>
 
           <!-- deduction counter chip -->
           <div class="floating-chip chip-deduction float-med">
             <span class="chip-label"># GF items</span>
-            <span class="chip-value">7</span>
+            <span class="chip-value">6</span>
           </div>
         </div>
       </div>
@@ -146,7 +145,7 @@
           <div class="timeline-copy">
             <span class="step-num">SCAN IT</span>
             <h3>Upload or photograph your receipt</h3>
-            <p>Snap a picture right after checkout, or upload a photo later. BreadWinner will keep every receipt in one place.</p>
+            <p>Snap a picture right after checkout, or upload a photo later — BreadWinner keeps every receipt in one place.</p>
           </div>
         </div>
 
@@ -155,7 +154,7 @@
           <div class="timeline-copy">
             <span class="step-num">READ IT</span>
             <h3>AI identifies gluten-free items</h3>
-            <p>Every line item gets sorted automatically by our AI. Whether it be gluten-free or not, we'll identify it for you.</p>
+            <p>Every line item gets sorted — gluten-free finds, everyday staples, and anything that needs a second look.</p>
           </div>
         </div>
 
@@ -173,7 +172,7 @@
           <div class="timeline-copy">
             <span class="step-num">SEE IT</span>
             <h3>View organized reports and statistics</h3>
-            <p>See spending trends, total overcharges, and deductible totals at a glance, EZ PZ!</p>
+            <p>See spending trends, total overcharges, and deductible totals at a glance — no spreadsheets required.</p>
           </div>
         </div>
       </div>
@@ -254,6 +253,7 @@
         <div class="footer-col">
           <h4>Company</h4>
           <a href="#about">About</a>
+          <a href="#">Careers</a>
           <a href="#">Contact</a>
         </div>
         <div class="footer-col">
@@ -277,8 +277,8 @@
 <script src="index.js"></script>
 <script>
   function handleCredentialResponse(response) {
-    // response.credential is a signed JWT — do not log it. Wire this to real
-    // sign-in handling (e.g. redirecting to the dashboard) once the backend exists.
+    console.log("Encoded JWT ID token: " + response.credential);
+    // Add your login success handling here (e.g., redirecting to a dashboard)
   }
 
   window.onload = function () {

@@ -5,8 +5,31 @@
 (function () {
   'use strict';
 
-  // Avatar initials, avatar color, and the "Welcome back" greeting are handled
-  // sitewide by shared.js (applySitewideSettings), so home.js doesn't duplicate it.
+  /* ---------- User profile ---------- */
+  const storedName = (function () {
+    try {
+      return localStorage.getItem('breadwinner_user_name') || '';
+    } catch (e) { return ''; }
+  })();
+
+  function getInitials(name) {
+    const parts = name.trim().split(/\s+/).filter(Boolean);
+    if (!parts.length) return 'JM';
+    const first = parts[0].charAt(0).toUpperCase();
+    const last = parts.length > 1 ? parts[parts.length - 1].charAt(0).toUpperCase() : '';
+    return first + last;
+  }
+
+  const avatarEl = document.querySelector('.avatar-circle');
+  if (avatarEl) {
+    avatarEl.textContent = getInitials(storedName);
+  }
+
+  const welcomeHeading = document.querySelector('.dash-header h1');
+  if (welcomeHeading && storedName) {
+    const firstName = storedName.trim().split(/\s+/)[0];
+    welcomeHeading.textContent = 'Welcome back, ' + firstName + '!';
+  }
 
   /* ---------- Placeholder data ---------- */
   const RECEIPTS = [
@@ -70,9 +93,8 @@
     },
   ];
 
-  const BW = window.BreadWinner || {};
-  const formatDate = BW.formatDate || ((d) => new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(new Date(d)));
-  const money = BW.formatMoney || ((n) => '$' + n.toFixed(2));
+  const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const money = (n) => '$' + n.toFixed(2);
 
   const table = document.getElementById('receiptTable');
   const template = document.getElementById('rowTemplate');
@@ -85,7 +107,7 @@
     const expand = frag.querySelector('.receipt-expand');
 
     frag.querySelector('.cell-name-text').textContent = receipt.name;
-    frag.querySelector('.cell-date').textContent = formatDate(receipt.date);
+    frag.querySelector('.cell-date').textContent = dateFormatter.format(new Date(receipt.date));
     frag.querySelector('.cell-items').textContent = receipt.items;
     frag.querySelector('.cell-gf').textContent = receipt.gfItems;
 
@@ -187,8 +209,7 @@
         if (!entry.isIntersecting) return;
         const el = entry.target;
         const target = parseFloat(el.dataset.target || '0');
-        const rawPrefix = el.dataset.prefix || '';
-        const prefix = rawPrefix === '$' && BW.currencySymbol ? BW.currencySymbol() : rawPrefix;
+        const prefix = el.dataset.prefix || '';
         const decimals = parseInt(el.dataset.decimals || '0', 10);
         const duration = 1200;
         const start = performance.now();

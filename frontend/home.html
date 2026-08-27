@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var s=JSON.parse(localStorage.getItem('breadwinner_settings')||'{}');var t=s.theme||'light';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard — BreadWinner</title>
 <meta name="description" content="Your BreadWinner dashboard — receipts, gluten-free totals, and tax-deductible spending at a glance.">
@@ -28,8 +27,8 @@
     <nav class="nav-links" aria-label="Dashboard">
       <a href="home.html" class="active">Dashboard</a>
       <a href="#receipts">Receipts</a>
-      <a href="profile.html">Profile</a>
-      <a href="settings.html">Settings</a>
+      <a href="#">Profile</a>
+      <a href="#">Settings</a>
     </nav>
     <div class="nav-actions dash-actions">
       <button class="icon-btn" aria-label="Notifications">
@@ -47,8 +46,8 @@
   <div class="mobile-menu" id="mobileMenu">
     <a href="home.html">Dashboard</a>
     <a href="#receipts">Receipts</a>
-    <a href="profile.html">Profile</a>
-    <a href="settings.html">Settings</a>
+    <a href="#">Profile</a>
+    <a href="#">Settings</a>
   </div>
 </header>
 
@@ -73,8 +72,8 @@
       <section class="stats-grid" aria-label="Summary statistics">
         <div class="stat-card reveal">
           <div class="stat-top">
-            <span class="stat-icon stat-icon-accent">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+            <span class="stat-icon" style="background:#DCFCE7">
+              <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
             </span>
             <span class="stat-trend up">+12%</span>
           </div>
@@ -84,8 +83,8 @@
 
         <div class="stat-card reveal">
           <div class="stat-top">
-            <span class="stat-icon stat-icon-accent">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 12.5l2.5 2.5l5-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            <span class="stat-icon" style="background:#DCFCE7">
+              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#16A34A" stroke-width="1.8"/><path d="M8.5 12.5l2.5 2.5l5-5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
             <span class="stat-trend up">+8%</span>
           </div>
@@ -139,15 +138,15 @@
           </div>
         </div>
 
-        <div class="receipt-table" id="receiptTable" role="table" aria-label="Receipt history">
+        <div class="receipt-table" id="receiptTable">
           <div class="receipt-row receipt-row-head" role="row">
-            <span role="columnheader">Receipt Name</span>
-            <span role="columnheader">Date</span>
-            <span role="columnheader">Items</span>
-            <span role="columnheader">GF Items</span>
-            <span role="columnheader">Overcharge</span>
-            <span role="columnheader">Status</span>
-            <span role="columnheader">Actions</span>
+            <span>Receipt Name</span>
+            <span>Date</span>
+            <span>Items</span>
+            <span>GF Items</span>
+            <span>Overcharge</span>
+            <span>Status</span>
+            <span>Actions</span>
           </div>
           <!-- Rows injected by home.js from placeholder data -->
         </div>
@@ -187,10 +186,10 @@
   <a href="#receipts" class="bottom-nav-item" data-nav="receipt" aria-label="Receipts">
     <svg viewBox="0 0 24 24" fill="none"><path d="M6 2h12v20l-2-1.5L14 22l-2-1.5L10 22l-2-1.5L6 22V2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 7h6M9 11h6M9 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
   </a>
-  <a href="profile.html" class="bottom-nav-item" data-nav="profile" aria-label="Profile">
+  <a href="#" class="bottom-nav-item" data-nav="profile" aria-label="Profile">
     <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
   </a>
-  <a href="settings.html" class="bottom-nav-item" data-nav="settings" aria-label="Settings">
+  <a href="#" class="bottom-nav-item" data-nav="settings" aria-label="Settings">
     <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
   </a>
 </nav>
@@ -237,18 +236,18 @@
 <!-- Row template used by JS -->
 <template id="rowTemplate">
   <div class="receipt-row" role="row" tabindex="0">
-    <span class="cell-name" role="cell">
+    <span class="cell-name">
       <span class="receipt-thumb" aria-hidden="true">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
       </span>
       <span class="cell-name-text"></span>
     </span>
-    <span class="cell-date" role="cell"></span>
-    <span class="cell-items" role="cell"></span>
-    <span class="cell-gf" role="cell"></span>
-    <span class="cell-overcharge" role="cell"></span>
-    <span class="cell-status" role="cell"></span>
-    <span class="cell-actions" role="cell">
+    <span class="cell-date"></span>
+    <span class="cell-items"></span>
+    <span class="cell-gf"></span>
+    <span class="cell-overcharge"></span>
+    <span class="cell-status"></span>
+    <span class="cell-actions">
       <button class="row-expand-btn" aria-label="Expand receipt details">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
       </button>

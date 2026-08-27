@@ -2,7 +2,6 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var s=JSON.parse(localStorage.getItem('breadwinner_settings')||'{}');var t=s.theme||'light';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Sign In — BreadWinner</title>
 <meta name="description" content="Sign in to your BreadWinner account to manage your gluten-free grocery receipts.">
@@ -143,8 +142,8 @@
 <script src="signin.js"></script>
 <script>
   function handleCredentialResponse(response) {
-    // response.credential is a signed JWT — do not log it. Wire this to real
-    // sign-in handling (redirect to the dashboard) once the backend exists.
+    console.log("Encoded JWT ID token: " + response.credential);
+    // Add custom redirection or handling here upon successful sign in
   }
 
   window.onload = function () {
