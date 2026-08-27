@@ -92,7 +92,11 @@
     btn.addEventListener('click', () => {
       set(STORAGE.avatarColor, btn.dataset.color);
       swatches.forEach((b) => b.classList.toggle('active', b === btn));
-      if (avatarPreview) avatarPreview.style.background = AVATAR_BG[btn.dataset.color] || AVATAR_BG.green;
+      const bg = AVATAR_BG[btn.dataset.color] || AVATAR_BG.green;
+      if (avatarPreview) avatarPreview.style.background = bg;
+      // Keep the navbar profile pill in sync immediately (shared.js covers other pages).
+      const navAvatarEl = document.querySelector('.avatar-circle');
+      if (navAvatarEl) navAvatarEl.style.background = bg;
       if (BW.Settings) BW.Settings.applySettings();
       if (BW.toast) BW.toast('Avatar color updated');
     });

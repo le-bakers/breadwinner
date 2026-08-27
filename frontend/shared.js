@@ -131,6 +131,35 @@ window.BreadWinner = window.BreadWinner || {};
     orange: ['#F97316', '#EA580C'],
     pink: ['#EC4899', '#DB2777']
   };
+// Full accent "scheme" so switching a swatch recolors the whole UI,
+  // not just --primary. RGB is used for translucent glows/shadows.
+  const ACCENT_LIGHT = {
+    green: '#DCFCE7',
+    blue: '#DBEAFE',
+    purple: '#F3E8FF',
+    orange: '#FFEDD5',
+    pink: '#FCE7F3'
+  };
+  const ACCENT_RGB = {
+    green: '34, 197, 94',
+    blue: '59, 130, 246',
+    purple: '168, 85, 247',
+    orange: '249, 115, 22',
+    pink: '236, 72, 153'
+  };
+  // Deepest end of each accent used in large hero banners/gradients.
+  const ACCENT_DEEP = {
+    green: '#14532D',
+    blue: '#1E3A8A',
+    purple: '#4C1D95',
+    orange: '#7C2D12',
+    pink: '#831843'
+  };
+  // Avatar gradient mirrors the accent pair (keeps the two swatch sets in sync).
+  const avatarGradient = (color) => {
+    const pair = ACCENT_COLORS[color] || ACCENT_COLORS.green;
+    return 'linear-gradient(135deg,' + pair[0] + ',' + pair[1] + ')';
+  };
   const CURRENCY_SYMBOLS = { USD: '$', EUR: '\u20AC', GBP: '\u00A3', CAD: 'CA$', AUD: 'AU$' };
 
   function deepMerge(base, patch) {
@@ -186,14 +215,22 @@ window.BreadWinner = window.BreadWinner || {};
     const navLogo = isDark ? 'images/breadwinner_logo_white.png' : 'images/breadwinner_logo_black.png';
     document.querySelectorAll('.navbar .logo img').forEach((img) => { img.setAttribute('src', navLogo); });
 
-    // Accent color — overrides brand green everywhere var(--primary*) is used.
-    // Left alone for the default so each theme's own accent tuning still applies.
-    if (s.accentColor && s.accentColor !== 'green' && ACCENT_COLORS[s.accentColor]) {
-      root.style.setProperty('--primary', ACCENT_COLORS[s.accentColor][0]);
-      root.style.setProperty('--primary-hover', ACCENT_COLORS[s.accentColor][1]);
+    // Accent color — overrides brand green and the whole derived scheme
+    // (primary, hover, soft-light, translucent glows, hero deep shade).
+    const fullRecolor = s.accentColor && s.accentColor !== 'green' && ACCENT_COLORS[s.accentColor];
+    if (fullRecolor) {
+      const a = ACCENT_COLORS[s.accentColor];
+      root.style.setProperty('--primary', a[0]);
+      root.style.setProperty('--primary-hover', a[1]);
+      if (ACCENT_LIGHT[s.accentColor]) root.style.setProperty('--accent-light', ACCENT_LIGHT[s.accentColor]);
+      if (ACCENT_RGB[s.accentColor]) root.style.setProperty('--accent-rgb', ACCENT_RGB[s.accentColor]);
+      if (ACCENT_DEEP[s.accentColor]) root.style.setProperty('--accent-deep', ACCENT_DEEP[s.accentColor]);
     } else {
       root.style.removeProperty('--primary');
       root.style.removeProperty('--primary-hover');
+      root.style.removeProperty('--accent-light');
+      root.style.removeProperty('--accent-rgb');
+      root.style.removeProperty('--accent-deep');
     }
 
     root.setAttribute('data-reduce-motion', s.reduceMotion ? 'true' : 'false');
@@ -280,4 +317,20 @@ window.BreadWinner = window.BreadWinner || {};
     setTimeout(init, 100);
     window.addEventListener('resize', init);
   }
+/* ---------- Avatar color + swatch backgrounds (shared across pages) ---------- */
+  // Apply the user's saved avatar color to every avatar element — the navbar
+  // profile pill on home/profile/settings and the large profile preview.
+  (function applyAvatarColor() {
+    const color = BW.safeGet(BW.STORAGE.avatarColor, 'green');
+    const bg = avatarGradient(color);
+    document.querySelectorAll('.avatar-circle, .avatar-xl').forEach((el) => {
+      el.style.background = bg;
+    });
+  })();
+
+  // Paint the avatar/accent swatch buttons using their data-bg gradient, so
+  // they show the vivid color instead of looking washed-out/transparent.
+  document.querySelectorAll('.avatar-swatch').forEach((sw) => {
+    if (sw.dataset.bg) sw.style.background = sw.dataset.bg;
+  });
 })(window.BreadWinner);

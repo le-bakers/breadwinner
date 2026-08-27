@@ -2,6 +2,10 @@
    BreadWinner — Landing Page Styles
    ============================================ */
 
+/* Hero illustration shadow follows the chosen accent color. */
+#cardShadowGrad stop { stop-color: var(--primary); }
+
+
 .eyebrow {
   font-size: clamp(12px, 0.8vw, 17px);
   font-weight: 700;
@@ -217,7 +221,7 @@
 /* ---------- CTA ---------- */
 .cta-section { padding: 0 0 110px; }
 .cta-card {
-  background: linear-gradient(135deg, #14532D, #16A34A 55%, #22C55E);
+  background: linear-gradient(135deg, var(--accent-deep), var(--primary-hover) 55%, var(--primary));
   border-radius: 28px;
   padding: 72px 40px;
   text-align: center;

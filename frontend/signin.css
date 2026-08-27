@@ -51,7 +51,7 @@
 .btn-google:hover {
   background: var(--primary-hover);
   transform: translateY(-2px);
-  box-shadow: 0 0 0 1px rgba(34,197,94,0.1), 0 18px 36px -8px rgba(34,197,94,0.38);
+  box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.1), 0 18px 36px -8px rgba(var(--accent-rgb), 0.38);
 }
 .btn-google:active { transform: scale(0.97); }
 .btn-google svg { flex-shrink: 0; }
@@ -89,7 +89,7 @@
 .field-group input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(34,197,94,0.12);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.12);
 }
 .field-group label {
   position: absolute;
@@ -197,7 +197,7 @@
 /* ---------- Right panel: carousel ---------- */
 .carousel-panel {
   position: relative;
-  background: linear-gradient(160deg, #14532D, #16A34A 55%, #22C55E);
+  background: linear-gradient(160deg, var(--accent-deep), var(--primary-hover) 55%, var(--primary));
   display: flex;
   align-items: center;
   justify-content: center;
