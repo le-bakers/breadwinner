@@ -143,6 +143,8 @@
 }
 .receipt-row:not(.receipt-row-head):hover { background: #FAFCFA; cursor: pointer; }
 .receipt-row:not(.receipt-row-head):focus-visible { background: var(--accent-light); }
+/* Highlight the clicked (open) row so it reads as expanded in both themes */
+.receipt-row:not(.receipt-row-head).open { background: #F2FAF4; }
 
 .cell-name { display: flex; align-items: center; gap: 10px; font-weight: 600; }
 .receipt-thumb {
@@ -433,6 +435,13 @@
   justify-content: center;
 }
 .camera-preview-actions .btn { min-width: 130px; }
+
+/* ---------- Dark theme (receipt table states) ---------- */
+:root[data-theme="dark"] .receipt-row-head { background: #161E17; }
+:root[data-theme="dark"] .receipt-row:not(.receipt-row-head):hover { background: #202B22; }
+:root[data-theme="dark"] .receipt-row:not(.receipt-row-head).open { background: #223026; }
+:root[data-theme="dark"] .receipt-expand { background: #161E17; }
+
 
 /* ---------- Mobile views (desktop: show both together) ---------- */
 @media (min-width: 861px) {
