@@ -1,5 +1,5 @@
 /* ============================================
-   BreadWinner — Dashboard JS
+   BreadWinner â€” Dashboard JS
    ============================================ */
 
 (function () {
@@ -53,7 +53,7 @@
     frag.querySelector('.cell-gf').textContent = receipt.gfItems;
 
     const overchargeCell = frag.querySelector('.cell-overcharge');
-    overchargeCell.textContent = receipt.overcharge > 0 ? money(receipt.overcharge) : '—';
+    overchargeCell.textContent = receipt.overcharge > 0 ? money(receipt.overcharge) : 'â€”';
     overchargeCell.classList.toggle('zero', receipt.overcharge === 0);
 
     const statusCell = frag.querySelector('.cell-status');
@@ -116,7 +116,7 @@
     if (!list.length) {
       const empty = document.createElement('div');
       empty.className = 'receipt-empty';
-      empty.textContent = 'No receipts yet — tap the + button to upload your first receipt.';
+      empty.textContent = 'No receipts yet â€” tap the + button to upload your first receipt.';
       table.appendChild(empty);
       return;
     }
@@ -221,7 +221,7 @@
     });
     fileInput.addEventListener('change', () => {
       if (fileInput.files.length > 0) {
-        // Simulate upload — in production, send to server
+        // Simulate upload â€” in production, send to server
         console.log('File selected:', fileInput.files[0].name);
         fileInput.value = '';
       }
@@ -232,6 +232,7 @@
   const photoBtn = document.getElementById('fabTakePhoto');
   const cameraOverlay = document.getElementById('cameraOverlay');
   const cameraVideo = document.getElementById('cameraVideo');
+  const cameraVideoBack = document.getElementById('cameraVideoBack');
   const cameraCanvas = document.getElementById('cameraCanvas');
   const cameraPlaceholder = document.getElementById('cameraPlaceholder');
   const cameraCaptureBtn = document.getElementById('cameraCaptureBtn');
@@ -241,9 +242,13 @@
   const cameraRetakeBtn = document.getElementById('cameraRetakeBtn');
   const cameraConfirmBtn = document.getElementById('cameraConfirmBtn');
   const cameraFooter = document.getElementById('cameraFooter');
+  const cameraStatus = document.getElementById('cameraStatus');
+  const cameraFlash = document.getElementById('cameraFlash');
+  const scanGuide = document.getElementById('scanGuide');
 
   let mediaStream = null;
   let capturedBlob = null;
+  let streamReady = false;
 
   function setCameraLoading() {
     cameraPlaceholder.hidden = false;
@@ -273,29 +278,51 @@
     if (err && err.name === 'NotReadableError') {
       return 'Your camera is already in use by another app. Close it and try again.';
     }
-    return 'This browser can’t access the camera here. Serve the app over HTTPS (or localhost) and make sure camera permissions are allowed.';
+    return 'This browser canâ€™t access the camera here. Serve the app over HTTPS (or localhost) and make sure camera permissions are allowed.';
   }
 
-  async function startCamera() {
+  function startCamera() {
     setCameraLoading();
     cameraFooter.hidden = true;
     cameraPreview.hidden = true;
+    if (scanGuide) scanGuide.hidden = true;
+    cameraCaptureBtn.disabled = true;
+    streamReady = false;
     try {
       if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
         throw new Error('MediaDevices API unavailable');
       }
-      mediaStream = await navigator.mediaDevices.getUserMedia({
+      navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
         audio: false
+      }).then((stream) => {
+        mediaStream = stream;
+        cameraVideo.srcObject = stream;
+        if (cameraVideoBack) cameraVideoBack.srcObject = stream;
+        cameraVideo.hidden = false;
+        cameraVideoBack.hidden = false;
+        cameraPlaceholder.hidden = true;
+        // Enable capture only once frames are actually flowing.
+        cameraVideo.addEventListener('loadeddata', enableWhenReady, { once: true });
+        cameraVideo.addEventListener('playing', enableWhenReady, { once: true });
+        // Fallback in case loadeddata/playing don't fire.
+        setTimeout(() => { if (mediaStream === stream) enableWhenReady(); }, 1200);
+      }).catch((err) => {
+        setCameraError(cameraErrorMessage(err));
       });
-      cameraVideo.srcObject = mediaStream;
-      cameraVideo.hidden = false;
-      cameraPlaceholder.hidden = true;
-      cameraFooter.hidden = false;
-      cameraPreview.hidden = true;
     } catch (err) {
       setCameraError(cameraErrorMessage(err));
     }
+  }
+
+  function enableWhenReady() {
+    if (streamReady) return;
+    if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) return;
+    streamReady = true;
+    cameraFooter.hidden = false;
+    cameraCaptureBtn.disabled = false;
+    if (scanGuide) scanGuide.hidden = false;
+    if (cameraStatus) { cameraStatus.textContent = 'Ready'; cameraStatus.classList.add('live'); }
   }
 
   function stopCamera() {
@@ -304,28 +331,48 @@
       mediaStream = null;
     }
     cameraVideo.srcObject = null;
+    if (cameraVideoBack) cameraVideoBack.srcObject = null;
     cameraVideo.hidden = true;
+    cameraVideoBack.hidden = true;
+    streamReady = false;
+    cameraCaptureBtn.disabled = true;
     setCameraLoading();
     cameraFooter.hidden = true;
     cameraPreview.hidden = true;
+    if (scanGuide) scanGuide.hidden = true;
+    if (cameraStatus) { cameraStatus.textContent = 'Starting camera…'; cameraStatus.classList.remove('live'); }
+  }
+
+  function flashShutter() {
+    if (!cameraFlash || document.documentElement.getAttribute('data-reduce-motion') === 'true') return;
+    cameraFlash.hidden = false;
+    void cameraFlash.offsetWidth;
+    cameraFlash.classList.remove('flash');
+    void cameraFlash.offsetWidth;
+    cameraFlash.classList.add('flash');
+    setTimeout(() => { cameraFlash.hidden = true; cameraFlash.classList.remove('flash'); }, 400);
   }
 
   function capturePhoto() {
+    if (!streamReady || !cameraVideo.videoWidth || !cameraVideo.videoHeight) return;
+    flashShutter();
     const video = cameraVideo;
-    if (!video.videoWidth || !video.videoHeight) return;
     const canvas = cameraCanvas;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob((blob) => {
       if (!blob) return;
       capturedBlob = blob;
       const url = URL.createObjectURL(blob);
       cameraPreviewImg.src = url;
       cameraVideo.hidden = true;
-      cameraPreview.hidden = false;
+      cameraVideoBack.hidden = true;
+      if (scanGuide) scanGuide.hidden = true;
       cameraFooter.hidden = true;
+      cameraPreview.hidden = false;
+      if (cameraStatus) { cameraStatus.textContent = 'Captured'; cameraStatus.classList.remove('live'); }
     }, 'image/jpeg', 0.92);
   }
 
@@ -341,7 +388,10 @@
     }
     cameraPreview.hidden = true;
     cameraVideo.hidden = false;
+    cameraVideoBack.hidden = false;
     cameraFooter.hidden = false;
+    if (scanGuide) scanGuide.hidden = false;
+    if (cameraStatus) { cameraStatus.textContent = 'Ready'; cameraStatus.classList.add('live'); }
   }
 
   function confirmAndAddReceipt() {

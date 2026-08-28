@@ -185,31 +185,52 @@
       <button class="camera-close" id="cameraClose" aria-label="Close camera">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
       </button>
-      <span class="camera-title">Take a Photo</span>
+      <span class="camera-title">Scan Receipt</span>
+      <span class="camera-status" id="cameraStatus" role="status" aria-live="polite">Starting camera…</span>
     </div>
+
     <div class="camera-viewport" id="cameraViewport">
+      <video id="cameraVideoBack" autoplay playsinline muted aria-hidden="true"></video>
       <video id="cameraVideo" autoplay playsinline muted></video>
       <canvas id="cameraCanvas" hidden></canvas>
+
+      <!-- Scanner guide (capture state) -->
+      <div class="scan-guide" id="scanGuide" aria-hidden="true">
+        <svg viewBox="0 0 200 260" class="scan-frame" preserveAspectRatio="none">
+          <path d="M2 40a38 38 0 0138-38M160 2a38 38 0 0138 38M198 220a38 38 0 01-38 38M40 258a38 38 0 01-38-38" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <p class="scan-hint"><span class="scan-pulse"></span>Hold steady to scan</p>
+      </div>
+
       <div class="camera-placeholder" id="cameraPlaceholder">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg>
-        <p>Camera loading...</p>
+        <p>Camera loading…</p>
       </div>
+
+      <!-- Flash overlay for shutter feedback -->
+      <div class="camera-flash" id="cameraFlash" hidden></div>
     </div>
+
     <div class="camera-footer" id="cameraFooter">
-      <button class="shutter-btn" id="cameraCaptureBtn" aria-label="Capture photo">
+      <p class="camera-caption">Align the receipt inside the frame</p>
+      <button class="shutter-btn" id="cameraCaptureBtn" aria-label="Capture photo" disabled>
         <span class="shutter-inner"></span>
       </button>
+      <p class="camera-caption-end">Scan</p>
     </div>
+
     <div class="camera-preview" id="cameraPreview" hidden>
-      <img id="cameraPreviewImg" alt="Captured receipt preview">
+      <div class="camera-stage">
+        <img id="cameraPreviewImg" alt="Captured receipt preview">
+      </div>
       <div class="camera-preview-actions">
-        <button class="btn btn-secondary" id="cameraRetakeBtn">
+        <button class="btn btn-secondary" id="cameraRetakeBtn" type="button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Retake
         </button>
-        <button class="btn btn-primary" id="cameraConfirmBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v10m0 0l-4-4m4 4l4-4" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
-          Upload Receipt
+        <button class="btn btn-primary" id="cameraConfirmBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Use Photo
         </button>
       </div>
     </div>
