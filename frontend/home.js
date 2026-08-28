@@ -329,6 +329,21 @@
     }, 'image/jpeg', 0.92);
   }
 
+  function retakePhoto() {
+    if (capturedBlob) {
+      URL.revokeObjectURL(cameraPreviewImg.src);
+      capturedBlob = null;
+    }
+    // Return to the live feed. If the stream is gone for any reason, restart it.
+    if (!mediaStream || !cameraVideo.srcObject) {
+      startCamera();
+      return;
+    }
+    cameraPreview.hidden = true;
+    cameraVideo.hidden = false;
+    cameraFooter.hidden = false;
+  }
+
   function confirmAndAddReceipt() {
     if (!capturedBlob) return;
 
