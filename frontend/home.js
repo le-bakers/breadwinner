@@ -459,11 +459,21 @@
   if (bottomNav) {
     bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => {
       item.addEventListener('click', (e) => {
-        // Allow default anchor navigation, but update active state + pill
+        // Same-page dashboard / receipts toggles are handled in JS so the
+        // receipt view is pulled up as its own screen on mobile (no hash race).
+        const nav = item.dataset.nav;
+        if (nav === 'dashboard' || nav === 'receipt') {
+          if (window.matchMedia('(max-width: 860px)').matches) e.preventDefault();
+          bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
+          item.classList.add('active');
+          positionBottomNavPill(item);
+          switchMobileView(nav);
+          return;
+        }
+        // Other pages (e.g. settings) keep default anchor/navigation.
         bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
         item.classList.add('active');
         positionBottomNavPill(item);
-        switchMobileView(item.dataset.nav);
       });
     });
 

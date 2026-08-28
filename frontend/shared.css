@@ -854,11 +854,6 @@ input, select { font-family: inherit; }
   to   { transform: translateY(0); opacity: 1; }
 }
 @media (hover: hover) {
-  .section-card:hover {
-    transform: translateY(-3px);
-    box-shadow: var(--shadow-md);
-    border-color: rgba(var(--accent-rgb), 0.35);
-  }
   .danger-card:hover { box-shadow: 0 8px 24px -10px rgba(220, 38, 38, 0.25); }
 }
 
