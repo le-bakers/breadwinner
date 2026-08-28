@@ -188,7 +188,7 @@
       <span class="camera-title">Take a Photo</span>
     </div>
     <div class="camera-viewport" id="cameraViewport">
-      <video id="cameraVideo" autoplay playsinline></video>
+      <video id="cameraVideo" autoplay playsinline muted></video>
       <canvas id="cameraCanvas" hidden></canvas>
       <div class="camera-placeholder" id="cameraPlaceholder">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg>
@@ -196,9 +196,8 @@
       </div>
     </div>
     <div class="camera-footer" id="cameraFooter">
-      <button class="btn btn-primary btn-lg" id="cameraCaptureBtn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2.4"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg>
-        Capture
+      <button class="shutter-btn" id="cameraCaptureBtn" aria-label="Capture photo">
+        <span class="shutter-inner"></span>
       </button>
     </div>
     <div class="camera-preview" id="cameraPreview" hidden>
@@ -209,8 +208,8 @@
           Retake
         </button>
         <button class="btn btn-primary" id="cameraConfirmBtn">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Add Receipt
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 3v10m0 0l-4-4m4 4l4-4" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M5 17v2a2 2 0 002 2h10a2 2 0 002-2v-2" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+          Upload Receipt
         </button>
       </div>
     </div>
