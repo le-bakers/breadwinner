@@ -65,9 +65,7 @@
   document.querySelectorAll('#accentSwatches .avatar-swatch').forEach((btn) => {
     btn.addEventListener('click', () => {
       api.update('accentColor', btn.dataset.accent);
-      const m = (btn.dataset.bg || '').match(/#[0-9A-Fa-f]{6}/);
       renderFromSettings();
-      emitWave(btn, m ? m[0] : null);
       if (BW.toast) BW.toast('Accent color updated');
     });
   });
