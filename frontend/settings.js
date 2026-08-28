@@ -1,5 +1,5 @@
 /* ============================================
-   BreadWinner — Settings page JS
+   BreadWinner â€” Settings page JS
    ============================================ */
 (function () {
   'use strict';
@@ -27,13 +27,34 @@
     });
 
     document.getElementById('reduceMotionToggle').checked = s.reduceMotion;
-    document.getElementById('currencySelect').value = s.currency;
-    document.getElementById('dateFormatSelect').value = s.dateFormat;
+  }
+
+  /* ---------- Appearance: emanating wave ripple ---------- */
+  function emitWave(btn, colorOverride) {
+    if (api.get().reduceMotion) return;
+    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    const rect = btn.getBoundingClientRect();
+    const cx = rect.left + rect.width / 2;
+    const cy = rect.top + rect.height / 2;
+    const radius = Math.hypot(Math.max(cx, window.innerWidth - cx), Math.max(cy, window.innerHeight - cy)) * 1.05;
+    const color = colorOverride || getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#22C55E';
+    for (let i = 0; i < 2; i++) {
+      const ring = document.createElement('span');
+      ring.className = 'settings-wave' + (i ? ' second' : '');
+      ring.style.left = cx + 'px';
+      ring.style.top = cy + 'px';
+      ring.style.width = radius * 2 + 'px';
+      ring.style.height = radius * 2 + 'px';
+      ring.style.borderColor = color;
+      document.body.appendChild(ring);
+      ring.addEventListener('animationend', () => ring.remove());
+    }
   }
 
   /* ---------- Appearance: theme ---------- */
   document.querySelectorAll('#themeSegmented button').forEach((btn) => {
     btn.addEventListener('click', () => {
+      emitWave(btn);
       api.update('theme', btn.dataset.themeValue);
       renderFromSettings();
       if (BW.toast) BW.toast('Theme set to ' + btn.dataset.themeValue);
@@ -44,19 +65,11 @@
   document.querySelectorAll('#accentSwatches .avatar-swatch').forEach((btn) => {
     btn.addEventListener('click', () => {
       api.update('accentColor', btn.dataset.accent);
+      const m = (btn.dataset.bg || '').match(/#[0-9A-Fa-f]{6}/);
       renderFromSettings();
+      emitWave(btn, m ? m[0] : null);
       if (BW.toast) BW.toast('Accent color updated');
     });
-  });
-
-  /* ---------- Preferences ---------- */
-  document.getElementById('currencySelect').addEventListener('change', (e) => {
-    api.update('currency', e.target.value);
-    if (BW.toast) BW.toast('Currency set to ' + e.target.value);
-  });
-  document.getElementById('dateFormatSelect').addEventListener('change', (e) => {
-    api.update('dateFormat', e.target.value);
-    if (BW.toast) BW.toast('Date format updated');
   });
 
   /* ---------- Accessibility ---------- */
@@ -218,7 +231,6 @@
       if (BW.toast) BW.toast('Avatar color updated');
     });
   });
-
 
   /* ---------- Profile picture upload ---------- */
   const avatarUploadBtn = document.getElementById('avatarUploadBtn');
