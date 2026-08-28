@@ -26,11 +26,10 @@
     <nav class="nav-links" aria-label="Dashboard">
       <a href="home.html">Dashboard</a>
       <a href="home.html#receipts">Receipts</a>
-      <a href="profile.html">Profile</a>
       <a href="settings.html" class="active">Settings</a>
     </nav>
     <div class="nav-actions dash-actions">
-      <a class="profile-pill" href="profile.html" aria-label="Go to your profile">
+      <a class="profile-pill" href="settings.html" aria-label="Go to your profile and settings">
         <span class="avatar-circle">JM</span>
       </a>
     </div>
@@ -41,11 +40,71 @@
   <div class="container">
 
     <div class="account-header">
-      <h1>Settings</h1>
-      <p>Appearance, notifications, and how your data is stored on this device.</p>
+      <h1>Profile &amp; Settings</h1>
+      <p>Your name and contact info, plus appearance, notifications, and how your data is stored on this device.</p>
     </div>
 
+    <p style="margin-top: 15px;"></p>
+
     <div class="account-grid">
+
+      <!-- ============ PROFILE SUMMARY + AVATAR (merged from profile.html) ============ -->
+      <section class="section-card">
+        <div class="profile-summary">
+          <span class="avatar-xl" id="avatarPreview" aria-hidden="true">JM</span>
+          <div class="profile-summary-text">
+            <h2 id="summaryName">Your Name</h2>
+            <p id="summaryEmail">you@example.com</p>
+          </div>
+          <button type="button" class="btn btn-secondary" id="editProfileBtn">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M12 20h9M16.5 3.5a2.12 2.12 0 013 3L7 19l-4 1 1-4L16.5 3.5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Edit Profile
+          </button>
+        </div>
+
+        <div>
+          <label class="swatch-label">Avatar color</label>
+          <div class="avatar-swatches" id="avatarSwatches" role="group" aria-label="Avatar color">
+            <button type="button" class="avatar-swatch active" data-color="green" data-bg="linear-gradient(135deg,#22C55E,#16A34A)" aria-label="Green"></button>
+            <button type="button" class="avatar-swatch" data-color="blue" data-bg="linear-gradient(135deg,#3B82F6,#2563EB)" aria-label="Blue"></button>
+            <button type="button" class="avatar-swatch" data-color="purple" data-bg="linear-gradient(135deg,#A855F7,#9333EA)" aria-label="Purple"></button>
+            <button type="button" class="avatar-swatch" data-color="orange" data-bg="linear-gradient(135deg,#F97316,#EA580C)" aria-label="Orange"></button>
+            <button type="button" class="avatar-swatch" data-color="pink" data-bg="linear-gradient(135deg,#EC4899,#DB2777)" aria-label="Pink"></button>
+          </div>
+        </div>
+      </section>
+      <!-- ============ PERSONAL INFORMATION ============ -->
+      <form class="section-card" id="profileForm" novalidate>
+        <div class="section-card-header">
+          <span class="section-icon">
+            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <div>
+            <h2>Personal Information</h2>
+            <p>Click "Edit Profile" above to make changes.</p>
+          </div>
+        </div>
+
+        <div class="field-row-2">
+          <div class="field-group">
+            <input type="text" id="fullName" name="fullName" placeholder=" " autocomplete="name" disabled>
+            <label for="fullName">Full name</label>
+            <p class="field-error" id="fullName-error" role="alert"></p>
+          </div>
+          <div class="field-group">
+            <input type="email" id="email" name="email" placeholder=" " autocomplete="email" disabled>
+            <label for="email">Email address</label>
+            <p class="field-error" id="email-error" role="alert"></p>
+          </div>
+        </div>
+        <div class="form-actions" id="formActions" hidden>
+          <button type="button" class="btn btn-secondary" id="cancelProfileBtn">Cancel</button>
+          <button type="submit" class="btn btn-primary" id="saveProfileBtn">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            Save Changes
+          </button>
+        </div>
+      </form>
 
       <!-- ============ APPEARANCE ============ -->
       <section class="section-card">
@@ -200,6 +259,36 @@
         </div>
       </section>
 
+      <!-- ============ ACCOUNT OVERVIEW (merged from profile.html) ============ -->
+      <section class="section-card">
+        <div class="section-card-header">
+          <span class="section-icon" style="background:#FEF3F2;color:#DC2626">
+            <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="4" width="18" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M3 9h18M8 3v3M16 3v3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+          </span>
+          <div>
+            <h2>Account Overview</h2>
+            <p>A quick summary of your account. Manage privacy and data below.</p>
+          </div>
+        </div>
+
+        <div class="field-row-2">
+          <div class="field-static">
+            <label>Member since</label>
+            <p class="value" id="memberSince">—</p>
+          </div>
+          <div class="field-static">
+            <label>Sign-in method</label>
+            <p class="value">Email &amp; password</p>
+          </div>
+        </div>
+        <div class="field-row-2" style="margin-top:20px;">
+          <div class="field-static">
+            <label>Theme</label>
+            <p class="value" id="themeStatus">—</p>
+          </div>
+        </div>
+      </section>
+
       <!-- ============ ACCOUNT ============ -->
       <section class="section-card">
         <div class="section-card-header">
@@ -209,16 +298,6 @@
           <div>
             <h2>Account</h2>
             <p>Profile and legal information.</p>
-          </div>
-        </div>
-
-        <div class="form-row">
-          <div class="form-row-text">
-            <strong>Profile</strong>
-            <span>Name and email details.</span>
-          </div>
-          <div class="form-row-control">
-            <a href="profile.html" class="btn btn-secondary btn-sm">View Profile</a>
           </div>
         </div>
 
@@ -312,9 +391,6 @@
   </a>
   <a href="home.html#receipts" class="bottom-nav-item" data-nav="receipt" aria-label="Receipts">
     <svg viewBox="0 0 24 24" fill="none"><path d="M6 2h12v20l-2-1.5L14 22l-2-1.5L10 22l-2-1.5L6 22V2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 7h6M9 11h6M9 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-  </a>
-  <a href="profile.html" class="bottom-nav-item" data-nav="profile" aria-label="Profile">
-    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
   </a>
   <a href="settings.html" class="bottom-nav-item active" data-nav="settings" aria-label="Settings">
     <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>

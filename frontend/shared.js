@@ -83,7 +83,7 @@
 
 /* ============================================
    Identity + Sitewide Settings + UI helpers
-   (used by profile.html and settings.html)
+   (used by home.html and settings.html)
    ============================================ */
 window.BreadWinner = window.BreadWinner || {};
 (function (BW) {
