@@ -328,6 +328,7 @@
       cameraFooter.hidden = true;
     }, 'image/jpeg', 0.92);
   }
+
   function confirmAndAddReceipt() {
     if (!capturedBlob) return;
 
