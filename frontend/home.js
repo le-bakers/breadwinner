@@ -471,24 +471,6 @@
     window.scrollTo(0, 0);
   }
 
-  // "Add Receipt" button in dashboard header should open the receipt view on mobile
-  const addReceiptBtn = document.querySelector('.dash-header .btn-secondary');
-  if (addReceiptBtn) {
-    addReceiptBtn.addEventListener('click', (e) => {
-      if (window.matchMedia('(max-width: 860px)').matches) {
-        e.preventDefault();
-        switchMobileView('receipt');
-        // Also update the bottom nav active state
-        const receiptNavItem = bottomNav.querySelector('.bottom-nav-item[data-nav="receipt"]');
-        if (receiptNavItem) {
-          bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
-          receiptNavItem.classList.add('active');
-          positionBottomNavPill(receiptNavItem);
-        }
-      }
-    });
-  }
-
   if (bottomNav) {
     bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => {
       item.addEventListener('click', (e) => {
