@@ -43,11 +43,16 @@
 /* The shared floating-label inputs use a heavy top / thin bottom padding
    (18/8), which makes the name + email text hug the bottom edge of the
    field. Balance it out for the profile form only (onboarding keeps its own). */
+#profileForm .field-row-2 {
+  gap: 10px; /* pull the name + email boxes closer together (shared default is 16px) */
+}
 #profileForm .field-group input {
-  padding: 20px 16px 12px;
+  /* Extra bottom padding pushes the typed value lower, widening the gap
+     between the floated label ("Full name") and the entered text. */
+  padding: 22px 16px 16px;
 }
 #profileForm .field-group label {
-  top: 19px; /* matches the new top padding so the resting label aligns with the text */
+  top: 21px; /* matches the new top padding so the resting label aligns with the text */
 }
 #profileForm .field-group input:focus + label,
 #profileForm .field-group input:not(:placeholder-shown) + label {
