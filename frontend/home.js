@@ -31,67 +31,8 @@
     welcomeHeading.textContent = 'Welcome back, ' + firstName + '!';
   }
 
-  /* ---------- Placeholder data ---------- */
-  const RECEIPTS = [
-    {
-      name: 'Whole Foods Market', date: '2026-07-03', items: 14, gfItems: 9,
-      overcharge: 4.20, status: 'processed',
-      lines: [
-        { name: 'GF Bread Loaf', gf: true, tax: true, price: 6.49 },
-        { name: 'Bananas', gf: true, tax: false, price: 1.28 },
-        { name: 'GF Pasta', gf: true, tax: true, price: 5.99 },
-        { name: 'Wheat Crackers', gf: false, tax: false, price: 3.49 },
-        { name: 'GF All-Purpose Flour', gf: true, tax: true, price: 7.29 },
-      ]
-    },
-    {
-      name: 'Trader Joe\'s', date: '2026-06-28', items: 21, gfItems: 12,
-      overcharge: 6.80, status: 'processed',
-      lines: [
-        { name: 'GF Oat Cereal', gf: true, tax: true, price: 4.79 },
-        { name: 'Almond Milk', gf: true, tax: false, price: 3.49 },
-        { name: 'Regular Bagels', gf: false, tax: false, price: 3.99 },
-        { name: 'GF Tortillas', gf: true, tax: true, price: 5.49 },
-      ]
-    },
-    {
-      name: 'Safeway', date: '2026-06-21', items: 9, gfItems: 3,
-      overcharge: 0, status: 'review',
-      lines: [
-        { name: 'Eggs (dozen)', gf: true, tax: false, price: 4.29 },
-        { name: 'GF Cookies', gf: true, tax: true, price: 6.99 },
-        { name: 'Soy Sauce', gf: false, tax: false, price: 2.99 },
-      ]
-    },
-    {
-      name: 'Costco Wholesale', date: '2026-06-14', items: 32, gfItems: 18,
-      overcharge: 11.40, status: 'processed',
-      lines: [
-        { name: 'GF Pizza Crust (3pk)', gf: true, tax: true, price: 12.99 },
-        { name: 'GF Chicken Tenders', gf: true, tax: true, price: 15.49 },
-        { name: 'Paper Towels', gf: false, tax: false, price: 18.99 },
-        { name: 'GF Pretzels', gf: true, tax: true, price: 8.49 },
-      ]
-    },
-    {
-      name: 'Sprouts Farmers Market', date: '2026-06-07', items: 11, gfItems: 8,
-      overcharge: 2.10, status: 'processed',
-      lines: [
-        { name: 'GF Bagels', gf: true, tax: true, price: 5.99 },
-        { name: 'Spinach', gf: true, tax: false, price: 2.49 },
-        { name: 'GF Granola', gf: true, tax: true, price: 6.29 },
-      ]
-    },
-    {
-      name: 'Kroger', date: '2026-05-30', items: 17, gfItems: 6,
-      overcharge: 3.55, status: 'review',
-      lines: [
-        { name: 'GF English Muffins', gf: true, tax: true, price: 5.49 },
-        { name: 'Ground Beef', gf: true, tax: false, price: 9.99 },
-        { name: 'Regular Pasta', gf: false, tax: false, price: 1.79 },
-      ]
-    },
-  ];
+  /* ---------- Receipt data (starts empty for new users) ---------- */
+  const RECEIPTS = [];
 
   const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const money = (n) => '$' + n.toFixed(2);
@@ -171,7 +112,14 @@
   }
 
   function render(list) {
-    table.querySelectorAll('.receipt-row:not(.receipt-row-head), .receipt-expand').forEach((el) => el.remove());
+    table.querySelectorAll('.receipt-row:not(.receipt-row-head), .receipt-expand, .receipt-empty').forEach((el) => el.remove());
+    if (!list.length) {
+      const empty = document.createElement('div');
+      empty.className = 'receipt-empty';
+      empty.textContent = 'No receipts yet — tap the + button to upload your first receipt.';
+      table.appendChild(empty);
+      return;
+    }
     list.forEach((r) => table.appendChild(buildRow(r)));
   }
 

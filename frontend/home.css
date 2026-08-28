@@ -222,6 +222,13 @@
 .item-name { flex: 1; font-weight: 500; }
 .item-price { color: var(--text-secondary); font-weight: 600; }
 
+.receipt-empty {
+  padding: 48px 24px;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 14.5px;
+}
+
 @media (max-width: 900px) {
   .receipt-row { grid-template-columns: 1.4fr 0.9fr 0.6fr 1fr; }
   .receipt-row-head span:nth-child(5), .receipt-row-head span:nth-child(6),
