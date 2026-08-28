@@ -107,8 +107,25 @@ window.BreadWinner = window.BreadWinner || {};
     name: 'breadwinner_user_name',
     email: 'breadwinner_user_email',
     avatarColor: 'breadwinner_avatar_color',
-    memberSince: 'breadwinner_member_since'
+    memberSince: 'breadwinner_member_since',
+    session: 'breadwinner_session'
   };
+
+  /* ---------- Session ("are you signed in?") ---------- */
+  BW.isSignedIn = function () {
+    return !!BW.safeGet(BW.STORAGE.session, '');
+  };
+  BW.signIn = function (details) {
+    return BW.safeSet(BW.STORAGE.session, JSON.stringify(Object.assign({ at: Date.now() }, details || {})));
+  };
+  BW.signOut = function () {
+    return BW.safeRemove(BW.STORAGE.session);
+  };
+  // When signed in, every "Sign In" / "Start Free" link points to the dashboard
+  // instead of the sign-in page (navbars, mobile menus, footers on all pages).
+  if (BW.isSignedIn()) {
+    document.querySelectorAll('a[href="signin.html"]').forEach((a) => { a.setAttribute('href', 'home.html'); });
+  }
   /* ---------- Sitewide Settings (persisted under breadwinner_settings) ---------- */
   const SETTINGS_KEY = 'breadwinner_settings';
   const SETTINGS_DEFAULTS = {

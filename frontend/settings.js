@@ -123,6 +123,7 @@
 
   /* ---------- Sign out ---------- */
   document.getElementById('signOutBtn').addEventListener('click', () => {
+    if (BW.signOut) BW.signOut();
     window.location.href = 'signin.html';
   });
 
