@@ -770,3 +770,46 @@ input, select { font-family: inherit; }
 .bottom-nav-item.active svg { transform: translateY(-1px) scale(1.08); }
 .bottom-nav-item:active svg { transform: scale(0.9); }
 @media (max-width: 860px) { .mobile-bottom-nav { display: flex; } }
+
+/* ---------- Profile picture upload ---------- */
+.avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.avatar-upload-btn {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+}
+.avatar-upload-btn:hover { color: var(--primary-hover); border-color: rgba(var(--accent-rgb), 0.5); transform: scale(1.08); }
+.avatar-upload-btn:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.2); }
+.avatar-photo { color: transparent; }
+:root[data-theme="dark"] .avatar-upload-btn { background: #223026; }
+
+.remove-photo-btn {
+  margin-top: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s var(--ease-out);
+}
+.remove-photo-btn:hover { color: #DC2626; }
+.remove-photo-btn:focus-visible { outline: none; color: var(--primary-hover); }

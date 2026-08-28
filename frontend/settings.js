@@ -191,7 +191,7 @@
     summaryName.textContent = name || 'Your Name';
     summaryEmail.textContent = email || 'No email on file';
 
-    if (avatarPreview) avatarPreview.textContent = getInitials(name);
+    if (avatarPreview && !get(STORAGE.photo, "")) avatarPreview.textContent = getInitials(name);
 
     if (BW.Settings && themeStatusEl) {
       const s = BW.Settings.getSettings();
@@ -211,14 +211,98 @@
       set(STORAGE.avatarColor, btn.dataset.color);
       swatches.forEach((b) => b.classList.toggle('active', b === btn));
       const bg = btn.dataset.bg || AVATAR_BG[btn.dataset.color] || AVATAR_BG.green;
-      if (avatarPreview) avatarPreview.style.background = bg;
+      if (avatarPreview && !get(STORAGE.photo, "")) avatarPreview.style.background = bg;
       const navAvatarEl = document.querySelector('.avatar-circle');
-      if (navAvatarEl) navAvatarEl.style.background = bg;
+      if (navAvatarEl && !get(STORAGE.photo, "")) navAvatarEl.style.background = bg;
       if (BW.Settings) BW.Settings.applySettings();
       if (BW.toast) BW.toast('Avatar color updated');
     });
   });
 
+
+  /* ---------- Profile picture upload ---------- */
+  const avatarUploadBtn = document.getElementById('avatarUploadBtn');
+  const avatarUploadInput = document.getElementById('avatarUploadInput');
+  const removePhotoBtn = document.getElementById('removePhotoBtn');
+
+  // Center-crop to a square and downscale to a small JPEG so the data URL
+  // fits comfortably in localStorage.
+  function resizeImage(file, size) {
+    return new Promise((resolve, reject) => {
+      const url = URL.createObjectURL(file);
+      const img = new Image();
+      img.onload = () => {
+        const min = Math.min(img.width, img.height);
+        const canvas = document.createElement('canvas');
+        canvas.width = size;
+        canvas.height = size;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, (img.width - min) / 2, (img.height - min) / 2, min, min, 0, 0, size, size);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/jpeg', 0.85));
+      };
+      img.onerror = () => {
+        URL.revokeObjectURL(url);
+        reject(new Error('Could not read that image.'));
+      };
+      img.src = url;
+    });
+  }
+
+  function applyPhotoToAvatar(el, photo) {
+    if (!el) return;
+    el.classList.toggle('avatar-photo', !!photo);
+    if (photo) {
+      el.style.background = 'url("' + photo + '") center / cover no-repeat';
+      el.textContent = '';
+    } else {
+      el.style.background = AVATAR_BG[get(STORAGE.avatarColor, 'green')] || AVATAR_BG.green;
+      el.textContent = getInitials(get(STORAGE.name, ''));
+    }
+  }
+
+  function refreshAvatarPhoto() {
+    const photo = get(STORAGE.photo, '');
+    applyPhotoToAvatar(avatarPreview, photo);
+    applyPhotoToAvatar(document.querySelector('.avatar-circle'), photo);
+    if (removePhotoBtn) removePhotoBtn.hidden = !photo;
+  }
+
+  async function handleAvatarFile(file) {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      if (BW.toast) BW.toast('Please choose an image file');
+      return;
+    }
+    try {
+      const dataUrl = await resizeImage(file, 256);
+      if (!BW.safeSet(STORAGE.photo, dataUrl)) {
+        if (BW.toast) BW.toast('Photo could not be stored');
+        return;
+      }
+      refreshAvatarPhoto();
+      if (BW.toast) BW.toast('Profile picture updated');
+    } catch (err) {
+      if (BW.toast) BW.toast('Could not read that image');
+    }
+  }
+
+  if (avatarUploadBtn && avatarUploadInput) {
+    avatarUploadBtn.addEventListener('click', () => avatarUploadInput.click());
+    avatarUploadInput.addEventListener('change', () => {
+      const file = avatarUploadInput.files && avatarUploadInput.files[0];
+      avatarUploadInput.value = '';
+      handleAvatarFile(file);
+    });
+  }
+  if (removePhotoBtn) {
+    removePhotoBtn.addEventListener('click', () => {
+      BW.safeRemove(STORAGE.photo);
+      refreshAvatarPhoto();
+      if (BW.toast) BW.toast('Profile picture removed');
+    });
+  }
+  refreshAvatarPhoto();
   /* ---------- Edit / Save / Cancel ---------- */
   function enterEditMode() {
     snapshot = {
@@ -331,5 +415,6 @@
     loadFieldsFromStorage();
     renderSummary();
     if (avatarPreview) avatarPreview.style.background = AVATAR_BG[get(STORAGE.avatarColor, 'green')] || AVATAR_BG.green;
+    refreshAvatarPhoto();
   }
 })();
