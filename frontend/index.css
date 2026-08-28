@@ -197,12 +197,6 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 30px 24px;
-  transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out), border-color 0.35s;
-}
-.feature-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
-  border-color: transparent;
 }
 .feature-icon {
   width: 48px; height: 48px;
