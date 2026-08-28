@@ -277,6 +277,8 @@
     const photo = get(STORAGE.photo, '');
     applyPhotoToAvatar(avatarPreview, photo);
     applyPhotoToAvatar(document.querySelector('.avatar-circle'), photo);
+    const colorSection = document.getElementById('avatarColorSection');
+    if (colorSection) colorSection.hidden = !!photo;
     if (removePhotoBtn) removePhotoBtn.hidden = !photo;
   }
 
