@@ -354,6 +354,7 @@
   width: 100%;
   max-width: 500px;
   max-height: 90vh;
+  margin: auto;
   overflow: hidden;
   display: flex;
   flex-direction: column;
@@ -384,7 +385,8 @@
   flex-shrink: 0;
   transition: background 0.2s;
 }
-.camera-close:hover { background: var(--text-secondary); }
+.camera-close:hover { opacity: 0.85; }
+.camera-close:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
 .camera-close svg { width: 18px; height: 18px; }
 .camera-title {
   font-weight: 700;
@@ -411,12 +413,17 @@
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 12px;
   color: #9CA3AF;
   font-size: 14px;
   font-weight: 500;
-  padding: 40px;
+  padding: 40px 24px;
+  text-align: center;
 }
+.camera-error-title { color: #F3F4F6; font-weight: 700; font-size: 15px; margin: 0; }
+.camera-error-msg { color: #9CA3AF; font-size: 13.5px; line-height: 1.55; max-width: 300px; margin: 0; }
+.camera-placeholder .camera-retry { margin-top: 4px; }
 .camera-footer {
   display: flex;
   justify-content: center;

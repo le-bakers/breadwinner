@@ -245,10 +245,48 @@
   let mediaStream = null;
   let capturedBlob = null;
 
+  function setCameraLoading() {
+    cameraPlaceholder.hidden = false;
+    cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg><p>Camera loading...</p>';
+  }
+
+  function setCameraError(message) {
+    cameraVideo.hidden = true;
+    cameraFooter.hidden = true;
+    cameraPreview.hidden = true;
+    cameraPlaceholder.hidden = false;
+    cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      + '<p class="camera-error-title">Camera unavailable</p>'
+      + '<p class="camera-error-msg">' + message + '</p>'
+      + '<button type="button" class="btn btn-primary camera-retry">Try Again</button>';
+    const retryBtn = cameraPlaceholder.querySelector('.camera-retry');
+    if (retryBtn) retryBtn.addEventListener('click', (e) => { e.stopPropagation(); startCamera(); });
+  }
+
+  function cameraErrorMessage(err) {
+    if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+      return 'Camera access was denied. Allow camera permissions in your browser settings, then try again.';
+    }
+    if (err && err.name === 'NotFoundError') {
+      return 'No camera was found on this device.';
+    }
+    if (err && err.name === 'NotReadableError') {
+      return 'Your camera is already in use by another app. Close it and try again.';
+    }
+    return 'This browser can’t access the camera here. Serve the app over HTTPS (or localhost) and make sure camera permissions are allowed.';
+  }
+
   async function startCamera() {
+    setCameraLoading();
+    cameraFooter.hidden = true;
+    cameraPreview.hidden = true;
     try {
+      if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+        throw new Error('MediaDevices API unavailable');
+      }
       mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false
       });
       cameraVideo.srcObject = mediaStream;
       cameraVideo.hidden = false;
@@ -256,8 +294,7 @@
       cameraFooter.hidden = false;
       cameraPreview.hidden = true;
     } catch (err) {
-      cameraPlaceholder.innerHTML = '<p style="color:#DC2626">Camera access denied. Please allow camera permissions.</p>';
-      console.error('Camera error:', err);
+      setCameraError(cameraErrorMessage(err));
     }
   }
 
@@ -268,14 +305,14 @@
     }
     cameraVideo.srcObject = null;
     cameraVideo.hidden = true;
-    cameraPlaceholder.hidden = false;
-    cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg><p>Camera loading...</p>';
+    setCameraLoading();
     cameraFooter.hidden = true;
     cameraPreview.hidden = true;
   }
 
   function capturePhoto() {
     const video = cameraVideo;
+    if (!video.videoWidth || !video.videoHeight) return;
     const canvas = cameraCanvas;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
@@ -291,14 +328,6 @@
       cameraFooter.hidden = true;
     }, 'image/jpeg', 0.92);
   }
-
-  function retakePhoto() {
-    capturedBlob = null;
-    cameraPreview.hidden = true;
-    cameraVideo.hidden = false;
-    cameraFooter.hidden = false;
-  }
-
   function confirmAndAddReceipt() {
     if (!capturedBlob) return;
 
@@ -359,6 +388,13 @@
     cameraCaptureBtn.addEventListener('click', capturePhoto);
     cameraRetakeBtn.addEventListener('click', retakePhoto);
     cameraConfirmBtn.addEventListener('click', confirmAndAddReceipt);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !cameraOverlay.hidden) {
+        stopCamera();
+        cameraOverlay.hidden = true;
+      }
+    });
   }
 
   /* ---------- Mobile bottom navbar sliding pill ---------- */
