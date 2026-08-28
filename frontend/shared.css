@@ -1,4 +1,4 @@
-﻿/* ============================================
+/* ============================================
    BreadWinner â€” Shared Design System
    Tokens, reset, nav, buttons, footer, utilities
    ============================================ */
@@ -484,6 +484,7 @@ input, select { font-family: inherit; }
 @media (max-width: 560px) { .form-row { flex-direction: column; align-items: flex-start; gap: 10px; } }
 
 .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+.form-actions[hidden] { display: none; }
 
 .field-static label {
   display: block; font-size: 12px; font-weight: 700;

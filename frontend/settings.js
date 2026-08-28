@@ -174,6 +174,7 @@
   const editBtn = document.getElementById('editProfileBtn');
   const cancelBtn = document.getElementById('cancelProfileBtn');
   const formActions = document.getElementById('formActions');
+  const saveBtn = document.getElementById('saveProfileBtn');
   const summaryName = document.getElementById('summaryName');
   const summaryEmail = document.getElementById('summaryEmail');
   const avatarPreview = document.getElementById('avatarPreview');
@@ -226,6 +227,7 @@
     };
     editableFields.forEach((el) => { el.disabled = false; });
     formActions.hidden = false;
+    updateSaveState();
     editBtn.hidden = true;
     fullNameInput.focus();
   }
@@ -240,6 +242,15 @@
     emailError.classList.remove('show');
     fullNameInput.classList.remove('invalid');
     emailInput.classList.remove('invalid');
+  }
+
+  function isDirty() {
+    if (!snapshot) return false;
+    return fullNameInput.value !== snapshot.name || emailInput.value !== snapshot.email;
+  }
+
+  function updateSaveState() {
+    if (saveBtn) saveBtn.disabled = !isDirty();
   }
 
   function validate() {
@@ -285,6 +296,7 @@
   }
 
   /* ---------- Wire up events ---------- */
+  editableFields.forEach((el) => el.addEventListener('input', updateSaveState));
   if (editBtn) editBtn.addEventListener('click', enterEditMode);
 
   if (cancelBtn) {
