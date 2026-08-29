@@ -1,4 +1,4 @@
-﻿/* ============================================
+/* ============================================
    BreadWinner â€” Shared Design System
    Tokens, reset, nav, buttons, footer, utilities
    ============================================ */
@@ -39,6 +39,7 @@
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
@@ -484,6 +485,7 @@ input, select { font-family: inherit; }
 @media (max-width: 560px) { .form-row { flex-direction: column; align-items: flex-start; gap: 10px; } }
 
 .form-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 20px; }
+.form-actions[hidden] { display: none; }
 
 .field-static label {
   display: block; font-size: 12px; font-weight: 700;
@@ -769,3 +771,166 @@ input, select { font-family: inherit; }
 .bottom-nav-item.active svg { transform: translateY(-1px) scale(1.08); }
 .bottom-nav-item:active svg { transform: scale(0.9); }
 @media (max-width: 860px) { .mobile-bottom-nav { display: flex; } }
+
+/* ---------- Profile picture upload ---------- */
+.avatar-wrap {
+  position: relative;
+  display: inline-flex;
+  flex-shrink: 0;
+}
+.avatar-upload-btn {
+  position: absolute;
+  right: -4px;
+  bottom: -4px;
+  width: 30px;
+  height: 30px;
+  border-radius: var(--radius-full);
+  background: var(--card);
+  border: 1px solid var(--border);
+  color: var(--text-secondary);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-sm);
+  transition: color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+}
+.avatar-upload-btn:hover { color: var(--primary-hover); border-color: rgba(var(--accent-rgb), 0.5); transform: scale(1.08); }
+.avatar-upload-btn:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.2); }
+.avatar-photo { color: transparent; }
+:root[data-theme="dark"] .avatar-upload-btn { background: #223026; }
+
+.remove-photo-btn {
+  margin-top: 10px;
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--text-secondary);
+  font-family: var(--font-body);
+  font-size: 13px;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color 0.2s var(--ease-out);
+}
+.remove-photo-btn:hover { color: #DC2626; }
+.remove-photo-btn:focus-visible { outline: none; color: var(--primary-hover); }
+
+/* ============================================
+   Extra polish: entrances + micro-interactions
+   (all disabled by both Reduce Motion settings)
+   ============================================ */
+
+/* ---------- Page entrance: navbar slides down, main content fades up ---------- */
+.navbar {
+  animation: navSlideDown 0.55s var(--ease-out) backwards;
+}
+@keyframes navSlideDown {
+  from { transform: translateY(-16px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+.account-main {
+  animation: contentFadeUp 0.6s var(--ease-out) 0.08s backwards;
+}
+@keyframes contentFadeUp {
+  from { transform: translateY(14px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+
+/* ---------- Cards: staggered entrance + hover lift ---------- */
+.section-card, .danger-card {
+  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out),
+              border-color 0.25s var(--ease-out);
+  animation: cardIn 0.55s var(--ease-out) backwards;
+}
+.section-card:nth-of-type(1) { animation-delay: 0.05s; }
+.section-card:nth-of-type(2) { animation-delay: 0.12s; }
+.section-card:nth-of-type(3) { animation-delay: 0.19s; }
+.section-card:nth-of-type(4) { animation-delay: 0.26s; }
+.section-card:nth-of-type(5) { animation-delay: 0.33s; }
+.section-card:nth-of-type(6) { animation-delay: 0.40s; }
+.section-card:nth-of-type(n+7) { animation-delay: 0.47s; }
+@keyframes cardIn {
+  from { transform: translateY(18px); opacity: 0; }
+  to   { transform: translateY(0); opacity: 1; }
+}
+@media (hover: hover) {
+  .danger-card:hover { box-shadow: 0 8px 24px -10px rgba(220, 38, 38, 0.25); }
+}
+
+/* ---------- Form rows: soft hover highlight ---------- */
+.form-row { transition: background 0.2s var(--ease-out); border-radius: 10px; }
+@media (hover: hover) {
+  .form-row:hover { background: rgba(var(--accent-rgb), 0.04); }
+}
+
+/* ---------- Buttons: springy press + arrow nudge for primary CTAs ---------- */
+.btn { transition: transform 0.18s var(--ease-out), box-shadow 0.2s var(--ease-out), background 0.2s var(--ease-out), color 0.2s var(--ease-out); }
+.btn:active { transform: scale(0.97); }
+.btn:focus-visible { transition-duration: 0.1s; }
+
+/* ---------- Floating-label inputs: smoother focus ring ---------- */
+.field-group input, .field-group .select, .select, .field-group input[type="text"], .field-group input[type="email"] {
+  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background 0.2s var(--ease-out);
+}
+
+/* ---------- Segmented control: springy selection ---------- */
+.segmented button {
+  transition: color 0.2s var(--ease-out), background 0.2s var(--ease-out),
+              transform 0.18s var(--ease-out), box-shadow 0.2s var(--ease-out);
+}
+.segmented button:active { transform: scale(0.94); }
+.segmented button.active svg { animation: iconPop 0.3s var(--ease-out); }
+@keyframes iconPop {
+  0% { transform: scale(0.7); }
+  60% { transform: scale(1.15); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- Toggle switch: subtle hover glow ---------- */
+.switch:hover .switch-track { box-shadow: 0 0 0 5px rgba(var(--accent-rgb), 0.08); }
+.switch-track { transition: background 0.25s var(--ease-out), box-shadow 0.2s var(--ease-out); }
+
+/* ---------- Swatches: playful hover + selection bounce ---------- */
+.avatar-swatch { transition: transform 0.2s var(--ease-out), border-color 0.2s, box-shadow 0.2s var(--ease-out); }
+.avatar-swatch:hover { transform: scale(1.15) rotate(6deg); }
+.avatar-swatch.active { animation: swatchSelect 0.35s var(--ease-out); }
+@keyframes swatchSelect {
+  0% { transform: scale(0.85); }
+  60% { transform: scale(1.12); }
+  100% { transform: scale(1); }
+}
+
+/* ---------- Avatar pill: gentle hover lift ---------- */
+.profile-pill { transition: transform 0.2s var(--ease-out); }
+.profile-pill:hover { transform: translateY(-1px) scale(1.05); }
+.profile-pill:active { transform: scale(0.95); }
+
+/* ---------- Bottom nav: hover feedback on items ---------- */
+@media (hover: hover) {
+  .bottom-nav-item { transition: color 0.2s var(--ease-out); }
+  .bottom-nav-item:hover { color: var(--primary-hover); }
+  .bottom-nav-item:hover svg { transform: translateY(-2px); }
+}
+
+/* ---------- Modal: backdrop fade to match the card pop ---------- */
+.modal-overlay { animation: overlayFade 0.25s var(--ease-out); }
+@keyframes overlayFade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ---------- Toast: slight overshoot on entry ---------- */
+.toast-wrap.show { transition: opacity 0.3s var(--ease-out), transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
+
+/* ---------- Logo: playful hover tilt ---------- */
+@media (hover: hover) {
+  .logo img { transition: transform 0.25s var(--ease-out); }
+  .logo:hover img { transform: rotate(-3deg) scale(1.04); }
+}
+
+/* ---------- Nav links: animated underline-ish press ---------- */
+.nav-links a { transition: color 0.2s var(--ease-out), background 0.2s var(--ease-out), transform 0.15s var(--ease-out); }
+.nav-links a:active { transform: scale(0.96); }
+
+/* ---------- Static overview fields: value pop when updated ---------- */
+.field-static .value { transition: color 0.2s var(--ease-out); }

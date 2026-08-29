@@ -1,5 +1,5 @@
 /* ============================================
-   BreadWinner — Dashboard JS
+   BreadWinner â€” Dashboard JS
    ============================================ */
 
 (function () {
@@ -31,67 +31,8 @@
     welcomeHeading.textContent = 'Welcome back, ' + firstName + '!';
   }
 
-  /* ---------- Placeholder data ---------- */
-  const RECEIPTS = [
-    {
-      name: 'Whole Foods Market', date: '2026-07-03', items: 14, gfItems: 9,
-      overcharge: 4.20, status: 'processed',
-      lines: [
-        { name: 'GF Bread Loaf', gf: true, tax: true, price: 6.49 },
-        { name: 'Bananas', gf: true, tax: false, price: 1.28 },
-        { name: 'GF Pasta', gf: true, tax: true, price: 5.99 },
-        { name: 'Wheat Crackers', gf: false, tax: false, price: 3.49 },
-        { name: 'GF All-Purpose Flour', gf: true, tax: true, price: 7.29 },
-      ]
-    },
-    {
-      name: 'Trader Joe\'s', date: '2026-06-28', items: 21, gfItems: 12,
-      overcharge: 6.80, status: 'processed',
-      lines: [
-        { name: 'GF Oat Cereal', gf: true, tax: true, price: 4.79 },
-        { name: 'Almond Milk', gf: true, tax: false, price: 3.49 },
-        { name: 'Regular Bagels', gf: false, tax: false, price: 3.99 },
-        { name: 'GF Tortillas', gf: true, tax: true, price: 5.49 },
-      ]
-    },
-    {
-      name: 'Safeway', date: '2026-06-21', items: 9, gfItems: 3,
-      overcharge: 0, status: 'review',
-      lines: [
-        { name: 'Eggs (dozen)', gf: true, tax: false, price: 4.29 },
-        { name: 'GF Cookies', gf: true, tax: true, price: 6.99 },
-        { name: 'Soy Sauce', gf: false, tax: false, price: 2.99 },
-      ]
-    },
-    {
-      name: 'Costco Wholesale', date: '2026-06-14', items: 32, gfItems: 18,
-      overcharge: 11.40, status: 'processed',
-      lines: [
-        { name: 'GF Pizza Crust (3pk)', gf: true, tax: true, price: 12.99 },
-        { name: 'GF Chicken Tenders', gf: true, tax: true, price: 15.49 },
-        { name: 'Paper Towels', gf: false, tax: false, price: 18.99 },
-        { name: 'GF Pretzels', gf: true, tax: true, price: 8.49 },
-      ]
-    },
-    {
-      name: 'Sprouts Farmers Market', date: '2026-06-07', items: 11, gfItems: 8,
-      overcharge: 2.10, status: 'processed',
-      lines: [
-        { name: 'GF Bagels', gf: true, tax: true, price: 5.99 },
-        { name: 'Spinach', gf: true, tax: false, price: 2.49 },
-        { name: 'GF Granola', gf: true, tax: true, price: 6.29 },
-      ]
-    },
-    {
-      name: 'Kroger', date: '2026-05-30', items: 17, gfItems: 6,
-      overcharge: 3.55, status: 'review',
-      lines: [
-        { name: 'GF English Muffins', gf: true, tax: true, price: 5.49 },
-        { name: 'Ground Beef', gf: true, tax: false, price: 9.99 },
-        { name: 'Regular Pasta', gf: false, tax: false, price: 1.79 },
-      ]
-    },
-  ];
+  /* ---------- Receipt data (starts empty for new users) ---------- */
+  const RECEIPTS = [];
 
   const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const money = (n) => '$' + n.toFixed(2);
@@ -112,7 +53,7 @@
     frag.querySelector('.cell-gf').textContent = receipt.gfItems;
 
     const overchargeCell = frag.querySelector('.cell-overcharge');
-    overchargeCell.textContent = receipt.overcharge > 0 ? money(receipt.overcharge) : '—';
+    overchargeCell.textContent = receipt.overcharge > 0 ? money(receipt.overcharge) : 'â€”';
     overchargeCell.classList.toggle('zero', receipt.overcharge === 0);
 
     const statusCell = frag.querySelector('.cell-status');
@@ -171,7 +112,14 @@
   }
 
   function render(list) {
-    table.querySelectorAll('.receipt-row:not(.receipt-row-head), .receipt-expand').forEach((el) => el.remove());
+    table.querySelectorAll('.receipt-row:not(.receipt-row-head), .receipt-expand, .receipt-empty').forEach((el) => el.remove());
+    if (!list.length) {
+      const empty = document.createElement('div');
+      empty.className = 'receipt-empty';
+      empty.textContent = 'No receipts yet â€” tap the + button to upload your first receipt.';
+      table.appendChild(empty);
+      return;
+    }
     list.forEach((r) => table.appendChild(buildRow(r)));
   }
 
@@ -273,7 +221,7 @@
     });
     fileInput.addEventListener('change', () => {
       if (fileInput.files.length > 0) {
-        // Simulate upload — in production, send to server
+        // Simulate upload â€” in production, send to server
         console.log('File selected:', fileInput.files[0].name);
         fileInput.value = '';
       }
@@ -284,6 +232,7 @@
   const photoBtn = document.getElementById('fabTakePhoto');
   const cameraOverlay = document.getElementById('cameraOverlay');
   const cameraVideo = document.getElementById('cameraVideo');
+  const cameraVideoBack = document.getElementById('cameraVideoBack');
   const cameraCanvas = document.getElementById('cameraCanvas');
   const cameraPlaceholder = document.getElementById('cameraPlaceholder');
   const cameraCaptureBtn = document.getElementById('cameraCaptureBtn');
@@ -293,24 +242,87 @@
   const cameraRetakeBtn = document.getElementById('cameraRetakeBtn');
   const cameraConfirmBtn = document.getElementById('cameraConfirmBtn');
   const cameraFooter = document.getElementById('cameraFooter');
+  const cameraStatus = document.getElementById('cameraStatus');
+  const cameraFlash = document.getElementById('cameraFlash');
+  const scanGuide = document.getElementById('scanGuide');
 
   let mediaStream = null;
   let capturedBlob = null;
+  let streamReady = false;
 
-  async function startCamera() {
-    try {
-      mediaStream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } }
-      });
-      cameraVideo.srcObject = mediaStream;
-      cameraVideo.hidden = false;
-      cameraPlaceholder.hidden = true;
-      cameraFooter.hidden = false;
-      cameraPreview.hidden = true;
-    } catch (err) {
-      cameraPlaceholder.innerHTML = '<p style="color:#DC2626">Camera access denied. Please allow camera permissions.</p>';
-      console.error('Camera error:', err);
+  function setCameraLoading() {
+    cameraPlaceholder.hidden = false;
+    cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg><p>Camera loading...</p>';
+  }
+
+  function setCameraError(message) {
+    cameraVideo.hidden = true;
+    cameraFooter.hidden = true;
+    cameraPreview.hidden = true;
+    cameraPlaceholder.hidden = false;
+    cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
+      + '<p class="camera-error-title">Camera unavailable</p>'
+      + '<p class="camera-error-msg">' + message + '</p>'
+      + '<button type="button" class="btn btn-primary camera-retry">Try Again</button>';
+    const retryBtn = cameraPlaceholder.querySelector('.camera-retry');
+    if (retryBtn) retryBtn.addEventListener('click', (e) => { e.stopPropagation(); startCamera(); });
+  }
+
+  function cameraErrorMessage(err) {
+    if (err && (err.name === 'NotAllowedError' || err.name === 'PermissionDeniedError')) {
+      return 'Camera access was denied. Allow camera permissions in your browser settings, then try again.';
     }
+    if (err && err.name === 'NotFoundError') {
+      return 'No camera was found on this device.';
+    }
+    if (err && err.name === 'NotReadableError') {
+      return 'Your camera is already in use by another app. Close it and try again.';
+    }
+    return 'This browser canâ€™t access the camera here. Serve the app over HTTPS (or localhost) and make sure camera permissions are allowed.';
+  }
+
+  function startCamera() {
+    setCameraLoading();
+    cameraFooter.hidden = true;
+    cameraPreview.hidden = true;
+    if (scanGuide) scanGuide.hidden = true;
+    cameraCaptureBtn.disabled = true;
+    streamReady = false;
+    try {
+      if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+        throw new Error('MediaDevices API unavailable');
+      }
+      navigator.mediaDevices.getUserMedia({
+        video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
+        audio: false
+      }).then((stream) => {
+        mediaStream = stream;
+        cameraVideo.srcObject = stream;
+        if (cameraVideoBack) cameraVideoBack.srcObject = stream;
+        cameraVideo.hidden = false;
+        cameraVideoBack.hidden = false;
+        cameraPlaceholder.hidden = true;
+        // Enable capture only once frames are actually flowing.
+        cameraVideo.addEventListener('loadeddata', enableWhenReady, { once: true });
+        cameraVideo.addEventListener('playing', enableWhenReady, { once: true });
+        // Fallback in case loadeddata/playing don't fire.
+        setTimeout(() => { if (mediaStream === stream) enableWhenReady(); }, 1200);
+      }).catch((err) => {
+        setCameraError(cameraErrorMessage(err));
+      });
+    } catch (err) {
+      setCameraError(cameraErrorMessage(err));
+    }
+  }
+
+  function enableWhenReady() {
+    if (streamReady) return;
+    if (!cameraVideo.videoWidth || !cameraVideo.videoHeight) return;
+    streamReady = true;
+    cameraFooter.hidden = false;
+    cameraCaptureBtn.disabled = false;
+    if (scanGuide) scanGuide.hidden = false;
+    if (cameraStatus) { cameraStatus.textContent = 'Ready'; cameraStatus.classList.add('live'); }
   }
 
   function stopCamera() {
@@ -319,36 +331,67 @@
       mediaStream = null;
     }
     cameraVideo.srcObject = null;
+    if (cameraVideoBack) cameraVideoBack.srcObject = null;
     cameraVideo.hidden = true;
-    cameraPlaceholder.hidden = false;
-    cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg><p>Camera loading...</p>';
+    cameraVideoBack.hidden = true;
+    streamReady = false;
+    cameraCaptureBtn.disabled = true;
+    setCameraLoading();
     cameraFooter.hidden = true;
     cameraPreview.hidden = true;
+    if (scanGuide) scanGuide.hidden = true;
+    if (cameraStatus) { cameraStatus.textContent = 'Starting camera…'; cameraStatus.classList.remove('live'); }
+  }
+
+  function flashShutter() {
+    if (!cameraFlash || document.documentElement.getAttribute('data-reduce-motion') === 'true') return;
+    cameraFlash.hidden = false;
+    void cameraFlash.offsetWidth;
+    cameraFlash.classList.remove('flash');
+    void cameraFlash.offsetWidth;
+    cameraFlash.classList.add('flash');
+    setTimeout(() => { cameraFlash.hidden = true; cameraFlash.classList.remove('flash'); }, 400);
   }
 
   function capturePhoto() {
+    if (!streamReady || !cameraVideo.videoWidth || !cameraVideo.videoHeight) return;
+    flashShutter();
     const video = cameraVideo;
     const canvas = cameraCanvas;
     canvas.width = video.videoWidth;
     canvas.height = video.videoHeight;
     const ctx = canvas.getContext('2d');
-    ctx.drawImage(video, 0, 0);
+    ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     canvas.toBlob((blob) => {
       if (!blob) return;
       capturedBlob = blob;
       const url = URL.createObjectURL(blob);
       cameraPreviewImg.src = url;
       cameraVideo.hidden = true;
-      cameraPreview.hidden = false;
+      cameraVideoBack.hidden = true;
+      if (scanGuide) scanGuide.hidden = true;
       cameraFooter.hidden = true;
+      cameraPreview.hidden = false;
+      if (cameraStatus) { cameraStatus.textContent = 'Captured'; cameraStatus.classList.remove('live'); }
     }, 'image/jpeg', 0.92);
   }
 
   function retakePhoto() {
-    capturedBlob = null;
+    if (capturedBlob) {
+      URL.revokeObjectURL(cameraPreviewImg.src);
+      capturedBlob = null;
+    }
+    // Return to the live feed. If the stream is gone for any reason, restart it.
+    if (!mediaStream || !cameraVideo.srcObject) {
+      startCamera();
+      return;
+    }
     cameraPreview.hidden = true;
     cameraVideo.hidden = false;
+    cameraVideoBack.hidden = false;
     cameraFooter.hidden = false;
+    if (scanGuide) scanGuide.hidden = false;
+    if (cameraStatus) { cameraStatus.textContent = 'Ready'; cameraStatus.classList.add('live'); }
   }
 
   function confirmAndAddReceipt() {
@@ -411,6 +454,13 @@
     cameraCaptureBtn.addEventListener('click', capturePhoto);
     cameraRetakeBtn.addEventListener('click', retakePhoto);
     cameraConfirmBtn.addEventListener('click', confirmAndAddReceipt);
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !cameraOverlay.hidden) {
+        stopCamera();
+        cameraOverlay.hidden = true;
+      }
+    });
   }
 
   /* ---------- Mobile bottom navbar sliding pill ---------- */
@@ -471,32 +521,24 @@
     window.scrollTo(0, 0);
   }
 
-  // "Add Receipt" button in dashboard header should open the receipt view on mobile
-  const addReceiptBtn = document.querySelector('.dash-header .btn-secondary');
-  if (addReceiptBtn) {
-    addReceiptBtn.addEventListener('click', (e) => {
-      if (window.matchMedia('(max-width: 860px)').matches) {
-        e.preventDefault();
-        switchMobileView('receipt');
-        // Also update the bottom nav active state
-        const receiptNavItem = bottomNav.querySelector('.bottom-nav-item[data-nav="receipt"]');
-        if (receiptNavItem) {
-          bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
-          receiptNavItem.classList.add('active');
-          positionBottomNavPill(receiptNavItem);
-        }
-      }
-    });
-  }
-
   if (bottomNav) {
     bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => {
       item.addEventListener('click', (e) => {
-        // Allow default anchor navigation, but update active state + pill
+        // Same-page dashboard / receipts toggles are handled in JS so the
+        // receipt view is pulled up as its own screen on mobile (no hash race).
+        const nav = item.dataset.nav;
+        if (nav === 'dashboard' || nav === 'receipt') {
+          if (window.matchMedia('(max-width: 860px)').matches) e.preventDefault();
+          bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
+          item.classList.add('active');
+          positionBottomNavPill(item);
+          switchMobileView(nav);
+          return;
+        }
+        // Other pages (e.g. settings) keep default anchor/navigation.
         bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
         item.classList.add('active');
         positionBottomNavPill(item);
-        switchMobileView(item.dataset.nav);
       });
     });
 

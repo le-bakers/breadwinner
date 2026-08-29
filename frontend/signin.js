@@ -5,6 +5,8 @@
 (function () {
   'use strict';
 
+  const BW = window.BreadWinner || {};
+
   /* ---------- Google OAuth Handler ---------- */
   const GOOGLE_CLIENT_ID = "1097872808556-r9f8e34uq40s10v3hu3aaomdqi0vq6ft.apps.googleusercontent.com";
   let tokenClient = null;
@@ -52,6 +54,15 @@
         if (emailInput && userData.email) {
           emailInput.value = userData.email;
         }
+
+        // Persist the session, then redirect to the dashboard
+        BW.signIn({
+          method: 'google',
+          email: userData.email || '',
+          name: userData.name || ''
+        });
+        if (userData.name) BW.safeSet(BW.STORAGE.name, userData.name);
+        if (userData.email) BW.safeSet(BW.STORAGE.email, userData.email);
 
         // Redirect to main page after successful authentication
         window.location.href = 'home.html';
@@ -171,6 +182,7 @@
         const submitBtn = form.querySelector('button[type="submit"] .btn-text');
         if (submitBtn) submitBtn.textContent = 'Signing in…';
         setTimeout(() => {
+          BW.signIn({ method: 'email', email: email.value.trim() });
           window.location.href = 'home.html';
         }, 500);
       }

@@ -83,7 +83,7 @@
 
 /* ============================================
    Identity + Sitewide Settings + UI helpers
-   (used by profile.html and settings.html)
+   (used by home.html and settings.html)
    ============================================ */
 window.BreadWinner = window.BreadWinner || {};
 (function (BW) {
@@ -107,8 +107,26 @@ window.BreadWinner = window.BreadWinner || {};
     name: 'breadwinner_user_name',
     email: 'breadwinner_user_email',
     avatarColor: 'breadwinner_avatar_color',
-    memberSince: 'breadwinner_member_since'
+    photo: 'breadwinner_user_photo',
+    memberSince: 'breadwinner_member_since',
+    session: 'breadwinner_session'
   };
+
+  /* ---------- Session ("are you signed in?") ---------- */
+  BW.isSignedIn = function () {
+    return !!BW.safeGet(BW.STORAGE.session, '');
+  };
+  BW.signIn = function (details) {
+    return BW.safeSet(BW.STORAGE.session, JSON.stringify(Object.assign({ at: Date.now() }, details || {})));
+  };
+  BW.signOut = function () {
+    return BW.safeRemove(BW.STORAGE.session);
+  };
+  // When signed in, every "Sign In" / "Start Free" link points to the dashboard
+  // instead of the sign-in page (navbars, mobile menus, footers on all pages).
+  if (BW.isSignedIn()) {
+    document.querySelectorAll('a[href="signin.html"]').forEach((a) => { a.setAttribute('href', 'home.html'); });
+  }
   /* ---------- Sitewide Settings (persisted under breadwinner_settings) ---------- */
   const SETTINGS_KEY = 'breadwinner_settings';
   const SETTINGS_DEFAULTS = {
@@ -320,9 +338,17 @@ window.BreadWinner = window.BreadWinner || {};
   // profile pill on home/profile/settings and the large profile preview.
   (function applyAvatarIdentity() {
     const color = BW.safeGet(BW.STORAGE.avatarColor, 'green');
-    const bg = avatarGradient(color);
+        const bg = avatarGradient(color);
+    const photo = BW.safeGet(BW.STORAGE.photo, '');
     document.querySelectorAll('.avatar-circle, .avatar-xl').forEach((el) => {
-      el.style.background = bg;
+      if (photo) {
+        el.classList.add('avatar-photo');
+        el.style.background = 'url("' + photo + '") center / cover no-repeat';
+        el.textContent = '';
+      } else {
+        el.classList.remove('avatar-photo');
+        el.style.background = bg;
+      }
     });
 
     // Initials from the saved name, so the pill letters match the profile
@@ -333,9 +359,9 @@ window.BreadWinner = window.BreadWinner || {};
       if (parts.length === 1) return parts[0].charAt(0).toUpperCase();
       return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase();
     };
-    const initials = getInitials(BW.safeGet(BW.STORAGE.name, ''));
+        const initials = getInitials(BW.safeGet(BW.STORAGE.name, ''));
     document.querySelectorAll('.avatar-circle, .avatar-xl').forEach((el) => {
-      el.textContent = initials;
+      if (!photo) el.textContent = initials;
     });
   })();
 

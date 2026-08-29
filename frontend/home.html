@@ -28,11 +28,10 @@
     <nav class="nav-links" aria-label="Dashboard">
       <a href="home.html" class="active">Dashboard</a>
       <a href="home.html#receipts">Receipts</a>
-      <a href="profile.html">Profile</a>
       <a href="settings.html">Settings</a>
     </nav>
     <div class="nav-actions dash-actions">
-      <a class="profile-pill" href="profile.html" aria-label="Go to your profile">
+      <a class="profile-pill" href="settings.html" aria-label="Go to your profile and settings">
         <span class="avatar-circle">JM</span>
       </a>
     </div>
@@ -43,7 +42,6 @@
   <div class="mobile-menu" id="mobileMenu">
     <a href="home.html">Dashboard</a>
     <a href="home.html#receipts">Receipts</a>
-    <a href="profile.html">Profile</a>
     <a href="settings.html">Settings</a>
   </div>
 </header>
@@ -59,10 +57,6 @@
           <h1>Welcome back, Jordan!</h1>
           <p>Here's how your gluten-free spending looks this month.</p>
         </div>
-        <a href="#receipts" class="btn btn-secondary">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-          Add Receipt
-        </a>
       </section>
 
       <!-- ============ STATS ============ -->
@@ -72,9 +66,8 @@
             <span class="stat-icon" style="background:#DCFCE7">
               <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
             </span>
-            <span class="stat-trend up">+12%</span>
           </div>
-          <p class="stat-value" data-counter data-target="47" data-prefix="">0</p>
+          <p class="stat-value" data-counter data-target="0" data-prefix="">0</p>
           <p class="stat-label">Receipts Scanned</p>
         </div>
 
@@ -83,9 +76,8 @@
             <span class="stat-icon" style="background:#DCFCE7">
               <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#16A34A" stroke-width="1.8"/><path d="M8.5 12.5l2.5 2.5l5-5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </span>
-            <span class="stat-trend up">+8%</span>
           </div>
-          <p class="stat-value" data-counter data-target="312" data-prefix="">0</p>
+          <p class="stat-value" data-counter data-target="0" data-prefix="">0</p>
           <p class="stat-label">Gluten-Free Items</p>
         </div>
 
@@ -94,9 +86,8 @@
             <span class="stat-icon" style="background:#FEF3F2">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke="#DC2626" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#DC2626" stroke-width="1.8"/></svg>
             </span>
-            <span class="stat-trend down">-4%</span>
           </div>
-          <p class="stat-value" data-counter data-target="184.32" data-prefix="$" data-decimals="2">$0.00</p>
+          <p class="stat-value" data-counter data-target="0" data-prefix="$" data-decimals="2">$0.00</p>
           <p class="stat-label">Total Overcharge</p>
         </div>
 
@@ -105,9 +96,8 @@
             <span class="stat-icon" style="background:#EFF6FF">
               <svg viewBox="0 0 24 24" fill="none"><path d="M12 3V21M7 7H15.5C17 7 18 8 18 9.5C18 11 17 12 15.5 12H8.5C7 12 6 13 6 14.5C6 16 7 17 8.5 17H17" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round"/></svg>
             </span>
-            <span class="stat-trend up">+2%</span>
           </div>
-          <p class="stat-value" data-counter data-target="3.92" data-prefix="$" data-decimals="2">$0.00</p>
+          <p class="stat-value" data-counter data-target="0" data-prefix="$" data-decimals="2">$0.00</p>
           <p class="stat-label">Average Overcharge</p>
         </div>
       </section>
@@ -183,9 +173,6 @@
   <a href="#receipts" class="bottom-nav-item" data-nav="receipt" aria-label="Receipts">
     <svg viewBox="0 0 24 24" fill="none"><path d="M6 2h12v20l-2-1.5L14 22l-2-1.5L10 22l-2-1.5L6 22V2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 7h6M9 11h6M9 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
   </a>
-  <a href="profile.html" class="bottom-nav-item" data-nav="profile" aria-label="Profile">
-    <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-  </a>
   <a href="settings.html" class="bottom-nav-item" data-nav="settings" aria-label="Settings">
     <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 11-2.83 2.83l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 11-4 0v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 11-2.83-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 110-4h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 112.83-2.83l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 114 0v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 112.83 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 110 4h-.09a1.65 1.65 0 00-1.51 1z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
   </a>
@@ -198,32 +185,52 @@
       <button class="camera-close" id="cameraClose" aria-label="Close camera">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
       </button>
-      <span class="camera-title">Take a Photo</span>
+      <span class="camera-title">Scan Receipt</span>
+      <span class="camera-status" id="cameraStatus" role="status" aria-live="polite">Starting camera…</span>
     </div>
+
     <div class="camera-viewport" id="cameraViewport">
-      <video id="cameraVideo" autoplay playsinline></video>
+      <video id="cameraVideoBack" autoplay playsinline muted aria-hidden="true"></video>
+      <video id="cameraVideo" autoplay playsinline muted></video>
       <canvas id="cameraCanvas" hidden></canvas>
+
+      <!-- Scanner guide (capture state) -->
+      <div class="scan-guide" id="scanGuide" aria-hidden="true">
+        <svg viewBox="0 0 200 260" class="scan-frame" preserveAspectRatio="none">
+          <path d="M2 40a38 38 0 0138-38M160 2a38 38 0 0138 38M198 220a38 38 0 01-38 38M40 258a38 38 0 01-38-38" fill="none" stroke="rgba(255,255,255,0.85)" stroke-width="4" stroke-linecap="round"/>
+        </svg>
+        <p class="scan-hint"><span class="scan-pulse"></span>Hold steady to scan</p>
+      </div>
+
       <div class="camera-placeholder" id="cameraPlaceholder">
         <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg>
-        <p>Camera loading...</p>
+        <p>Camera loading…</p>
       </div>
+
+      <!-- Flash overlay for shutter feedback -->
+      <div class="camera-flash" id="cameraFlash" hidden></div>
     </div>
+
     <div class="camera-footer" id="cameraFooter">
-      <button class="btn btn-primary btn-lg" id="cameraCaptureBtn">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#fff" stroke-width="2.4"/><circle cx="12" cy="12" r="4" fill="#fff"/></svg>
-        Capture
+      <p class="camera-caption">Align the receipt inside the frame</p>
+      <button class="shutter-btn" id="cameraCaptureBtn" aria-label="Capture photo" disabled>
+        <span class="shutter-inner"></span>
       </button>
+      <p class="camera-caption-end">Scan</p>
     </div>
+
     <div class="camera-preview" id="cameraPreview" hidden>
-      <img id="cameraPreviewImg" alt="Captured receipt preview">
+      <div class="camera-stage">
+        <img id="cameraPreviewImg" alt="Captured receipt preview">
+      </div>
       <div class="camera-preview-actions">
-        <button class="btn btn-secondary" id="cameraRetakeBtn">
+        <button class="btn btn-secondary" id="cameraRetakeBtn" type="button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
           Retake
         </button>
-        <button class="btn btn-primary" id="cameraConfirmBtn">
+        <button class="btn btn-primary" id="cameraConfirmBtn" type="button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Add Receipt
+          Use Photo
         </button>
       </div>
     </div>
