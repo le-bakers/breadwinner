@@ -199,6 +199,15 @@ input, select { font-family: inherit; }
 }
 .logo-mark svg { width: 18px; height: 18px; }
 
+.navbar .logo,
+.navbar .logo img,
+.navbar .logo:hover,
+.navbar .logo:hover img {
+  transform: none !important;
+  transition: none !important;
+  filter: none !important;
+}
+
 .nav-links {
   display: flex;
   align-items: center;
