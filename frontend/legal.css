@@ -138,7 +138,7 @@
   padding: 18px 20px;
   border-radius: var(--radius-md);
   background: var(--accent-light);
-  border: 1px solid rgba(34,197,94,0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.25);
   margin: 20px 0;
 }
 .legal-callout svg { flex-shrink: 0; margin-top: 2px; }

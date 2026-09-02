@@ -120,7 +120,7 @@ body { min-height: 100vh; }
 .field-group input:focus {
   outline: none;
   border-color: var(--primary);
-  box-shadow: 0 0 0 4px rgba(34,197,94,0.12);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.12);
 }
 .field-group label {
   position: absolute;

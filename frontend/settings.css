@@ -1,0 +1,94 @@
+/* ============================================
+   BreadWinner — Settings page styles
+   (sits on top of shared.css)
+   ============================================ */
+
+/* Keep accent swatches from wrapping awkwardly on narrow screens */
+.accent-swatches { gap: 12px; }
+
+/* Settings controls take a comfortably wide tap target on touch devices */
+@media (max-width: 560px) {
+  .form-row-control .select { width: 100%; }
+  .segmented { flex-wrap: wrap; }
+}
+
+/* ============================================
+   Profile styles (merged from profile.css)
+   ============================================ */
+
+.profile-summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+.profile-summary-text {
+  min-width: 0;
+  flex: 1;
+}
+.profile-summary-text h2 {
+  font-size: 21px;
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+.profile-summary-text p {
+  color: var(--text-secondary);
+  font-size: 14.5px;
+  margin-top: 2px;
+  word-break: break-word;
+}
+.profile-summary .btn { margin-left: auto; }
+
+/* ---------- Personal information field padding ---------- */
+/* The shared floating-label inputs use a heavy top / thin bottom padding
+   (18/8), which makes the name + email text hug the bottom edge of the
+   field. Balance it out for the profile form only (onboarding keeps its own). */
+#profileForm .field-row-2 {
+  gap: 10px; /* pull the name + email boxes closer together (shared default is 16px) */
+}
+#profileForm .field-group input {
+  /* Extra bottom padding pushes the typed value lower, widening the gap
+     between the floated label ("Full name") and the entered text. */
+  padding: 22px 16px 16px;
+}
+#profileForm .field-group label {
+  top: 21px; /* matches the new top padding so the resting label aligns with the text */
+}
+#profileForm .field-group input:focus + label,
+#profileForm .field-group input:not(:placeholder-shown) + label {
+  top: 8px;
+}
+
+@media (max-width: 560px) {
+  .profile-summary { flex-direction: column; align-items: flex-start; }
+  .profile-summary .btn { margin-left: 0; }
+}
+/* Save button is greyed out until the profile has actually been edited */
+#saveProfileBtn:disabled {
+  background: var(--border);
+  color: var(--text-secondary);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+#saveProfileBtn:disabled:hover {
+  background: var(--border);
+  transform: none;
+}
+/* ---------- Settings: wave ripple from Appearance controls ---------- */
+.settings-wave {
+  position: fixed;
+  z-index: 9999;
+  border-radius: 50%;
+  border: 2px solid var(--primary);
+  pointer-events: none;
+  opacity: 0;
+  transform: translate(-50%, -50%) scale(0);
+  animation: settingsWave 0.9s var(--ease-out) forwards;
+}
+.settings-wave.second { animation-delay: 0.12s; }
+@keyframes settingsWave {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.6; }
+  70% { opacity: 0.25; }
+  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+}

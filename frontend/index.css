@@ -2,6 +2,10 @@
    BreadWinner — Landing Page Styles
    ============================================ */
 
+/* Hero illustration shadow follows the chosen accent color. */
+#cardShadowGrad stop { stop-color: var(--primary); }
+
+
 .eyebrow {
   font-size: clamp(12px, 0.8vw, 17px);
   font-weight: 700;
@@ -62,15 +66,6 @@
   height: auto;
   display: block;
 }
-.hero-title {
-  font-size: clamp(44px, 6vw, 68px);
-  font-weight: 800;
-  line-height: 1;
-  background: linear-gradient(135deg, var(--text) 40%, var(--primary-hover));
-  -webkit-background-clip: text;
-  background-clip: text;
-  color: transparent;
-}
 .hero-subtitle {
   font-family: var(--font-display);
   font-size: clamp(18px, 2.1vw, 40px);
@@ -90,19 +85,6 @@
   padding: clamp(13px, 1vw, 18px) clamp(24px, 2.2vw, 34px);
   font-size: clamp(14px, 1vw, 18px);
 }
-
-.hero-trust { display: flex; align-items: center; gap: 12px; margin-top: 36px; }
-.avatar-stack { display: flex; }
-.avatar-stack span {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  border: 2px solid var(--bg);
-  margin-left: -8px;
-  background: linear-gradient(135deg, var(--primary), var(--accent-light));
-}
-.avatar-stack span:first-child { margin-left: 0; }
-.hero-trust p { font-size: 13.5px; color: var(--text-secondary); }
-.hero-trust strong { color: var(--text); }
 
 .hero-visual { position: relative; display: flex; justify-content: center; }
 .hero-card { position: relative; max-width: 380px; width: 100%; }
@@ -215,12 +197,6 @@
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
   padding: 30px 24px;
-  transition: transform 0.35s var(--ease-out), box-shadow 0.35s var(--ease-out), border-color 0.35s;
-}
-.feature-card:hover {
-  transform: translateY(-6px);
-  box-shadow: var(--shadow-lg);
-  border-color: transparent;
 }
 .feature-icon {
   width: 48px; height: 48px;
@@ -239,7 +215,7 @@
 /* ---------- CTA ---------- */
 .cta-section { padding: 0 0 110px; }
 .cta-card {
-  background: linear-gradient(135deg, #14532D, #16A34A 55%, #22C55E);
+  background: linear-gradient(135deg, var(--accent-deep), var(--primary-hover) 55%, var(--primary));
   border-radius: 28px;
   padding: 72px 40px;
   text-align: center;
