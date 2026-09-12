@@ -116,7 +116,7 @@
     if (!list.length) {
       const empty = document.createElement('div');
       empty.className = 'receipt-empty';
-      empty.textContent = 'No receipts yet â€” tap the + button to upload your first receipt.';
+      empty.textContent = 'No receipts yet! Click the green + button to upload or take a photo of a receipt.';
       table.appendChild(empty);
       return;
     }

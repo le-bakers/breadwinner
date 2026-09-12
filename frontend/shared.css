@@ -845,10 +845,8 @@ input, select { font-family: inherit; }
   to   { transform: translateY(0); opacity: 1; }
 }
 
-/* ---------- Cards: staggered entrance + hover lift ---------- */
+/* ---------- Cards: staggered entrance ---------- */
 .section-card, .danger-card {
-  transition: transform 0.25s var(--ease-out), box-shadow 0.25s var(--ease-out),
-              border-color 0.25s var(--ease-out);
   animation: cardIn 0.55s var(--ease-out) backwards;
 }
 .section-card:nth-of-type(1) { animation-delay: 0.05s; }
@@ -862,15 +860,9 @@ input, select { font-family: inherit; }
   from { transform: translateY(18px); opacity: 0; }
   to   { transform: translateY(0); opacity: 1; }
 }
-@media (hover: hover) {
-  .danger-card:hover { box-shadow: 0 8px 24px -10px rgba(220, 38, 38, 0.25); }
-}
 
-/* ---------- Form rows: soft hover highlight ---------- */
-.form-row { transition: background 0.2s var(--ease-out); border-radius: 10px; }
-@media (hover: hover) {
-  .form-row:hover { background: rgba(var(--accent-rgb), 0.04); }
-}
+/* ---------- Form rows ---------- */
+.form-row { border-radius: 10px; }
 
 /* ---------- Buttons: springy press + arrow nudge for primary CTAs ---------- */
 .btn { transition: transform 0.18s var(--ease-out), box-shadow 0.2s var(--ease-out), background 0.2s var(--ease-out), color 0.2s var(--ease-out); }

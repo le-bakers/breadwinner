@@ -48,8 +48,8 @@
 
     <div class="account-grid">
 
-      <!-- ============ PROFILE SUMMARY + AVATAR (merged from profile.html) ============ -->
-      <section class="section-card">
+      <!-- ============ PROFILE SUMMARY + EDITABLE PERSONAL INFO (merged) ============ -->
+      <section class="section-card" id="profileCard">
         <div class="profile-summary">
           <div class="avatar-wrap">
             <span class="avatar-xl" id="avatarPreview" aria-hidden="true">JM</span>
@@ -68,50 +68,32 @@
           </button>
         </div>
 
-        <div id="avatarColorSection">
-          <label class="swatch-label">Avatar color</label>
-          <div class="avatar-swatches" id="avatarSwatches" role="group" aria-label="Avatar color">
-            <button type="button" class="avatar-swatch active" data-color="green" data-bg="linear-gradient(135deg,#22C55E,#16A34A)" aria-label="Green"></button>
-            <button type="button" class="avatar-swatch" data-color="blue" data-bg="linear-gradient(135deg,#3B82F6,#2563EB)" aria-label="Blue"></button>
-            <button type="button" class="avatar-swatch" data-color="purple" data-bg="linear-gradient(135deg,#A855F7,#9333EA)" aria-label="Purple"></button>
-            <button type="button" class="avatar-swatch" data-color="orange" data-bg="linear-gradient(135deg,#F97316,#EA580C)" aria-label="Orange"></button>
-            <button type="button" class="avatar-swatch" data-color="pink" data-bg="linear-gradient(135deg,#EC4899,#DB2777)" aria-label="Pink"></button>
-          </div>
-        </div>
         <button type="button" class="remove-photo-btn" id="removePhotoBtn" hidden>Remove photo</button>
-      </section>
-      <!-- ============ PERSONAL INFORMATION ============ -->
-      <form class="section-card" id="profileForm" novalidate>
-        <div class="section-card-header">
-          <span class="section-icon">
-            <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="currentColor" stroke-width="1.8"/><path d="M4 21c0-4 3.6-6.5 8-6.5s8 2.5 8 6.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
-          </span>
-          <div>
-            <h2>Personal Information</h2>
-            <p>Click "Edit Profile" above to make changes.</p>
-          </div>
-        </div>
 
-        <div class="field-row-2">
-          <div class="field-group">
-            <input type="text" id="fullName" name="fullName" placeholder=" " autocomplete="name" disabled>
-            <label for="fullName">Full name</label>
-            <p class="field-error" id="fullName-error" role="alert"></p>
+        <form class="profile-edit" id="profileForm" novalidate>
+          <div class="profile-edit-body">
+            <div class="field-row-2">
+              <div class="field-group">
+                <input type="text" id="fullName" name="fullName" placeholder=" " autocomplete="name" disabled>
+                <label for="fullName">Full name</label>
+                <p class="field-error" id="fullName-error" role="alert"></p>
+              </div>
+              <div class="field-group">
+                <input type="email" id="email" name="email" placeholder=" " autocomplete="email" disabled>
+                <label for="email">Email address</label>
+                <p class="field-error" id="email-error" role="alert"></p>
+              </div>
+            </div>
+            <div class="form-actions" id="formActions">
+              <button type="button" class="btn btn-secondary" id="cancelProfileBtn">Cancel</button>
+              <button type="submit" class="btn btn-primary" id="saveProfileBtn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Save Changes
+              </button>
+            </div>
           </div>
-          <div class="field-group">
-            <input type="email" id="email" name="email" placeholder=" " autocomplete="email" disabled>
-            <label for="email">Email address</label>
-            <p class="field-error" id="email-error" role="alert"></p>
-          </div>
-        </div>
-        <div class="form-actions" id="formActions" hidden>
-          <button type="button" class="btn btn-secondary" id="cancelProfileBtn">Cancel</button>
-          <button type="submit" class="btn btn-primary" id="saveProfileBtn">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            Save Changes
-          </button>
-        </div>
-      </form>
+        </form>
+      </section>
 
       <!-- ============ APPEARANCE ============ -->
       <section class="section-card">
@@ -148,22 +130,7 @@
           </div>
         </div>
 
-        <div class="form-row">
-          <div class="form-row-text">
-            <strong>Accent color</strong>
-            <span>Recolors buttons and highlights across the app. Default matches the BreadWinner brand green.</span>
-          </div>
-          <div class="form-row-control">
-            <div class="accent-swatches" id="accentSwatches" role="group" aria-label="Accent color">
-              <button type="button" class="avatar-swatch active" data-accent="green" data-bg="linear-gradient(135deg,#22C55E,#16A34A)" aria-label="Green (default)"></button>
-              <button type="button" class="avatar-swatch" data-accent="blue" data-bg="linear-gradient(135deg,#3B82F6,#2563EB)" aria-label="Blue"></button>
-              <button type="button" class="avatar-swatch" data-accent="purple" data-bg="linear-gradient(135deg,#A855F7,#9333EA)" aria-label="Purple"></button>
-              <button type="button" class="avatar-swatch" data-accent="orange" data-bg="linear-gradient(135deg,#F97316,#EA580C)" aria-label="Orange"></button>
-              <button type="button" class="avatar-swatch" data-accent="pink" data-bg="linear-gradient(135deg,#EC4899,#DB2777)" aria-label="Pink"></button>
-            </div>
-          </div>
-        </div>
-      </section>
+        </section>
 
       <!-- ============ ACCESSIBILITY ============ -->
       <section class="section-card">
@@ -285,15 +252,24 @@
 
       <!-- ============ DANGER ZONE ============ -->
       <div class="danger-card">
-        <h2>Reset settings</h2>
-        <p>Restore appearance, notifications, and preferences to their defaults. Your name and email are kept.</p>
+        <h2>Danger zone</h2>
+        <p>Actions here permanently reset preferences or delete your account.</p>
         <div class="form-row" style="margin-top:14px;">
           <div class="form-row-text">
             <strong>Reset to defaults</strong>
-            <span>Theme, accent color, currency, and toggles go back to their initial values.</span>
+            <span>Theme, currency, and toggles go back to their initial values.</span>
           </div>
           <div class="form-row-control">
             <button type="button" class="btn btn-secondary btn-sm" id="resetSettingsBtn">Reset Settings</button>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-row-text">
+            <strong>Delete account</strong>
+            <span>Permanently delete your account and all data stored on this device. This can't be undone.</span>
+          </div>
+          <div class="form-row-control">
+            <button type="button" class="btn btn-danger btn-sm" id="deleteAccountBtn">Delete Account</button>
           </div>
         </div>
       </div>
@@ -324,7 +300,7 @@
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
     </span>
     <h3>Reset settings to defaults?</h3>
-    <p>Theme, accent color, notifications, currency, date format, and reduce-motion go back to their defaults. Your name and email are not affected.</p>
+    <p>Theme, notifications, currency, date format, and reduce-motion go back to their defaults. Your name and email are not affected.</p>
     <div class="modal-actions">
       <button type="button" class="btn btn-secondary" id="resetSettingsCancel">Cancel</button>
       <button type="button" class="btn btn-primary" id="resetSettingsConfirm">Reset Settings</button>
@@ -339,10 +315,25 @@
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
     </span>
     <h3>Clear all local data?</h3>
-    <p>This removes your name, email, avatar color, and preferences from this device. Your dashboard will reset to its default state. This can't be undone.</p>
+    <p>This removes your name, email, and preferences from this device. Your dashboard will reset to its default state. This can't be undone.</p>
     <div class="modal-actions">
       <button type="button" class="btn btn-secondary" id="clearDataCancel">Cancel</button>
       <button type="button" class="btn btn-danger" id="clearDataConfirm">Clear Data</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM DELETE ACCOUNT MODAL ============ -->
+<div class="modal-overlay" id="deleteAccountModal" hidden>
+  <div class="modal-card">
+    <span class="modal-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </span>
+    <h3>Delete your account?</h3>
+    <p>This permanently removes your account and all data stored on this device. You will need to sign up again to use BreadWinner. This can't be undone.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="deleteAccountCancel">Cancel</button>
+      <button type="button" class="btn btn-danger" id="deleteAccountConfirm">Delete Account</button>
     </div>
   </div>
 </div>
