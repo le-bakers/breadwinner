@@ -929,6 +929,19 @@ input, select { font-family: inherit; }
   .logo:hover img { transform: rotate(-3deg) scale(1.04); }
 }
 
+/* Disable logo hover tilt for the footer logo (index.html) and the sign-in top bar */
+.footer .logo,
+.footer .logo img,
+.footer .logo:hover,
+.footer .logo:hover img,
+.signin-panel .logo,
+.signin-panel .logo img,
+.signin-panel .logo:hover,
+.signin-panel .logo:hover img {
+  transform: none !important;
+  transition: none !important;
+}
+
 /* ---------- Nav links: animated underline-ish press ---------- */
 .nav-links a { transition: color 0.2s var(--ease-out), background 0.2s var(--ease-out), transform 0.15s var(--ease-out); }
 .nav-links a:active { transform: scale(0.96); }
