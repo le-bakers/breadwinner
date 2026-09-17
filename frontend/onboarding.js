@@ -192,7 +192,7 @@
       let age = today.getFullYear() - dobDate.getFullYear();
       const monthDiff = today.getMonth() - dobDate.getMonth();
       if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate())) age--;
-      if (age < 13) return showError(dob, errorEl, 'You must be at least 13 years old.');
+      if (age < 18) return showError(dob, errorEl, 'You must be at least 18 years old.');
       if (dobDate > today) return showError(dob, errorEl, 'Date of birth cannot be in the future.');
       return showError(dob, errorEl, '');
     }
