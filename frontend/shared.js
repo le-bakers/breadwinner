@@ -129,7 +129,7 @@ window.BreadWinner = window.BreadWinner || {};
     // Because pages now live in their own subfolders, resolve the home page
     // relative to each existing sign-in link's current (relative) path.
     document.querySelectorAll('a[href$="signin.html"]').forEach((a) => {
-      a.setAttribute('href', a.getAttribute('href').replace(/sign in\/signin\.html$/, '../home/home.html'));
+      a.setAttribute('href', a.getAttribute('href').replace(/sign in\/signin\.html$/, 'home/home.html'));
     });
   }
   /* ---------- Sitewide Settings (persisted under breadwinner_settings) ---------- */
