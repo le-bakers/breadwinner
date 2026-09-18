@@ -25,7 +25,7 @@
 .contact-details > p { color: var(--text-secondary); line-height: 1.75; margin-top: 16px; max-width: 430px; }
 .contact-detail-list { display: grid; gap: 14px; margin-top: 30px; }
 .contact-detail { display: flex; align-items: center; gap: 14px; color: var(--text); }
-.contact-detail:hover strong { color: var(--primary-hover); }
+a.contact-detail:hover strong { color: var(--primary-hover); }
 .contact-icon { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; border-radius: 12px; color: var(--primary-hover); background: var(--accent-light); }
 .contact-icon svg { width: 21px; height: 21px; }
 .contact-detail strong, .contact-detail small { display: block; }
