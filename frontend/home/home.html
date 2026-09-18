@@ -162,7 +162,7 @@
 </div>
 
 <!-- Hidden file input for upload -->
-<input type="file" id="fileInput" accept="image/*" style="display:none">
+<input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none">
 
 <!-- ============ MOBILE BOTTOM NAVBAR ============ -->
 <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile navigation">
@@ -183,7 +183,7 @@
   <div class="camera-modal">
     <div class="camera-header">
       <button class="camera-close" id="cameraClose" aria-label="Close camera">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
       </button>
       <span class="camera-title">Scan Receipt</span>
       <span class="camera-status" id="cameraStatus" role="status" aria-live="polite">Starting camera…</span>
@@ -230,7 +230,7 @@
         </button>
         <button class="btn btn-primary" id="cameraConfirmBtn" type="button">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-          Use Photo
+          Confirm &amp; Add Receipt
         </button>
       </div>
     </div>
@@ -269,6 +269,6 @@
 </template>
 
 <script src="../shared.js"></script>
-<script src="home.js"></script>
+<script src="home.js?v=2"></script>
 </body>
 </html>

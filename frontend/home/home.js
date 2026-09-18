@@ -51,6 +51,9 @@
     frag.querySelector('.cell-date').textContent = dateFormatter.format(new Date(receipt.date));
     frag.querySelector('.cell-items').textContent = receipt.items;
     frag.querySelector('.cell-gf').textContent = receipt.gfItems;
+    if (receipt.imageUrl) {
+      frag.querySelector('.expand-receipt-img').src = receipt.imageUrl;
+    }
 
     const overchargeCell = frag.querySelector('.cell-overcharge');
     overchargeCell.textContent = receipt.overcharge > 0 ? money(receipt.overcharge) : 'â€”';
@@ -249,23 +252,34 @@
   let mediaStream = null;
   let capturedBlob = null;
   let streamReady = false;
+  let previewUrl = null;
+  let cameraRequestId = 0;
 
   function setCameraLoading() {
     cameraPlaceholder.hidden = false;
-    cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg><p>Camera loading...</p>';
+    cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2-2V8a2 2 0 00-2-2h-4l-2-3h-6L7 6H3a2 2 0 00-2 2v11a2 2 0 002 2h16a2 2 0 002-2Z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg><p>Requesting camera access...</p>';
+    if (cameraStatus) { cameraStatus.textContent = 'Requesting access…'; cameraStatus.classList.remove('live'); }
   }
 
   function setCameraError(message) {
     cameraVideo.hidden = true;
+    cameraVideoBack.hidden = true;
     cameraFooter.hidden = true;
     cameraPreview.hidden = true;
     cameraPlaceholder.hidden = false;
     cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       + '<p class="camera-error-title">Camera unavailable</p>'
       + '<p class="camera-error-msg">' + message + '</p>'
-      + '<button type="button" class="btn btn-primary camera-retry">Try Again</button>';
+      + '<div class="camera-error-actions"><button type="button" class="btn btn-secondary camera-fallback">Use Upload Image</button><button type="button" class="btn btn-primary camera-retry">Try Again</button></div>';
     const retryBtn = cameraPlaceholder.querySelector('.camera-retry');
     if (retryBtn) retryBtn.addEventListener('click', (e) => { e.stopPropagation(); startCamera(); });
+    const fallbackBtn = cameraPlaceholder.querySelector('.camera-fallback');
+    if (fallbackBtn) fallbackBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      closeCamera();
+      if (fileInput) fileInput.click();
+    });
+    if (cameraStatus) { cameraStatus.textContent = 'Unavailable'; cameraStatus.classList.remove('live'); }
   }
 
   function cameraErrorMessage(err) {
@@ -278,39 +292,52 @@
     if (err && err.name === 'NotReadableError') {
       return 'Your camera is already in use by another app. Close it and try again.';
     }
-    return 'This browser canâ€™t access the camera here. Serve the app over HTTPS (or localhost) and make sure camera permissions are allowed.';
+    return 'This browser cannot access the camera here. Use HTTPS (or localhost) and allow camera permissions.';
   }
 
-  function startCamera() {
+  function stopMediaStream() {
+    if (!mediaStream) return;
+    mediaStream.getTracks().forEach((track) => track.stop());
+    mediaStream = null;
+  }
+
+  async function startCamera() {
+    const requestId = ++cameraRequestId;
+    stopMediaStream();
     setCameraLoading();
     cameraFooter.hidden = true;
     cameraPreview.hidden = true;
     if (scanGuide) scanGuide.hidden = true;
     cameraCaptureBtn.disabled = true;
+    cameraConfirmBtn.disabled = false;
     streamReady = false;
     try {
       if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
-        throw new Error('MediaDevices API unavailable');
+        const error = new Error('MediaDevices API unavailable');
+        error.name = 'NotSupportedError';
+        throw error;
       }
-      navigator.mediaDevices.getUserMedia({
+      const stream = await navigator.mediaDevices.getUserMedia({
         video: { facingMode: 'environment', width: { ideal: 1920 }, height: { ideal: 1080 } },
         audio: false
-      }).then((stream) => {
-        mediaStream = stream;
-        cameraVideo.srcObject = stream;
-        if (cameraVideoBack) cameraVideoBack.srcObject = stream;
-        cameraVideo.hidden = false;
-        cameraVideoBack.hidden = false;
-        cameraPlaceholder.hidden = true;
-        // Enable capture only once frames are actually flowing.
-        cameraVideo.addEventListener('loadeddata', enableWhenReady, { once: true });
-        cameraVideo.addEventListener('playing', enableWhenReady, { once: true });
-        // Fallback in case loadeddata/playing don't fire.
-        setTimeout(() => { if (mediaStream === stream) enableWhenReady(); }, 1200);
-      }).catch((err) => {
-        setCameraError(cameraErrorMessage(err));
       });
+      if (requestId !== cameraRequestId || cameraOverlay.hidden) {
+        stream.getTracks().forEach((track) => track.stop());
+        return;
+      }
+      mediaStream = stream;
+      cameraVideo.srcObject = stream;
+      cameraVideoBack.srcObject = stream;
+      cameraVideo.hidden = false;
+      cameraVideoBack.hidden = false;
+      cameraPlaceholder.hidden = true;
+      cameraVideo.addEventListener('loadedmetadata', enableWhenReady, { once: true });
+      cameraVideo.addEventListener('playing', enableWhenReady, { once: true });
+      await cameraVideo.play().catch(() => {});
+      setTimeout(() => { if (mediaStream === stream) enableWhenReady(); }, 1200);
     } catch (err) {
+      if (requestId !== cameraRequestId || cameraOverlay.hidden) return;
+      stopMediaStream();
       setCameraError(cameraErrorMessage(err));
     }
   }
@@ -326,19 +353,23 @@
   }
 
   function stopCamera() {
-    if (mediaStream) {
-      mediaStream.getTracks().forEach(track => track.stop());
-      mediaStream = null;
-    }
+    cameraRequestId += 1;
+    stopMediaStream();
     cameraVideo.srcObject = null;
     if (cameraVideoBack) cameraVideoBack.srcObject = null;
     cameraVideo.hidden = true;
     cameraVideoBack.hidden = true;
     streamReady = false;
     cameraCaptureBtn.disabled = true;
+    cameraConfirmBtn.disabled = false;
     setCameraLoading();
     cameraFooter.hidden = true;
     cameraPreview.hidden = true;
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+      previewUrl = null;
+    }
+    capturedBlob = null;
     if (scanGuide) scanGuide.hidden = true;
     if (cameraStatus) { cameraStatus.textContent = 'Starting camera…'; cameraStatus.classList.remove('live'); }
   }
@@ -365,8 +396,9 @@
     canvas.toBlob((blob) => {
       if (!blob) return;
       capturedBlob = blob;
-      const url = URL.createObjectURL(blob);
-      cameraPreviewImg.src = url;
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+      previewUrl = URL.createObjectURL(blob);
+      cameraPreviewImg.src = previewUrl;
       cameraVideo.hidden = true;
       cameraVideoBack.hidden = true;
       if (scanGuide) scanGuide.hidden = true;
@@ -377,10 +409,8 @@
   }
 
   function retakePhoto() {
-    if (capturedBlob) {
-      URL.revokeObjectURL(cameraPreviewImg.src);
-      capturedBlob = null;
-    }
+    capturedBlob = null;
+    if (previewUrl) { URL.revokeObjectURL(previewUrl); previewUrl = null; }
     // Return to the live feed. If the stream is gone for any reason, restart it.
     if (!mediaStream || !cameraVideo.srcObject) {
       startCamera();
@@ -394,13 +424,30 @@
     if (cameraStatus) { cameraStatus.textContent = 'Ready'; cameraStatus.classList.add('live'); }
   }
 
-  function confirmAndAddReceipt() {
+  function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.addEventListener('load', () => resolve(reader.result));
+      reader.addEventListener('error', reject);
+      reader.readAsDataURL(blob);
+    });
+  }
+
+  async function confirmAndAddReceipt() {
     if (!capturedBlob) return;
+    cameraConfirmBtn.disabled = true;
 
     // Create a new receipt entry
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
-    const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+    let imageUrl;
+    try {
+      imageUrl = await blobToDataUrl(capturedBlob);
+    } catch (error) {
+      cameraConfirmBtn.disabled = false;
+      if (cameraStatus) cameraStatus.textContent = 'Could not save photo';
+      return;
+    }
     const storeName = 'Captured Receipt';
 
     const newReceipt = {
@@ -410,7 +457,8 @@
       gfItems: 0,
       overcharge: 0,
       status: 'review',
-      lines: []
+      lines: [],
+      imageUrl
     };
 
     // Add to beginning of RECEIPTS
@@ -419,9 +467,19 @@
     // Re-render the table
     applyFilters();
 
-    // Close camera
-    stopCamera();
-    cameraOverlay.hidden = true;
+    // Close camera and release the page lock.
+    closeCamera();
+
+    // Show the newly added receipt immediately on small screens.
+    if (window.matchMedia('(max-width: 860px)').matches) {
+      switchMobileView('receipt');
+      const receiptItem = bottomNav && bottomNav.querySelector('[data-nav="receipt"]');
+      if (receiptItem) {
+        bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => item.classList.remove('active'));
+        receiptItem.classList.add('active');
+        positionBottomNavPill(receiptItem);
+      }
+    }
 
     // Brief success feedback
     const fab = document.getElementById('fabUpload');
@@ -431,23 +489,28 @@
     capturedBlob = null;
   }
 
+  function closeCamera() {
+    stopCamera();
+    cameraOverlay.hidden = true;
+    document.body.style.overflow = '';
+  }
+
   if (photoBtn && cameraOverlay) {
     photoBtn.addEventListener('click', (e) => {
       e.stopPropagation();
       closeFab();
       cameraOverlay.hidden = false;
+      document.body.style.overflow = 'hidden';
       startCamera();
     });
 
     cameraClose.addEventListener('click', () => {
-      stopCamera();
-      cameraOverlay.hidden = true;
+      closeCamera();
     });
 
     cameraOverlay.addEventListener('click', (e) => {
       if (e.target === cameraOverlay) {
-        stopCamera();
-        cameraOverlay.hidden = true;
+        closeCamera();
       }
     });
 
@@ -457,8 +520,7 @@
 
     document.addEventListener('keydown', (e) => {
       if (e.key === 'Escape' && !cameraOverlay.hidden) {
-        stopCamera();
-        cameraOverlay.hidden = true;
+        closeCamera();
       }
     });
   }

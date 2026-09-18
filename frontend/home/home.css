@@ -535,6 +535,8 @@
 .camera-error-title { color: #F3F4F6; font-weight: 700; font-size: 15px; margin: 0; }
 .camera-error-msg { color: #9CA3AF; font-size: 13.5px; line-height: 1.55; max-width: 300px; margin: 0; }
 .camera-placeholder .camera-retry { margin-top: 4px; }
+.camera-error-actions { display: flex; justify-content: center; gap: 10px; flex-wrap: wrap; margin-top: 4px; }
+.camera-error-actions .btn { min-height: 42px; }
 
 /* Bottom deck */
 .camera-footer {
@@ -627,6 +629,11 @@
   .camera-modal { border-radius: 20px; }
   .camera-viewport { min-height: 300px; }
   .camera-caption, .camera-caption-end { font-size: 11px; }
+  .camera-header { padding: 12px 14px; }
+  .camera-status { max-width: 145px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .camera-footer { gap: 10px; padding-left: 12px; padding-right: 12px; }
+  .camera-preview-actions { flex-direction: column; }
+  .camera-preview-actions .btn { max-width: none; width: 100%; }
 }
 
 /* ---------- Dark theme (receipt table states) ---------- */
