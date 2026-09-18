@@ -31,11 +31,39 @@
     welcomeHeading.textContent = 'Welcome back, ' + firstName + '!';
   }
 
-  /* ---------- Receipt data (starts empty for new users) ---------- */
-  const RECEIPTS = [];
+  /* ---------- Receipt data ---------- */
+  const RECEIPTS_STORAGE_KEY = 'breadwinner_receipts';
+  function loadReceipts() {
+    try {
+      const stored = JSON.parse(localStorage.getItem(RECEIPTS_STORAGE_KEY) || '[]');
+      return Array.isArray(stored) ? stored : [];
+    } catch (e) { return []; }
+  }
+  function saveReceipts() {
+    try { localStorage.setItem(RECEIPTS_STORAGE_KEY, JSON.stringify(RECEIPTS)); } catch (e) { /* storage unavailable */ }
+  }
+  const RECEIPTS = loadReceipts();
 
   const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const money = (n) => '$' + n.toFixed(2);
+
+  function updateMetrics() {
+    const totalOvercharge = RECEIPTS.reduce((sum, receipt) => sum + Number(receipt.overcharge || 0), 0);
+    const totalGfItems = RECEIPTS.reduce((sum, receipt) => sum + Number(receipt.gfItems || 0), 0);
+    const averageOvercharge = RECEIPTS.length ? totalOvercharge / RECEIPTS.length : 0;
+    const values = {
+      receiptsCount: { value: RECEIPTS.length, text: String(RECEIPTS.length) },
+      gfItemsCount: { value: totalGfItems, text: String(totalGfItems) },
+      totalOvercharge: { value: totalOvercharge, text: money(totalOvercharge) },
+      averageOvercharge: { value: averageOvercharge, text: money(averageOvercharge) }
+    };
+    Object.keys(values).forEach((id) => {
+      const element = document.getElementById(id);
+      if (!element) return;
+      element.dataset.target = String(values[id].value);
+      element.textContent = values[id].text;
+    });
+  }
 
   const table = document.getElementById('receiptTable');
   const template = document.getElementById('rowTemplate');
@@ -148,6 +176,7 @@
 
   if (table && template) {
     render(RECEIPTS);
+    updateMetrics();
     searchInput.addEventListener('input', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
   }
@@ -183,60 +212,13 @@
     window.BreadWinner.staggerReveal('.stat-card', 80);
   }
 
-  /* ---------- FAB expand / collapse ---------- */
-  const fab = document.getElementById('fabUpload');
-  const fabOptions = document.getElementById('fabOptions');
+  /* ---------- Camera workspace ---------- */
+  const photoBtn = document.getElementById('fabUpload');
   const fileInput = document.getElementById('fileInput');
-  let isOpen = false;
-
-  function toggleFab(e) {
-    e.stopPropagation();
-    isOpen = !isOpen;
-    fabOptions.classList.toggle('open', isOpen);
-    fab.setAttribute('aria-expanded', isOpen);
-  }
-
-  function closeFab() {
-    isOpen = false;
-    fabOptions.classList.remove('open');
-    fab.setAttribute('aria-expanded', 'false');
-  }
-
-  if (fab && fabOptions) {
-    fab.addEventListener('click', toggleFab);
-
-    // Close when clicking outside
-    document.addEventListener('click', (e) => {
-      const wrapper = document.getElementById('fabWrapper');
-      if (isOpen && wrapper && !wrapper.contains(e.target)) {
-        closeFab();
-      }
-    });
-  }
-
-  /* ---------- Upload Image ---------- */
-  const uploadBtn = document.getElementById('fabUploadImage');
-  if (uploadBtn && fileInput) {
-    uploadBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      closeFab();
-      fileInput.click();
-    });
-    fileInput.addEventListener('change', () => {
-      if (fileInput.files.length > 0) {
-        // Simulate upload â€” in production, send to server
-        console.log('File selected:', fileInput.files[0].name);
-        fileInput.value = '';
-      }
-    });
-  }
-
-  /* ---------- Camera overlay (Take Photo) ---------- */
-  const photoBtn = document.getElementById('fabTakePhoto');
   const cameraOverlay = document.getElementById('cameraOverlay');
   const cameraVideo = document.getElementById('cameraVideo');
-  const cameraVideoBack = document.getElementById('cameraVideoBack');
   const cameraCanvas = document.getElementById('cameraCanvas');
+  const cameraViewport = document.getElementById('cameraViewport');
   const cameraPlaceholder = document.getElementById('cameraPlaceholder');
   const cameraCaptureBtn = document.getElementById('cameraCaptureBtn');
   const cameraPreview = document.getElementById('cameraPreview');
@@ -263,9 +245,9 @@
 
   function setCameraError(message) {
     cameraVideo.hidden = true;
-    cameraVideoBack.hidden = true;
     cameraFooter.hidden = true;
     cameraPreview.hidden = true;
+    cameraViewport.hidden = false;
     cameraPlaceholder.hidden = false;
     cameraPlaceholder.innerHTML = '<svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" stroke="#FBBF24" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>'
       + '<p class="camera-error-title">Camera unavailable</p>'
@@ -327,9 +309,7 @@
       }
       mediaStream = stream;
       cameraVideo.srcObject = stream;
-      cameraVideoBack.srcObject = stream;
       cameraVideo.hidden = false;
-      cameraVideoBack.hidden = false;
       cameraPlaceholder.hidden = true;
       cameraVideo.addEventListener('loadedmetadata', enableWhenReady, { once: true });
       cameraVideo.addEventListener('playing', enableWhenReady, { once: true });
@@ -356,9 +336,8 @@
     cameraRequestId += 1;
     stopMediaStream();
     cameraVideo.srcObject = null;
-    if (cameraVideoBack) cameraVideoBack.srcObject = null;
     cameraVideo.hidden = true;
-    cameraVideoBack.hidden = true;
+    cameraViewport.hidden = false;
     streamReady = false;
     cameraCaptureBtn.disabled = true;
     cameraConfirmBtn.disabled = false;
@@ -400,7 +379,7 @@
       previewUrl = URL.createObjectURL(blob);
       cameraPreviewImg.src = previewUrl;
       cameraVideo.hidden = true;
-      cameraVideoBack.hidden = true;
+      cameraViewport.hidden = true;
       if (scanGuide) scanGuide.hidden = true;
       cameraFooter.hidden = true;
       cameraPreview.hidden = false;
@@ -417,8 +396,8 @@
       return;
     }
     cameraPreview.hidden = true;
+    cameraViewport.hidden = false;
     cameraVideo.hidden = false;
-    cameraVideoBack.hidden = false;
     cameraFooter.hidden = false;
     if (scanGuide) scanGuide.hidden = false;
     if (cameraStatus) { cameraStatus.textContent = 'Ready'; cameraStatus.classList.add('live'); }
@@ -433,21 +412,22 @@
     });
   }
 
-  async function confirmAndAddReceipt() {
-    if (!capturedBlob) return;
-    cameraConfirmBtn.disabled = true;
+  function showReceiptHistory() {
+    applyFilters();
+    updateMetrics();
+    if (!window.matchMedia('(max-width: 860px)').matches) return;
+    switchMobileView('receipt');
+    const receiptItem = bottomNav && bottomNav.querySelector('[data-nav="receipt"]');
+    if (receiptItem) {
+      bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => item.classList.remove('active'));
+      receiptItem.classList.add('active');
+      positionBottomNavPill(receiptItem);
+    }
+  }
 
-    // Create a new receipt entry
+  function addReceiptToHistory(imageUrl) {
     const now = new Date();
     const dateStr = now.toISOString().split('T')[0];
-    let imageUrl;
-    try {
-      imageUrl = await blobToDataUrl(capturedBlob);
-    } catch (error) {
-      cameraConfirmBtn.disabled = false;
-      if (cameraStatus) cameraStatus.textContent = 'Could not save photo';
-      return;
-    }
     const storeName = 'Captured Receipt';
 
     const newReceipt = {
@@ -461,32 +441,26 @@
       imageUrl
     };
 
-    // Add to beginning of RECEIPTS
     RECEIPTS.unshift(newReceipt);
+    saveReceipts();
+    showReceiptHistory();
 
-    // Re-render the table
-    applyFilters();
-
-    // Close camera and release the page lock.
     closeCamera();
 
-    // Show the newly added receipt immediately on small screens.
-    if (window.matchMedia('(max-width: 860px)').matches) {
-      switchMobileView('receipt');
-      const receiptItem = bottomNav && bottomNav.querySelector('[data-nav="receipt"]');
-      if (receiptItem) {
-        bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => item.classList.remove('active'));
-        receiptItem.classList.add('active');
-        positionBottomNavPill(receiptItem);
-      }
-    }
-
-    // Brief success feedback
     const fab = document.getElementById('fabUpload');
     fab.style.background = '#10B981';
     setTimeout(() => { fab.style.background = ''; }, 800);
+  }
 
-    capturedBlob = null;
+  async function confirmAndAddReceipt() {
+    if (!capturedBlob) return;
+    cameraConfirmBtn.disabled = true;
+    try {
+      addReceiptToHistory(await blobToDataUrl(capturedBlob));
+    } catch (error) {
+      cameraConfirmBtn.disabled = false;
+      if (cameraStatus) cameraStatus.textContent = 'Could not save photo';
+    }
   }
 
   function closeCamera() {
@@ -498,7 +472,6 @@
   if (photoBtn && cameraOverlay) {
     photoBtn.addEventListener('click', (e) => {
       e.stopPropagation();
-      closeFab();
       cameraOverlay.hidden = false;
       document.body.style.overflow = 'hidden';
       startCamera();
@@ -522,6 +495,16 @@
       if (e.key === 'Escape' && !cameraOverlay.hidden) {
         closeCamera();
       }
+    });
+  }
+
+  if (fileInput) {
+    fileInput.addEventListener('change', async () => {
+      const file = fileInput.files && fileInput.files[0];
+      fileInput.value = '';
+      if (!file) return;
+      try { addReceiptToHistory(await blobToDataUrl(file)); }
+      catch (error) { console.error('Could not save uploaded receipt:', error); }
     });
   }
 
