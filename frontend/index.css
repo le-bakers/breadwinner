@@ -28,7 +28,7 @@
   position: absolute;
   inset: -24px;
   z-index: 0;
-  background-image: url('../images/hero-background.jpg');
+  background-image: url('images/hero-background.jpg');
   background-size: cover;
   background-position: center center;
   background-repeat: no-repeat;
