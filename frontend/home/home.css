@@ -249,6 +249,26 @@
   .expand-item-list li { padding: 10px 12px; }
 }
 
+@media (max-width: 560px) {
+  .dashboard { padding-top: 24px; }
+  .dash-header { margin-bottom: 26px; }
+  .dash-header h1 { font-size: 25px; line-height: 1.2; }
+  .dash-header p { font-size: 14px; line-height: 1.5; }
+  .stat-card { padding: 18px; }
+  .receipts-toolbar { align-items: stretch; }
+  .receipts-section h2 { font-size: 20px; }
+  .toolbar-controls { width: 100%; flex-direction: column; }
+  .search-box, .select-wrap, .select-wrap select { width: 100%; }
+  .select-wrap select { min-height: 44px; }
+  .receipt-row { padding: 13px 14px; gap: 8px; }
+  .cell-name { min-width: 0; }
+  .cell-name span:last-child { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .receipt-expand .expand-inner { padding-left: 14px; padding-right: 14px; }
+  .receipt-expand.open .expand-inner { padding: 14px; }
+  .fab-wrapper { right: 16px; bottom: 84px; }
+  .fab-option { padding: 11px 14px; }
+}
+
 /* ---------- FAB ---------- */
 .fab-wrapper {
   position: fixed;

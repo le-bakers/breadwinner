@@ -373,6 +373,21 @@ input, select { font-family: inherit; }
 }
 .footer-social a:hover { border-color: var(--primary); color: var(--primary-hover); transform: translateY(-2px); }
 
+/* ---------- Mobile foundation ---------- */
+@media (max-width: 560px) {
+  .container { padding-left: 16px; padding-right: 16px; }
+  .nav-inner { padding: 12px 16px; gap: 12px; }
+  .nav-inner .logo img { height: 30px; width: auto; }
+  .mobile-menu { top: 55px; padding: 16px; }
+  .footer { margin-top: 72px; padding: 40px 0 24px; }
+  .footer-inner { gap: 30px; padding-bottom: 26px; }
+  .footer-links { width: 100%; justify-content: space-between; gap: 20px; }
+  .footer-col { min-width: 0; }
+  .footer-col a { font-size: 13.5px; }
+  .footer-bottom { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .btn { min-height: 44px; }
+}
+
 /* ---------- Scroll reveal ---------- */
 .reveal {
   opacity: 0;

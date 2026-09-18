@@ -142,6 +142,19 @@
   .hero-visual { display: none !important; }
 }
 
+@media (max-width: 560px) {
+  .hero { min-height: auto; padding: 52px 0 64px; }
+  .hero-title-img { width: min(100%, 330px); }
+  .hero-subtitle { font-size: 22px; line-height: 1.25; }
+  .hero-desc { max-width: none; font-size: 15px; line-height: 1.65; }
+  .hero-actions { align-items: stretch; flex-direction: column; }
+  .hero-actions .btn { width: 100%; }
+  .how-it-works { padding: 72px 0; }
+  .features { padding: 16px 0 72px; }
+  .cta-section { padding-bottom: 72px; }
+  .cta-card { padding: 48px 22px; border-radius: 20px; }
+}
+
 /* ---------- How it works ---------- */
 .how-it-works { padding: 110px 0; }
 .section-heading { max-width: 620px; margin: 0 auto 64px; text-align: center; }

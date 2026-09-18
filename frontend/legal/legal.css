@@ -195,3 +195,22 @@
   .legal-layout { grid-template-columns: 1fr; gap: 32px; }
   .legal-toc { position: static; }
 }
+
+@media (max-width: 560px) {
+  .legal-hero { padding: 48px 0 32px; }
+  .legal-hero h1 { font-size: 34px; line-height: 1.15; }
+  .legal-hero p.updated { font-size: 13px; line-height: 1.5; }
+  .legal-layout { min-width: 0; grid-template-columns: minmax(0, 1fr); padding: 32px 0 80px; gap: 28px; }
+  .legal-toc { width: 100%; min-width: 0; padding: 16px; }
+  .legal-toc ol { padding-left: 0; }
+  .legal-doc section { margin-bottom: 38px; }
+  .legal-doc h2 { align-items: flex-start; font-size: 20px; gap: 10px; }
+  .legal-doc .section-index { width: 28px; height: 28px; }
+  .legal-doc p, .legal-doc ul li { font-size: 14px; line-height: 1.7; }
+  .legal-callout { padding: 15px; gap: 10px; }
+  .legal-table { display: block; overflow-x: auto; white-space: normal; }
+  .legal-table th, .legal-table td { min-width: 150px; padding: 10px 12px; }
+  .legal-contact-card { align-items: stretch; padding: 20px; }
+  .legal-contact-card .btn { width: 100%; white-space: normal; text-align: center; }
+  .back-to-top { right: 16px; bottom: 82px; }
+}

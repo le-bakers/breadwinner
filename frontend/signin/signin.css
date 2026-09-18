@@ -292,3 +292,14 @@
   .signin-panel { padding: 26px 20px; }
   .slide-illustration { max-width: 220px; }
 }
+
+@media (max-width: 560px) {
+  .signin-panel { padding: 20px 16px 24px; }
+  .signin-form-wrap { padding: 34px 0 28px; }
+  .signin-form-wrap h1 { font-size: 29px; line-height: 1.15; }
+  .signin-sub { font-size: 14px; line-height: 1.55; }
+  .btn-google { margin-top: 22px; padding: 13px 16px; font-size: 14px; }
+  .divider { margin: 22px 0; font-size: 12px; }
+  .field-row { margin-bottom: 22px; }
+  .signup-prompt { font-size: 13.5px; }
+}
