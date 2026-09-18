@@ -94,7 +94,7 @@
         .forEach((k) => localStorage.removeItem(k));
     } catch (e) { /* storage unavailable */ }
     clearModal.close();
-    window.location.href = 'signin.html';
+    window.location.href = '../sign in/signin.html';
   });
 
   /* ---------- Delete account (danger zone: wipe + sign out + redirect) ---------- */
@@ -111,13 +111,13 @@
         .forEach((k) => localStorage.removeItem(k));
     } catch (e) { /* storage unavailable */ }
     if (BW.signOut) BW.signOut();
-    window.location.href = 'signin.html';
+    window.location.href = '../sign in/signin.html';
   });
 
   /* ---------- Sign out ---------- */
   document.getElementById('signOutBtn').addEventListener('click', () => {
     if (BW.signOut) BW.signOut();
-    window.location.href = 'signin.html';
+    window.location.href = '../sign in/signin.html';
   });
 
   renderFromSettings();
