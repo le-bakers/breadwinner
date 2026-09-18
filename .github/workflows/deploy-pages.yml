@@ -21,11 +21,15 @@ jobs:
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
+
     steps:
       - uses: actions/checkout@v4
+
       - uses: actions/configure-pages@v5
+
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: frontend
+          path: frontend/index
+
       - id: deployment
         uses: actions/deploy-pages@v4
