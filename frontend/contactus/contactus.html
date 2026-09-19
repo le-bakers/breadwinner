@@ -12,30 +12,40 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="/contactus/contactus.css">
 </head>
-<body>
+<body class="has-morph-nav">
 
 <a class="sr-only" href="#main-content">Skip to main content</a>
 
-<header class="navbar">
-	<div class="nav-inner">
-		<a class="logo" href="/index/index.html">
-			<img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="36">
+<!-- ============ MORPHING SCROLL NAVBAR ============ -->
+<div class="msn-progress" aria-hidden="true"></div>
+<nav class="msn-nav" data-morph-nav aria-label="Primary navigation">
+	<div class="msn-shell">
+		<a class="msn-brand logo" href="/index/index.html" aria-label="BreadWinner home">
+			<img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="32">
 		</a>
-		<div class="nav-actions">
-			<a href="/signin/signin.html" class="btn btn-ghost">Sign In</a>
-			<a href="/signin/signin.html" class="btn btn-primary">Start Free</a>
+		<div class="msn-links">
+			<a href="/index/index.html#how-it-works">How it works</a>
+			<a href="/index/index.html#features">Features</a>
+			<a href="/about/about.html">About us</a>
 		</div>
-		<button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
-			<span></span><span></span><span></span>
-		</button>
-	</div>
-	<div class="mobile-menu" id="mobileMenu">
-		<div class="nav-actions">
-			<a href="/signin/signin.html" class="btn btn-secondary">Sign In</a>
-			<a href="/signin/signin.html" class="btn btn-primary">Start Free</a>
+		<div class="msn-actions">
+			<a class="msn-button msn-button-ghost" href="/signin/signin.html">Sign In</a>
+			<a class="msn-button msn-button-primary" href="/signin/signin.html">Start Free</a>
+			<button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+				<span></span><span></span><span></span>
+			</button>
 		</div>
 	</div>
-</header>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+	<a href="/index/index.html#how-it-works">How it works</a>
+	<a href="/index/index.html#features">Features</a>
+	<a href="/about/about.html">About us</a>
+	<div class="nav-actions">
+		<a href="/signin/signin.html" class="btn btn-secondary">Sign In</a>
+		<a href="/signin/signin.html" class="btn btn-primary">Start Free</a>
+	</div>
+</div>
 
 <main id="main-content">
 	<section class="contact-hero">
