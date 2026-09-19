@@ -380,3 +380,79 @@ window.BreadWinner = window.BreadWinner || {};
     if (sw.dataset.bg) sw.style.background = sw.dataset.bg;
   });
 })(window.BreadWinner);
+
+/* ============================================
+   Morphing Scroll Navbar (msn-*)
+   Ported from the React MorphingScrollNavbar component. A single
+   requestAnimationFrame-throttled scroll listener drives three things:
+   the reading-progress bar, the floating/compact shell states, and the
+   scroll-spy link marking. Markup opts in with data-morph-nav.
+   ============================================ */
+(function () {
+  'use strict';
+
+  function initMorphNav(nav) {
+    if (!nav || nav.dataset.morphNavReady === 'true') return;
+    nav.dataset.morphNavReady = 'true';
+
+    const progressEl = document.querySelector('.msn-progress');
+    const links = Array.prototype.slice.call(nav.querySelectorAll('.msn-links a[href^="#"]'));
+    let direction = 'up';
+    let lastY = window.scrollY;
+    let frame = 0;
+
+    function update() {
+      frame = 0;
+      const y = window.scrollY;
+      const delta = y - lastY;
+
+      // Direction is sticky: the shell stays compact while scrolling down and
+      // only restores itself on an upward move of more than 4px.
+      if (delta > 4) direction = 'down';
+      else if (delta < -4) direction = 'up';
+
+      const floating = y >= 8;
+      nav.classList.toggle('is-floating', floating);
+      nav.classList.toggle('is-compact', floating && direction === 'down');
+
+      if (progressEl) {
+        const doc = document.documentElement;
+        const max = doc.scrollHeight - doc.clientHeight;
+        const ratio = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
+        progressEl.style.transform = 'scaleX(' + ratio + ')';
+      }
+
+      // Active section: the last linked section whose top sits above a marker
+      // a third of the way down the viewport.
+      const marker = y + window.innerHeight * 0.34;
+      let active = links.length ? links[0].getAttribute('href') : '';
+      links.forEach((link) => {
+        const href = link.getAttribute('href');
+        const section = document.getElementById(href.slice(1));
+        // offsetParent is null while a section is display:none (e.g. the
+        // receipt view on mobile), which keeps hidden views out of the spy.
+        if (section && section.offsetParent !== null && section.offsetTop <= marker) active = href;
+      });
+      links.forEach((link) => {
+        if (link.getAttribute('href') === active) link.setAttribute('aria-current', 'location');
+        else link.removeAttribute('aria-current');
+      });
+
+      lastY = y;
+    }
+
+    function onScroll() {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    }
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+  }
+
+  document.querySelectorAll('[data-morph-nav]').forEach(initMorphNav);
+
+  // Exposed so pages that build the navbar dynamically can opt in too.
+  window.BreadWinner = window.BreadWinner || {};
+  window.BreadWinner.initMorphNav = initMorphNav;
+})();

@@ -963,3 +963,249 @@ input, select { font-family: inherit; }
 
 /* ---------- Static overview fields: value pop when updated ---------- */
 .field-static .value { transition: color 0.2s var(--ease-out); }
+
+/* ============================================
+   Morphing Scroll Navbar (msn-*)
+   Ported from the React MorphingScrollNavbar component into the plain
+   HTML/CSS/JS stack (the scroll behaviour lives in shared.js). Opt in per
+   page with:
+     <div class="msn-progress" aria-hidden="true"></div>
+     <nav class="msn-nav" data-morph-nav aria-label="Primary navigation">
+       <div class="msn-shell">
+         <a class="msn-brand logo" href="#top">logo</a>
+         <div class="msn-links"><a href="#section">Label</a></div>
+         <div class="msn-actions">
+           <a class="msn-button msn-button-ghost" href="...">Sign In</a>
+           <a class="msn-button msn-button-primary" href="...">Start Free</a>
+           <a class="msn-button msn-icon-button" href="..." aria-label="...">svg</a>
+         </div>
+       </div>
+     </nav>
+   Add class="has-morph-nav" on <body> so <main> clears the fixed bar and
+   anchor targets clear the shell. Hero pages should set --msn-clearance: 0
+   and add .msn-over-media to the nav when the resting bar sits on a dark
+   background (it then uses light ink and the white logo).
+   ============================================ */
+
+.msn-progress {
+  position: fixed;
+  z-index: 101;
+  top: 0; right: 0; left: 0;
+  height: 2px;
+  pointer-events: none;
+  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  will-change: transform;
+}
+
+.msn-nav {
+  /* Local names mapped onto the shared design tokens, so the navbar
+     follows the user's accent colour and the [data-theme] dark palette. */
+  --paper: var(--bg);
+  --surface: var(--card);
+  --ink: var(--text);
+  --muted: var(--text-secondary);
+  --line: var(--border);
+  --accent: var(--primary);
+
+  position: fixed;
+  z-index: 100;
+  top: 0; right: 0; left: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  pointer-events: none;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+.msn-nav *, .msn-nav *::before, .msn-nav *::after { box-sizing: border-box; }
+.msn-nav a { color: inherit; text-decoration: none; }
+
+/* The bar floats above the page, so the first block needs clearance and
+   in-page anchors must not land underneath the shell. */
+body.has-morph-nav > main { padding-top: var(--msn-clearance, 76px); }
+body.has-morph-nav section[id],
+body.has-morph-nav .mobile-view[id] { scroll-margin-top: 100px; }
+body.has-morph-nav .mobile-menu { top: 76px; }
+
+.msn-shell {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  width: 100%;
+  max-width: 1180px;
+  height: 68px;
+  padding: 0 12px 0 22px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  transition: max-width 0.5s cubic-bezier(0.34, 1.32, 0.5, 1),
+              height 0.38s cubic-bezier(0.34, 1.2, 0.5, 1),
+              margin-top 0.38s ease,
+              padding 0.38s ease,
+              background-color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.4s ease;
+}
+.msn-nav.is-floating .msn-shell {
+  max-width: 960px;
+  height: 58px;
+  margin-top: 12px;
+  padding: 0 10px 0 20px;
+  border-color: color-mix(in srgb, var(--ink) 10%, transparent);
+  background: color-mix(in srgb, var(--paper) 74%, transparent);
+  -webkit-backdrop-filter: saturate(170%) blur(16px);
+  backdrop-filter: saturate(170%) blur(16px);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 56%, transparent),
+              0 14px 40px -20px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.msn-nav.is-compact .msn-shell { max-width: 560px; height: 52px; }
+
+.msn-brand {
+  flex: none;
+  display: flex;
+  align-items: center;
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  transition: font-size 0.38s cubic-bezier(0.34, 1.2, 0.5, 1), transform 0.18s ease;
+}
+.msn-brand img { height: 32px; width: auto; }
+.msn-brand span { color: var(--accent); }
+.msn-brand:hover { transform: translateY(-1px); }
+.msn-nav.is-compact .msn-brand { font-size: 22px; }
+
+/* Landing variant: the hero is a dark photo, so the resting (transparent)
+   bar uses light ink and the white logo, then returns to the themed ink
+   once it floats onto its own surface. */
+.msn-nav.msn-over-media:not(.is-floating) {
+  --ink: #EFF5F0;
+  --muted: rgba(226, 236, 228, 0.76);
+  --line: rgba(255, 255, 255, 0.3);
+}
+.msn-nav.msn-over-media:not(.is-floating) .msn-brand img {
+  content: url("/images/breadwinner_logo_white.png");
+}
+
+.msn-links {
+  display: flex;
+  gap: 28px;
+  max-width: 640px;
+  overflow: hidden;
+  opacity: 1;
+  transition: max-width 0.45s cubic-bezier(0.34, 1.2, 0.5, 1),
+              opacity 0.28s ease,
+              transform 0.3s ease,
+              gap 0.35s ease;
+}
+.msn-nav.is-compact .msn-links {
+  max-width: 0;
+  gap: 0;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+.msn-links a {
+  position: relative;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+.msn-links a::after {
+  content: "";
+  position: absolute;
+  right: 0; bottom: -5px; left: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.msn-links a:hover,
+.msn-links a[aria-current="location"] { color: var(--ink); }
+.msn-links a:hover::after,
+.msn-links a[aria-current="location"]::after { transform: scaleX(1); }
+
+.msn-actions { display: flex; flex: none; align-items: center; gap: 10px; }
+.msn-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: height 0.38s ease, font-size 0.38s ease, padding 0.38s ease,
+              background-color 0.18s ease, transform 0.18s ease, box-shadow 0.22s ease;
+}
+.msn-button svg { width: 17px; height: 17px; }
+.msn-button:hover {
+  background: color-mix(in srgb, var(--surface) 80%, var(--paper));
+  transform: translateY(-2px);
+  box-shadow: 0 10px 22px -17px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.msn-button:active { transform: translateY(0) scale(0.97); }
+.msn-icon-button { width: 42px; padding: 0; }
+.msn-nav.is-compact .msn-button { height: 36px; padding: 0 14px; font-size: 12.5px; }
+.msn-nav.is-compact .msn-icon-button { width: 36px; padding: 0; }
+
+/* Variants mirror the site's .btn-primary / .btn-ghost pairing. */
+.msn-button-primary {
+  border-color: transparent;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+.msn-button-primary:hover { background: var(--primary-hover); color: #fff; }
+.msn-button-ghost { border-color: transparent; background: transparent; color: var(--muted); }
+.msn-button-ghost:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink); }
+.msn-button-ghost:active { transform: translateY(0) scale(0.97); }
+
+/* Avatar action (dashboard variant) — keeps the shared avatar styling. */
+.msn-avatar { flex: none; }
+.msn-nav .msn-avatar .avatar-circle {
+  width: 42px; height: 42px;
+  transition: width 0.38s ease, height 0.38s ease, font-size 0.38s ease;
+}
+.msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; font-size: 12.5px; }
+
+@media (max-width: 900px) {
+  .msn-nav.is-floating .msn-shell { max-width: 680px; }
+  .msn-nav.is-compact .msn-shell { max-width: 520px; }
+}
+@media (max-width: 860px) {
+  .msn-links { display: none; }
+  .msn-button-ghost { display: none; }
+}
+@media (max-width: 560px) {
+  .msn-nav { padding: 0 12px; }
+  .msn-shell,
+  .msn-nav.is-floating .msn-shell,
+  .msn-nav.is-compact .msn-shell { gap: 12px; height: 60px; padding: 0 4px 0 10px; }
+  .msn-nav.is-floating .msn-shell,
+  .msn-nav.is-compact .msn-shell { height: 52px; }
+  .msn-brand,
+  .msn-nav.is-compact .msn-brand { font-size: 23px; }
+  .msn-brand img { height: 28px; }
+  .msn-actions { gap: 7px; }
+  .msn-button,
+  .msn-nav.is-compact .msn-button { height: 40px; padding: 0 13px; font-size: 13px; }
+  .msn-nav.is-floating .msn-button,
+  .msn-nav.is-compact .msn-button { height: 36px; }
+  .msn-nav .msn-avatar .avatar-circle,
+  .msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; }
+}

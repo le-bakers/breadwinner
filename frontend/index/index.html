@@ -12,36 +12,45 @@
 <link rel="stylesheet" href="/index/index.css">
 <link rel="icon" type="image/x-icon" href="/images/breadwinner_icon.png">
 </head>
-<body>
+<body class="has-morph-nav">
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 <a class="sr-only" href="#main-content">Skip to main content</a>
 
-<!-- ============ NAVBAR ============ -->
-<header class="navbar">
-  <div class="nav-inner">
-    <a class="logo" href="/index/index.html">
-      <img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="36">
+<!-- ============ MORPHING SCROLL NAVBAR ============ -->
+<div class="msn-progress" aria-hidden="true"></div>
+<nav class="msn-nav msn-over-media" data-morph-nav aria-label="Primary navigation">
+  <div class="msn-shell">
+    <a class="msn-brand logo" href="#top" aria-label="BreadWinner, back to top">
+      <img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="32">
     </a>
-    <div class="nav-actions">
-      <a href="/signin/signin.html" class="btn btn-ghost">Sign In</a>
-      <a href="/signin/signin.html" class="btn btn-primary">Start Free</a>
+    <div class="msn-links">
+      <a href="#how-it-works">How it works</a>
+      <a href="#features">Features</a>
+      <a href="/about/about.html">About us</a>
     </div>
-    <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
-      <span></span><span></span><span></span>
-    </button>
-  </div>
-  <div class="mobile-menu" id="mobileMenu">
-    <div class="nav-actions">
-      <a href="/signin/signin.html" class="btn btn-secondary">Sign In</a>
-      <a href="/signin/signin.html" class="btn btn-primary">Start Free</a>
+    <div class="msn-actions">
+      <a class="msn-button msn-button-ghost" href="/signin/signin.html">Sign In</a>
+      <a class="msn-button msn-button-primary" href="/signin/signin.html">Start Free</a>
+      <button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
+        <span></span><span></span><span></span>
+      </button>
     </div>
   </div>
-</header>
+</nav>
+<div class="mobile-menu" id="mobileMenu">
+  <a href="#how-it-works">How it works</a>
+  <a href="#features">Features</a>
+  <a href="/about/about.html">About us</a>
+  <div class="nav-actions">
+    <a href="/signin/signin.html" class="btn btn-secondary">Sign In</a>
+    <a href="/signin/signin.html" class="btn btn-primary">Start Free</a>
+  </div>
+</div>
 
 <main id="main-content">
 
   <!-- ============ HERO ============ -->
-  <section class="hero">
+  <section class="hero" id="top">
     <div class="hero-blobs" aria-hidden="true">
       <span class="blob blob-1"></span>
       <span class="blob blob-2"></span>
@@ -172,7 +181,7 @@
   </section>
 
   <!-- ============ FEATURES ============ -->
-  <section class="features">
+  <section class="features" id="features">
     <div class="container">
       <div class="section-heading reveal">
         <p class="eyebrow">Why BreadWinner</p>

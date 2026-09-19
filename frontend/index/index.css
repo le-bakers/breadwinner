@@ -248,5 +248,15 @@
 .cta-card .btn-primary { background: #fff; color: var(--primary-hover); box-shadow: 0 12px 30px rgba(0,0,0,0.18); }
 .cta-card .btn-primary:hover { background: #F0FDF4; }
 
+/* ---------- Morphing scroll navbar over the hero ---------- */
+/* The navbar floats directly on top of the dark hero photo, so the landing
+   page supplies its own top spacing (see .hero) instead of the shared
+   fixed-nav clearance, letting the hero background reach the page top. */
+body.has-morph-nav { --msn-clearance: 0; }
+body.has-morph-nav .hero { padding-top: 130px; }
+@media (max-width: 560px) {
+  body.has-morph-nav .hero { padding-top: 96px; }
+}
+
 /* ---------- Footer extra ---------- */
 .footer-tagline { color: var(--text-secondary); font-size: 14px; margin-top: 10px; max-width: 220px; }
