@@ -65,7 +65,7 @@
         if (userData.email) BW.safeSet(BW.STORAGE.email, userData.email);
 
         // Redirect to main page after successful authentication
-        window.location.href = 'home.html';
+        window.location.href = '/home/home.html';
       })
       .catch((err) => {
         console.error('Failed to fetch Google profile info:', err);
@@ -183,7 +183,7 @@
         if (submitBtn) submitBtn.textContent = 'Signing in…';
         setTimeout(() => {
           BW.signIn({ method: 'email', email: email.value.trim() });
-          window.location.href = 'home.html';
+          window.location.href = '/home/home.html';
         }, 500);
       }
     });

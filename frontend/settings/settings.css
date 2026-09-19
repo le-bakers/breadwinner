@@ -3,9 +3,6 @@
    (sits on top of shared.css)
    ============================================ */
 
-/* Keep accent swatches from wrapping awkwardly on narrow screens */
-.accent-swatches { gap: 12px; }
-
 /* Settings controls take a comfortably wide tap target on touch devices */
 @media (max-width: 560px) {
   .form-row-control .select { width: 100%; }
@@ -75,20 +72,21 @@
   background: var(--border);
   transform: none;
 }
-/* ---------- Settings: wave ripple from Appearance controls ---------- */
-.settings-wave {
-  position: fixed;
-  z-index: 9999;
-  border-radius: 50%;
-  border: 2px solid var(--primary);
-  pointer-events: none;
-  opacity: 0;
-  transform: translate(-50%, -50%) scale(0);
-  animation: settingsWave 0.9s var(--ease-out) forwards;
+
+/* ---------- Profile edit: expand/collapse within the merged card ---------- */
+/* The name/email inputs live inside the profile card and grow/shrink so the card
+   "lengthens down" while editing, instead of opening a separate card. This uses
+   the modern 0fr -> 1fr grid-row trick to animate height cleanly. */
+#profileForm {
+  margin-top: 20px;
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows 0.32s var(--ease-out);
 }
-.settings-wave.second { animation-delay: 0.12s; }
-@keyframes settingsWave {
-  0% { transform: translate(-50%, -50%) scale(0); opacity: 0.6; }
-  70% { opacity: 0.25; }
-  100% { transform: translate(-50%, -50%) scale(1); opacity: 0; }
+#profileForm.editing { grid-template-rows: 1fr; }
+#profileForm .profile-edit-body {
+  overflow: hidden;
+  min-height: 0;
+  border-top: 1px solid var(--border);
+  padding: 18px 20px 6px;
 }

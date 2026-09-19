@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 620" role="img" aria-labelledby="title desc">
+  <title id="title">Team photo placeholder</title>
+  <desc id="desc">An illustrated placeholder showing a small team together.</desc>
+  <rect width="800" height="620" fill="#DCFCE7"/>
+  <circle cx="680" cy="92" r="118" fill="#BBF7D0"/>
+  <circle cx="120" cy="500" r="170" fill="#BBF7D0"/>
+  <path d="M0 452c146-56 228-30 344 4 132 39 284 43 456-30v194H0Z" fill="#86EFAC"/>
+  <g stroke="#14532D" stroke-width="9" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="274" cy="227" r="48" fill="#FDE68A"/>
+    <path d="M196 488c5-101 35-157 78-157s73 56 78 157" fill="#3B82F6"/>
+    <path d="M235 180c16-43 78-48 96 2" fill="none"/>
+    <circle cx="404" cy="193" r="58" fill="#FDBA74"/>
+    <path d="M310 488c6-119 42-183 94-183s88 64 94 183" fill="#22C55E"/>
+    <path d="M354 142c24-45 105-38 119 18" fill="none"/>
+    <circle cx="548" cy="240" r="45" fill="#F9A8D4"/>
+    <path d="M478 488c5-92 32-143 70-143s65 51 70 143" fill="#F97316"/>
+    <path d="M510 205c12-38 66-48 91-9" fill="none"/>
+    <path d="M255 232h1M293 232h1M383 199h1M425 199h1M532 244h1M564 244h1" stroke-width="12"/>
+    <path d="M269 257c8 8 17 8 25 0M394 226c9 9 18 9 27 0M543 268c8 8 16 8 24 0" fill="none"/>
+  </g>
+  <rect x="38" y="42" width="222" height="58" rx="29" fill="#fff" opacity=".92"/>
+  <text x="149" y="78" fill="#14532D" font-family="Arial, sans-serif" font-size="20" font-weight="700" text-anchor="middle">Your team photo</text>
+</svg>

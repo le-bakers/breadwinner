@@ -22,51 +22,16 @@
     document.querySelectorAll('#themeSegmented button').forEach((btn) => {
       btn.classList.toggle('active', btn.dataset.themeValue === s.theme);
     });
-    document.querySelectorAll('#accentSwatches .avatar-swatch').forEach((btn) => {
-      btn.classList.toggle('active', btn.dataset.accent === s.accentColor);
-    });
 
     document.getElementById('reduceMotionToggle').checked = s.reduceMotion;
-  }
-
-  /* ---------- Appearance: emanating wave ripple ---------- */
-  function emitWave(btn, colorOverride) {
-    if (api.get().reduceMotion) return;
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-    const rect = btn.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-    const radius = Math.hypot(Math.max(cx, window.innerWidth - cx), Math.max(cy, window.innerHeight - cy)) * 1.05;
-    const color = colorOverride || getComputedStyle(document.documentElement).getPropertyValue('--primary').trim() || '#22C55E';
-    for (let i = 0; i < 2; i++) {
-      const ring = document.createElement('span');
-      ring.className = 'settings-wave' + (i ? ' second' : '');
-      ring.style.left = cx + 'px';
-      ring.style.top = cy + 'px';
-      ring.style.width = radius * 2 + 'px';
-      ring.style.height = radius * 2 + 'px';
-      ring.style.borderColor = color;
-      document.body.appendChild(ring);
-      ring.addEventListener('animationend', () => ring.remove());
-    }
   }
 
   /* ---------- Appearance: theme ---------- */
   document.querySelectorAll('#themeSegmented button').forEach((btn) => {
     btn.addEventListener('click', () => {
-      emitWave(btn);
       api.update('theme', btn.dataset.themeValue);
       renderFromSettings();
       if (BW.toast) BW.toast('Theme set to ' + btn.dataset.themeValue);
-    });
-  });
-
-  /* ---------- Appearance: accent color ---------- */
-  document.querySelectorAll('#accentSwatches .avatar-swatch').forEach((btn) => {
-    btn.addEventListener('click', () => {
-      api.update('accentColor', btn.dataset.accent);
-      renderFromSettings();
-      if (BW.toast) BW.toast('Accent color updated');
     });
   });
 
@@ -129,13 +94,30 @@
         .forEach((k) => localStorage.removeItem(k));
     } catch (e) { /* storage unavailable */ }
     clearModal.close();
-    window.location.href = 'signin.html';
+    window.location.href = '/signin/signin.html';
+  });
+
+  /* ---------- Delete account (danger zone: wipe + sign out + redirect) ---------- */
+  const deleteAccountModal = BW.confirmModal(document.getElementById('deleteAccountModal'));
+  document.getElementById('deleteAccountBtn').addEventListener('click', () => deleteAccountModal.open());
+  document.getElementById('deleteAccountCancel').addEventListener('click', () => deleteAccountModal.close());
+  document.getElementById('deleteAccountModal').addEventListener('click', (e) => {
+    if (e.target.id === 'deleteAccountModal') deleteAccountModal.close();
+  });
+  document.getElementById('deleteAccountConfirm').addEventListener('click', () => {
+    try {
+      Object.keys(localStorage)
+        .filter((k) => k.startsWith('breadwinner_'))
+        .forEach((k) => localStorage.removeItem(k));
+    } catch (e) { /* storage unavailable */ }
+    if (BW.signOut) BW.signOut();
+    window.location.href = '/signin/signin.html';
   });
 
   /* ---------- Sign out ---------- */
   document.getElementById('signOutBtn').addEventListener('click', () => {
     if (BW.signOut) BW.signOut();
-    window.location.href = 'signin.html';
+    window.location.href = '/signin/signin.html';
   });
 
   renderFromSettings();
@@ -159,7 +141,7 @@
   const set = BW.safeSet || ((k, v) => { try { localStorage.setItem(k, v); } catch (e) {} });
   const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  /* ---------- Helpers: initials + avatar color ---------- */
+  /* ---------- Helpers: initials + default avatar background ---------- */
   const AVATAR_BG = {
     green: 'linear-gradient(135deg,#22C55E,#16A34A)',
     blue: 'linear-gradient(135deg,#3B82F6,#2563EB)',
@@ -214,22 +196,6 @@
     emailInput.value = get(STORAGE.email, '');
   }
 
-  /* ---------- Avatar color swatches (always live, not gated by Edit mode) ---------- */
-  const swatches = document.querySelectorAll('#avatarSwatches .avatar-swatch');
-  swatches.forEach((btn) => btn.classList.toggle('active', btn.dataset.color === get(STORAGE.avatarColor, 'green')));
-  swatches.forEach((btn) => {
-    btn.addEventListener('click', () => {
-      set(STORAGE.avatarColor, btn.dataset.color);
-      swatches.forEach((b) => b.classList.toggle('active', b === btn));
-      const bg = btn.dataset.bg || AVATAR_BG[btn.dataset.color] || AVATAR_BG.green;
-      if (avatarPreview && !get(STORAGE.photo, "")) avatarPreview.style.background = bg;
-      const navAvatarEl = document.querySelector('.avatar-circle');
-      if (navAvatarEl && !get(STORAGE.photo, "")) navAvatarEl.style.background = bg;
-      if (BW.Settings) BW.Settings.applySettings();
-      if (BW.toast) BW.toast('Avatar color updated');
-    });
-  });
-
   /* ---------- Profile picture upload ---------- */
   const avatarUploadBtn = document.getElementById('avatarUploadBtn');
   const avatarUploadInput = document.getElementById('avatarUploadInput');
@@ -275,8 +241,6 @@
     const photo = get(STORAGE.photo, '');
     applyPhotoToAvatar(avatarPreview, photo);
     applyPhotoToAvatar(document.querySelector('.avatar-circle'), photo);
-    const colorSection = document.getElementById('avatarColorSection');
-    if (colorSection) colorSection.hidden = !!photo;
     if (removePhotoBtn) removePhotoBtn.hidden = !photo;
   }
 
@@ -322,7 +286,7 @@
       email: emailInput.value,
     };
     editableFields.forEach((el) => { el.disabled = false; });
-    formActions.hidden = false;
+    profileForm.classList.add('editing');
     updateSaveState();
     editBtn.hidden = true;
     fullNameInput.focus();
@@ -330,7 +294,7 @@
 
   function exitEditMode() {
     editableFields.forEach((el) => { el.disabled = true; });
-    formActions.hidden = true;
+    profileForm.classList.remove('editing');
     editBtn.hidden = false;
     fullNameError.textContent = '';
     fullNameError.classList.remove('show');

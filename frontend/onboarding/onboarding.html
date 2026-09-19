@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css">
-<link rel="stylesheet" href="onboarding.css">
-<link rel="icon" type="image/x-icon" href="images/breadwinner_icon.png">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="/onboarding/onboarding.css">
+<link rel="icon" type="image/x-icon" href="/images/breadwinner_icon.png">
 </head>
 <body>
 
@@ -19,8 +19,8 @@
 <!-- ============ TOPBAR ============ -->
 <header class="onboard-topbar">
   <div class="onboard-topbar-inner">
-    <a class="logo" href="index.html">
-      <img src="images/breadwinner_logo_black.png" alt="BreadWinner" height="32">
+    <a class="logo" href="/index/index.html">
+      <img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="32">
     </a>
 
     <div class="progress-meta">
@@ -30,7 +30,7 @@
       </div>
     </div>
 
-    <a href="signin.html" class="topbar-link">Already have an account? <strong>Sign In</strong></a>
+    <a href="/signin/signin.html" class="topbar-link">Already have an account? <strong>Sign In</strong></a>
   </div>
 </header>
 
@@ -95,7 +95,7 @@
         <label class="checkbox terms-checkbox">
           <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
           <span class="checkbox-box" aria-hidden="true"></span>
-          I agree to the <a href="terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
+          I agree to the <a href="/legal/terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="/legal/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
         </label>
         <p class="field-error" id="agreeTerms-error" role="alert"></p>
 
@@ -265,7 +265,7 @@
         <p class="eyebrow">You're all set</p>
         <h2 id="doneHeading">Welcome to BreadWinner, <span id="doneNamePlaceholder">there</span></h2>
         <p class="step-sub">Your account is ready. Head to your dashboard to upload your first receipt.</p>
-        <a href="home.html" class="btn btn-primary btn-lg">
+        <a href="/home/home.html" class="btn btn-primary btn-lg">
           Go to Dashboard
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
         </a>
@@ -285,7 +285,7 @@
   </div>
 </main>
 
-<script src="shared.js"></script>
-<script src="onboarding.js"></script>
+<script src="/shared.js"></script>
+<script src="/onboarding/onboarding.js"></script>
 </body>
 </html>

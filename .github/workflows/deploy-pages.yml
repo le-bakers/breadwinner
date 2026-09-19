@@ -3,7 +3,7 @@ name: Deploy frontend to GitHub Pages
 on:
   push:
     branches: [main]
-    paths: ["frontend/**"]
+    paths: ["frontend/**", ".github/workflows/deploy-pages.yml"]
   workflow_dispatch:
 
 permissions:
@@ -24,8 +24,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - uses: actions/configure-pages@v5
+      - name: Prepare Pages artifact
+        shell: bash
+        run: |
+          mkdir -p _site
+          cp -R frontend/. _site/
+          cp frontend/index/index.html _site/index.html
+          cp frontend/index/index.css _site/index.css
+          cp frontend/index/index.js _site/index.js
+          sed -i 's#\.\./##g' _site/index.html _site/index.css _site/index.js
       - uses: actions/upload-pages-artifact@v3
         with:
-          path: frontend
+          path: _site
       - id: deployment
         uses: actions/deploy-pages@v4
