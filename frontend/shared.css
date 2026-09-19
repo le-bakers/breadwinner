@@ -1072,11 +1072,10 @@ body.has-morph-nav .mobile-menu { top: 76px; }
   font-weight: 800;
   line-height: 1;
   letter-spacing: -0.045em;
-  transition: font-size 0.38s cubic-bezier(0.34, 1.2, 0.5, 1), transform 0.18s ease;
+  transition: font-size 0.38s cubic-bezier(0.34, 1.2, 0.5, 1);
 }
 .msn-brand img { height: 32px; width: auto; }
 .msn-brand span { color: var(--accent); }
-.msn-brand:hover { transform: translateY(-1px); }
 .msn-nav.is-compact .msn-brand { font-size: 22px; }
 
 /* Landing variant: the hero is a dark photo, so the resting (transparent)
@@ -1153,12 +1152,12 @@ body.has-morph-nav .mobile-menu { top: 76px; }
               background-color 0.18s ease, transform 0.18s ease, box-shadow 0.22s ease;
 }
 .msn-button svg { width: 17px; height: 17px; }
+/* Hover feedback is the glow only — the buttons stay put in the bar. */
 .msn-button:hover {
   background: color-mix(in srgb, var(--surface) 80%, var(--paper));
-  transform: translateY(-2px);
   box-shadow: 0 10px 22px -17px color-mix(in srgb, var(--ink) 45%, transparent);
 }
-.msn-button:active { transform: translateY(0) scale(0.97); }
+.msn-button:active { transform: scale(0.97); }
 .msn-icon-button { width: 42px; padding: 0; }
 .msn-nav.is-compact .msn-button { height: 36px; padding: 0 14px; font-size: 12.5px; }
 .msn-nav.is-compact .msn-icon-button { width: 36px; padding: 0; }
@@ -1173,10 +1172,12 @@ body.has-morph-nav .mobile-menu { top: 76px; }
 .msn-button-primary:hover { background: var(--primary-hover); color: #fff; }
 .msn-button-ghost { border-color: transparent; background: transparent; color: var(--muted); }
 .msn-button-ghost:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink); }
-.msn-button-ghost:active { transform: translateY(0) scale(0.97); }
+.msn-button-ghost:active { transform: scale(0.97); }
 
 /* Avatar action (dashboard variant) — keeps the shared avatar styling. */
 .msn-avatar { flex: none; }
+/* The navbar avatar stays still on hover too (shared .profile-pill lifts). */
+.msn-nav .msn-avatar:hover { transform: none; }
 .msn-nav .msn-avatar .avatar-circle {
   width: 42px; height: 42px;
   transition: width 0.38s ease, height 0.38s ease, font-size 0.38s ease;
