@@ -17,24 +17,7 @@
 
 <a class="sr-only" href="#main-content">Skip to main content</a>
 
-<!-- ============ DASHBOARD NAV ============ -->
-<header class="navbar dash-navbar">
-  <div class="nav-inner">
-    <a class="logo" href="/index/index.html">
-      <img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="36">
-    </a>
-    <nav class="nav-links" aria-label="Dashboard">
-      <a href="/home/home.html">Dashboard</a>
-      <a href="/home/home.html#receipts">Receipts</a>
-      <a href="/settings/settings.html" class="active">Settings</a>
-    </nav>
-    <div class="nav-actions dash-actions">
-      <a class="profile-pill" href="/settings/settings.html" aria-label="Go to your profile and settings">
-        <span class="avatar-circle">JM</span>
-      </a>
-    </div>
-    </div>
-</header>
+<div data-navbar="dashboard"></div>
 
 <main id="main-content" class="account-main">
   <div class="container">
@@ -352,6 +335,7 @@
   </a>
 </nav>
 
+<script src="/components/navbar.js"></script>
 <script src="/shared.js"></script>
 <script src="/settings/settings.js"></script>
 </body>
