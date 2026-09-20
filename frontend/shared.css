@@ -847,8 +847,6 @@ input, select { font-family: inherit; }
    and add .msn-over-media-landing to the nav when the resting bar sits on a dark
    background (it then uses light ink and the white logo).
 
-   other places is the .msn-over-media-otherplace class, which is used when the resting
-    bar sits on a light background (it then uses dark ink and the dark logo). 
     
    ============================================ */
 
@@ -940,18 +938,8 @@ body.has-morph-nav .mobile-menu { top: 76px; }
 }
 
 
-.msn-nav.msn-over-media-otherplace:not(.is-floating) {
-  --ink: var(--text);
-  --muted: var(--text-secondary);
-  --line: var(--border);
-}
-
 .msn-nav.msn-over-media-landing:not(.is-floating) .msn-brand img {
   content: url("/images/breadwinner_logo_white.png");
-}
-
-.msn-nav.msn-over-media-otherplace:not(.is-floating) .msn-brand img {
-  content: url("/images/breadwinner_logo_black.png");
 }
 
 .msn-links {
