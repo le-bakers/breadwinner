@@ -873,7 +873,7 @@ input, select { font-family: inherit; }
 
 /* The bar floats above the page, so the first block needs clearance and
    in-page anchors must not land underneath the shell. */
-body.has-morph-nav > main { padding-top: var(--msn-clearance, 76px); }
+body.has-morph-nav > main { padding-top: var(--msn-clearance, 0px); }
 body.has-morph-nav section[id],
 body.has-morph-nav .mobile-view[id] { scroll-margin-top: 100px; }
 body.has-morph-nav .mobile-menu { top: 76px; }
