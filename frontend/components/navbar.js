@@ -1,4 +1,3 @@
-/* Shared navbar markup. Pages choose a variant with data-navbar. */
 (function () {
   'use strict';
 

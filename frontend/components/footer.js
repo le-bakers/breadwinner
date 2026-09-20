@@ -1,4 +1,3 @@
-/* Shared footer markup. Pages opt in with data-footer. */
 (function () {
 	'use strict';
 
