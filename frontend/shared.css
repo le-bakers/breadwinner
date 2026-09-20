@@ -912,7 +912,7 @@ body.has-morph-nav .mobile-menu { top: 76px; }
   background: color-mix(in srgb, var(--paper) 74%, transparent);
   -webkit-backdrop-filter: saturate(170%) blur(16px);
   backdrop-filter: saturate(170%) blur(16px);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #fff 56%, transparent),
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff00 0%, transparent),
               0 14px 40px -20px color-mix(in srgb, var(--ink) 45%, transparent);
 }
 .msn-nav.is-compact .msn-shell { max-width: 560px; height: 52px; }
@@ -936,7 +936,7 @@ body.has-morph-nav .mobile-menu { top: 76px; }
 .msn-nav.msn-over-media-landing:not(.is-floating) {
   --ink: #EFF5F0;
   --muted: rgba(226, 236, 228, 0.76);
-  --line: rgb(255, 0, 0);
+  --line: rgba(255, 255, 255, 0.3);
 }
 
 
