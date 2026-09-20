@@ -122,7 +122,8 @@ input, select { font-family: inherit; }
 }
 .btn-primary:hover {
   background: var(--primary-hover);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
   box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.1), 0 18px 36px -8px rgba(var(--accent-rgb), 0.38);
 }
 
@@ -241,7 +242,7 @@ input, select { font-family: inherit; }
   font-weight: 600;
   border-bottom: 1px solid var(--border);
   background: var(--card);
-  border-radius: var(--radius-sm, 8px);
+  border-radius: var(--radius-sm);
   margin-bottom: 6px;
   color: var(--text);
   text-align: center;
