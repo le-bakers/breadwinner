@@ -57,7 +57,7 @@
   const variants = {
     landing: landing,
     home: app,
-    legal: legal
+    dashboard: app
   };
 
   document.querySelectorAll('[data-navbar]').forEach(function (placeholder) {
