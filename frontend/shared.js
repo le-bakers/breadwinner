@@ -384,9 +384,9 @@ window.BreadWinner = window.BreadWinner || {};
 /* ============================================
    Morphing Scroll Navbar (msn-*)
    Ported from the React MorphingScrollNavbar component. A single
-   requestAnimationFrame-throttled scroll listener drives three things:
-   the reading-progress bar, the floating/compact shell states, and the
-   scroll-spy link marking. Markup opts in with data-morph-nav.
+   requestAnimationFrame-throttled scroll listener drives two things:
+   the floating/compact shell states and the scroll-spy link marking.
+   Markup opts in with data-morph-nav.
    ============================================ */
 (function () {
   'use strict';
@@ -395,7 +395,6 @@ window.BreadWinner = window.BreadWinner || {};
     if (!nav || nav.dataset.morphNavReady === 'true') return;
     nav.dataset.morphNavReady = 'true';
 
-    const progressEl = document.querySelector('.msn-progress');
     const links = Array.prototype.slice.call(nav.querySelectorAll('.msn-links a[href^="#"]'));
     let direction = 'up';
     let lastY = window.scrollY;
@@ -414,13 +413,6 @@ window.BreadWinner = window.BreadWinner || {};
       const floating = y >= 8;
       nav.classList.toggle('is-floating', floating);
       nav.classList.toggle('is-compact', floating && direction === 'down');
-
-      if (progressEl) {
-        const doc = document.documentElement;
-        const max = doc.scrollHeight - doc.clientHeight;
-        const ratio = max > 0 ? Math.min(1, Math.max(0, y / max)) : 0;
-        progressEl.style.transform = 'scaleX(' + ratio + ')';
-      }
 
       // Active section: the last linked section whose top sits above a marker
       // a third of the way down the viewport.
