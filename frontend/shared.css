@@ -944,6 +944,8 @@ body.has-morph-nav .mobile-menu { top: 76px; }
 
 .msn-links {
   display: flex;
+  justify-content: center;
+  margin: 0 auto;
   gap: 28px;
   max-width: 640px;
   overflow: hidden;
