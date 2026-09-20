@@ -10,12 +10,18 @@
       '<a href="/about/about.html">About us</a>' +
     '</div>';
 
-  const landingActions =
-    '<div class="msn-actions">' +
-      '<a class="msn-button msn-button-ghost" href="/signin/signin.html">Sign In</a>' +
-      '<a class="msn-button msn-button-primary" href="/signin/signin.html">Start Free</a>' +
-      '<button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button>' +
-    '</div>';
+  let isSignedIn = false;
+  try {
+    isSignedIn = !!localStorage.getItem('breadwinner_session');
+  } catch (e) {}
+
+  const landingActions = isSignedIn
+    ? '<div class="msn-actions"><a class="msn-button msn-button-primary" href="/home/home.html">Continue to Dashboard</a><button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button></div>'
+    : '<div class="msn-actions"><a class="msn-button msn-button-ghost" href="/signin/signin.html">Sign In</a><a class="msn-button msn-button-primary" href="/signin/signin.html">Start Free</a><button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button></div>';
+
+  const landingMobileActions = isSignedIn
+    ? '<div class="nav-actions"><a href="/home/home.html" class="btn btn-primary">Continue to Dashboard</a></div>'
+    : '<div class="nav-actions"><a href="/signin/signin.html" class="btn btn-secondary">Sign In</a><a href="/signin/signin.html" class="btn btn-primary">Start Free</a></div>';
 
   const landing =
     '<nav class="msn-nav msn-over-media-landing" data-morph-nav aria-label="Primary navigation">' +
@@ -29,10 +35,7 @@
       '<a href="/index/index.html#how-it-works">How it works</a>' +
       '<a href="/index/index.html#features">Features</a>' +
       '<a href="/about/about.html">About us</a>' +
-      '<div class="nav-actions">' +
-        '<a href="/signin/signin.html" class="btn btn-secondary">Sign In</a>' +
-        '<a href="/signin/signin.html" class="btn btn-primary">Start Free</a>' +
-      '</div>' +
+      landingMobileActions +
     '</div>';
 
 
@@ -50,10 +53,7 @@
       '<a href="/index/index.html#how-it-works">How it works</a>' +
       '<a href="/index/index.html#features">Features</a>' +
       '<a href="/about/about.html">About us</a>' +
-      '<div class="nav-actions">' +
-        '<a href="/signin/signin.html" class="btn btn-secondary">Sign In</a>' +
-        '<a href="/signin/signin.html" class="btn btn-primary">Start Free</a>' +
-      '</div>' +
+      landingMobileActions +
     '</div>';
 
   const appLinks =
