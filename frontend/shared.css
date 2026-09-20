@@ -1040,7 +1040,10 @@ body.has-morph-nav .mobile-menu { top: 76px; }
 }
 @media (max-width: 860px) {
   .msn-links { display: none; }
-  .msn-button-ghost { display: none; }
+  /* Hide the top-bar CTAs on mobile — Sign In / Start Free / Continue to
+     Dashboard already live in the hamburger (mobile) menu. The nav-toggle
+     button is not a .msn-button, so it stays visible. */
+  .msn-button { display: none; }
 }
 @media (max-width: 560px) {
   .msn-nav { padding: 0 12px; }
