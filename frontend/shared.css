@@ -938,13 +938,17 @@ input, select { font-family: inherit; }
 /* ---------- Toast: slight overshoot on entry ---------- */
 .toast-wrap.show { transition: opacity 0.3s var(--ease-out), transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
 
-/* ---------- Logo: playful hover tilt ---------- */
+/* ---------- Logo: playful hover tilt (not in the navbar) ---------- */
 @media (hover: hover) {
-  .logo img { transition: transform 0.25s var(--ease-out); }
-  .logo:hover img { transform: rotate(-3deg) scale(1.04); }
+  .logo:not(.msn-brand) img { transition: transform 0.25s var(--ease-out); }
+  .logo:not(.msn-brand):hover img { transform: rotate(-3deg) scale(1.04); }
 }
 
-/* Disable logo hover tilt for the footer logo (index.html) and the sign-in top bar */
+/* Disable logo hover tilt for the navbar, footer logo and the sign-in top bar */
+.msn-nav .logo,
+.msn-nav .logo img,
+.msn-nav .logo:hover,
+.msn-nav .logo:hover img,
 .footer .logo,
 .footer .logo img,
 .footer .logo:hover,
