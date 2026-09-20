@@ -197,7 +197,7 @@ input, select { font-family: inherit; }
 .nav-toggle {
   display: none;
   width: 40px; height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--card);
   align-items: center;
