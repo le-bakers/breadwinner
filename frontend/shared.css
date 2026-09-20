@@ -380,7 +380,7 @@ input, select { font-family: inherit; }
 /* ============================================
    Account pages (Profile + Settings)
    ============================================ */
-.account-main { padding: 40px 0 140px; }
+.account-main { padding: 116px 0 140px; }
 @media (max-width: 860px) { .account-main { padding-bottom: 120px; } }
 
 .account-header h1 { font-size: clamp(24px, 3vw, 30px); font-weight: 800; }
