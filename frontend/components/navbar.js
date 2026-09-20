@@ -5,8 +5,8 @@
 
   const landingLinks =
     '<div class="msn-links">' +
-      '<a href="#how-it-works">How it works</a>' +
-      '<a href="#features">Features</a>' +
+      '<a href="/index/index.html#how-it-works">How it works</a>' +
+      '<a href="/index/index.html#features">Features</a>' +
       '<a href="/about/about.html">About us</a>' +
     '</div>';
 
@@ -20,14 +20,14 @@
   const landing =
     '<nav class="msn-nav msn-over-media" data-morph-nav aria-label="Primary navigation">' +
       '<div class="msn-shell">' +
-        '<a class="msn-brand logo" href="#top" aria-label="BreadWinner, back to top">' + logo + '</a>' +
+        '<a class="msn-brand logo" href="/index/index.html#top" aria-label="BreadWinner, back to top">' + logo + '</a>' +
         landingLinks +
         landingActions +
       '</div>' +
     '</nav>' +
     '<div class="mobile-menu" id="mobileMenu">' +
-      '<a href="#how-it-works">How it works</a>' +
-      '<a href="#features">Features</a>' +
+      '<a href="/index/index.html#how-it-works">How it works</a>' +
+      '<a href="/index/index.html#features">Features</a>' +
       '<a href="/about/about.html">About us</a>' +
       '<div class="nav-actions">' +
         '<a href="/signin/signin.html" class="btn btn-secondary">Sign In</a>' +
