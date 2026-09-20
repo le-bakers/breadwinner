@@ -938,6 +938,14 @@ body.has-morph-nav .mobile-menu { top: 76px; }
   --muted: rgba(226, 236, 228, 0.76);
   --line: rgba(255, 255, 255, 0.3);
 }
+
+
+.msn-nav.msn-over-media-otherplace:not(.is-floating) {
+  --ink: var(--text);
+  --muted: var(--text-secondary);
+  --line: var(--border);
+}
+
 .msn-nav.msn-over-media-landing:not(.is-floating) .msn-brand img {
   content: url("/images/breadwinner_logo_white.png");
 }
