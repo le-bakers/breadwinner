@@ -2,7 +2,6 @@
   'use strict';
 
   const logo = '<img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="36">';
-
   const landingLinks =
     '<div class="msn-links">' +
       '<a href="/index/index.html#how-it-works">How it works</a>' +
@@ -58,7 +57,7 @@
   const variants = {
     landing: landing,
     home: app,
-    dashboard: app
+    legal: legal
   };
 
   document.querySelectorAll('[data-navbar]').forEach(function (placeholder) {

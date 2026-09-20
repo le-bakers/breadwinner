@@ -138,13 +138,6 @@ input, select { font-family: inherit; }
   box-shadow: var(--shadow-md);
 }
 
-.btn-ghost {
-  background: transparent;
-  color: var(--text);
-  padding: 10px 18px;
-}
-.btn-ghost:hover { color: var(--primary-hover); }
-
 .btn-sm { padding: 9px 18px; font-size: 13.5px; }
 
 /* Ripple */
@@ -156,23 +149,12 @@ input, select { font-family: inherit; }
   animation: ripple 0.6s var(--ease-out);
   pointer-events: none;
 }
-.btn-secondary .ripple, .btn-ghost .ripple { background: rgba(var(--accent-rgb), 0.18); }
+.btn-secondary .ripple { background: rgba(var(--accent-rgb), 0.18); }
 @keyframes ripple {
   to { transform: scale(3); opacity: 0; }
 }
 
-/* ---------- Navbar ---------- */
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(248, 250, 248, 0.78);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border-bottom: 1px solid var(--border);
-  transition: box-shadow 0.3s var(--ease-out);
-}
-.navbar.scrolled { box-shadow: var(--shadow-sm); }
+/* ---------- Navbar (legacy fixed elements shared with morph nav) ---------- */
 .nav-inner {
   max-width: 1200px;
   margin: 0 auto;
@@ -195,35 +177,8 @@ input, select { font-family: inherit; }
 /* Theme-aware top navbar logo */
 [data-theme="dark"] .logo img { content: url(/images/breadwinner_logo_white.png); }
 [data-theme="light"] .logo img { content: url(/images/breadwinner_logo_black.png); }
-.logo-mark {
-  width: 32px; height: 32px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 10px -2px rgba(var(--accent-rgb), 0.5);
-  flex-shrink: 0;
-}
-.logo-mark svg { width: 18px; height: 18px; }
 
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.nav-links a {
-  padding: 9px 14px;
-  border-radius: var(--radius-full);
-  font-size: 14.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: color 0.2s, background 0.2s;
-}
-.nav-links a:hover { color: var(--text); background: rgba(31,41,55,0.04); }
-.nav-links a.active { color: var(--primary-hover); background: var(--accent-light); }
-
-.nav-actions { display: flex; align-items: center; gap: 10px; }
-
-/* ---------- Dashboard nav extras (shared across dashboard pages) ---------- */
+/* Used by the injected app navbar (home/dashboard variants). */
 .dash-actions { gap: 14px; }
 .profile-pill { background: none; border: none; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: inherit; text-decoration: none; cursor: pointer; border-radius: 50%; transition: transform 0.2s, box-shadow 0.2s; }
 .profile-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 12px -2px rgba(var(--accent-rgb), 0.4); }
@@ -300,10 +255,6 @@ input, select { font-family: inherit; }
 .mobile-menu .btn { width: 100%; }
 
 @media (max-width: 860px) {
-  .nav-links { display: none; }
-  .nav-actions .btn-ghost { display: none; }
-  /* Hide the top-nav "Start Free" button on mobile, but keep it in the hamburger menu */
-  .nav-inner > .nav-actions .btn-primary { display: none; }
   .nav-toggle { display: flex; }
   .mobile-menu { display: block; }
 }
@@ -390,25 +341,6 @@ input, select { font-family: inherit; }
 .reveal-scale.in-view { opacity: 1; transform: scale(1); }
 
 /* ---------- Misc utilities ---------- */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 11px;
-  border-radius: var(--radius-full);
-  font-size: 12.5px;
-  font-weight: 600;
-}
-.badge-gf { background: var(--accent-light); color: var(--primary-hover); }
-.badge-tax { background: #EFF6FF; color: #2563EB; }
-.badge-warn { background: #FEF3F2; color: #DC2626; }
-
-.shimmer {
-  background: linear-gradient(90deg, var(--border) 25%, #F3F4F6 37%, var(--border) 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.4s ease infinite;
-}
-@keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 /* ============================================
    BreadWinner â€” Account + Settings design tokens,
    theme system, mobile nav, and UI controls.
@@ -432,7 +364,6 @@ input, select { font-family: inherit; }
   --shadow-lg: 0 20px 44px -12px rgba(0,0,0,0.6), 0 8px 18px -8px rgba(0,0,0,0.4);
   --shadow-glow: 0 0 0 1px rgba(var(--accent-rgb), 0.16), 0 12px 32px -8px rgba(var(--accent-rgb), 0.32);
 }
-:root[data-theme="dark"] .navbar { background: rgba(16, 22, 15, 0.82); }
 :root[data-theme="dark"] .mobile-menu { background: rgba(16, 22, 15, 0.98); }
 :root[data-theme="dark"] .mobile-bottom-nav { background: rgba(20, 27, 19, 0.9); }
 :root[data-theme="dark"] .toast-wrap { background: #EDF3EC; color: #10160F; }
@@ -611,19 +542,6 @@ input, select { font-family: inherit; }
 .segmented button svg { width: 15px; height: 15px; }
 .segmented button.active { background: var(--card); color: var(--primary-hover); box-shadow: var(--shadow-sm); }
 @media (max-width: 380px) { .segmented button { padding: 8px 10px; } }
-
-/* ---------- Avatar swatches ---------- */
-.swatch-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin: 18px 0 10px; }
-.avatar-swatches, .accent-swatches { display: flex; gap: 12px; flex-wrap: wrap; }
-.avatar-swatch {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  padding: 0;
-  transition: transform 0.2s var(--ease-out), border-color 0.2s;
-}
-.avatar-swatch:hover { transform: scale(1.1); }
-.avatar-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--border); }
 
 /* ---------- Avatar preview ---------- */
 .avatar-xl {
@@ -835,14 +753,7 @@ input, select { font-family: inherit; }
    (all disabled by both Reduce Motion settings)
    ============================================ */
 
-/* ---------- Page entrance: navbar slides down, main content fades up ---------- */
-.navbar {
-  animation: navSlideDown 0.55s var(--ease-out) backwards;
-}
-@keyframes navSlideDown {
-  from { transform: translateY(-16px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
-}
+/* ---------- Page entrance: main content fades up ---------- */
 .account-main {
   animation: contentFadeUp 0.6s var(--ease-out) 0.08s backwards;
 }
@@ -876,7 +787,7 @@ input, select { font-family: inherit; }
 .btn:focus-visible { transition-duration: 0.1s; }
 
 /* ---------- Floating-label inputs: smoother focus ring ---------- */
-.field-group input, .field-group .select, .select, .field-group input[type="text"], .field-group input[type="email"] {
+.field-group input, .field-group input[type="text"], .field-group input[type="email"] {
   transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background 0.2s var(--ease-out);
 }
 
@@ -886,26 +797,10 @@ input, select { font-family: inherit; }
               transform 0.18s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
 .segmented button:active { transform: scale(0.94); }
-.segmented button.active svg { animation: iconPop 0.3s var(--ease-out); }
-@keyframes iconPop {
-  0% { transform: scale(0.7); }
-  60% { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
 
 /* ---------- Toggle switch: subtle hover glow ---------- */
 .switch:hover .switch-track { box-shadow: 0 0 0 5px rgba(var(--accent-rgb), 0.08); }
 .switch-track { transition: background 0.25s var(--ease-out), box-shadow 0.2s var(--ease-out); }
-
-/* ---------- Swatches: playful hover + selection bounce ---------- */
-.avatar-swatch { transition: transform 0.2s var(--ease-out), border-color 0.2s, box-shadow 0.2s var(--ease-out); }
-.avatar-swatch:hover { transform: scale(1.15) rotate(6deg); }
-.avatar-swatch.active { animation: swatchSelect 0.35s var(--ease-out); }
-@keyframes swatchSelect {
-  0% { transform: scale(0.85); }
-  60% { transform: scale(1.12); }
-  100% { transform: scale(1); }
-}
 
 /* ---------- Avatar pill: gentle hover lift ---------- */
 .profile-pill { transition: transform 0.2s var(--ease-out); }
@@ -929,10 +824,6 @@ input, select { font-family: inherit; }
 /* ---------- Toast: slight overshoot on entry ---------- */
 .toast-wrap.show { transition: opacity 0.3s var(--ease-out), transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
 
-/* ---------- Nav links: animated underline-ish press ---------- */
-.nav-links a { transition: color 0.2s var(--ease-out), background 0.2s var(--ease-out), transform 0.15s var(--ease-out); }
-.nav-links a:active { transform: scale(0.96); }
-
 /* ---------- Static overview fields: value pop when updated ---------- */
 .field-static .value { transition: color 0.2s var(--ease-out); }
 
@@ -941,7 +832,6 @@ input, select { font-family: inherit; }
    Ported from the React MorphingScrollNavbar component into the plain
    HTML/CSS/JS stack (the scroll behaviour lives in shared.js). Opt in per
    page with:
-     <div class="msn-progress" aria-hidden="true"></div>
      <nav class="msn-nav" data-morph-nav aria-label="Primary navigation">
        <div class="msn-shell">
          <a class="msn-brand logo" href="#top">logo</a>
@@ -949,7 +839,6 @@ input, select { font-family: inherit; }
          <div class="msn-actions">
            <a class="msn-button msn-button-ghost" href="...">Sign In</a>
            <a class="msn-button msn-button-primary" href="...">Start Free</a>
-           <a class="msn-button msn-icon-button" href="..." aria-label="...">svg</a>
          </div>
        </div>
      </nav>
@@ -958,18 +847,6 @@ input, select { font-family: inherit; }
    and add .msn-over-media to the nav when the resting bar sits on a dark
    background (it then uses light ink and the white logo).
    ============================================ */
-
-.msn-progress {
-  position: fixed;
-  z-index: 101;
-  top: 0; right: 0; left: 0;
-  height: 2px;
-  pointer-events: none;
-  background: linear-gradient(90deg, var(--primary), var(--primary-hover));
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  will-change: transform;
-}
 
 .msn-nav {
   /* Local names mapped onto the shared design tokens, so the navbar
@@ -1047,7 +924,6 @@ body.has-morph-nav .mobile-menu { top: 76px; }
   transition: font-size 0.38s cubic-bezier(0.34, 1.2, 0.5, 1);
 }
 .msn-brand img { height: 32px; width: auto; }
-.msn-brand span { color: var(--accent); }
 .msn-nav.is-compact .msn-brand { font-size: 22px; }
 
 /* Landing variant: the hero is a dark photo, so the resting (transparent)
@@ -1123,18 +999,14 @@ body.has-morph-nav .mobile-menu { top: 76px; }
   transition: height 0.38s ease, font-size 0.38s ease, padding 0.38s ease,
               background-color 0.18s ease, transform 0.18s ease, box-shadow 0.22s ease;
 }
-.msn-button svg { width: 17px; height: 17px; }
-/* Hover feedback is the glow only — the buttons stay put in the bar. */
 .msn-button:hover {
   background: color-mix(in srgb, var(--surface) 80%, var(--paper));
   box-shadow: 0 10px 22px -17px color-mix(in srgb, var(--ink) 45%, transparent);
 }
 .msn-button:active { transform: scale(0.97); }
-.msn-icon-button { width: 42px; padding: 0; }
 .msn-nav.is-compact .msn-button { height: 36px; padding: 0 14px; font-size: 12.5px; }
-.msn-nav.is-compact .msn-icon-button { width: 36px; padding: 0; }
 
-/* Variants mirror the site's .btn-primary / .btn-ghost pairing. */
+/* Variants mirror the site's .btn-primary / .btn-secondary pairing. */
 .msn-button-primary {
   border-color: transparent;
   background: var(--primary);

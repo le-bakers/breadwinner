@@ -134,7 +134,6 @@
   const STORAGE = BW.STORAGE || {
     name: 'breadwinner_user_name',
     email: 'breadwinner_user_email',
-    avatarColor: 'breadwinner_avatar_color',
     memberSince: 'breadwinner_member_since'
   };
   const get = BW.safeGet || ((k, f) => { try { const v = localStorage.getItem(k); return v === null ? f : v; } catch (e) { return f; } });
@@ -142,13 +141,7 @@
   const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
   /* ---------- Helpers: initials + default avatar background ---------- */
-  const AVATAR_BG = {
-    green: 'linear-gradient(135deg,#22C55E,#16A34A)',
-    blue: 'linear-gradient(135deg,#3B82F6,#2563EB)',
-    purple: 'linear-gradient(135deg,#A855F7,#9333EA)',
-    orange: 'linear-gradient(135deg,#F97316,#EA580C)',
-    pink: 'linear-gradient(135deg,#EC4899,#DB2777)'
-  };
+  const AVATAR_BG = 'linear-gradient(135deg,#22C55E,#16A34A)';
 
   function getInitials(name) {
     const parts = String(name || '').trim().split(/\s+/).filter(Boolean);
@@ -232,7 +225,7 @@
       el.style.background = 'url("' + photo + '") center / cover no-repeat';
       el.textContent = '';
     } else {
-      el.style.background = AVATAR_BG[get(STORAGE.avatarColor, 'green')] || AVATAR_BG.green;
+      el.style.background = AVATAR_BG;
       el.textContent = getInitials(get(STORAGE.name, ''));
     }
   }
@@ -390,7 +383,7 @@
   if (profileForm) {
     loadFieldsFromStorage();
     renderSummary();
-    if (avatarPreview) avatarPreview.style.background = AVATAR_BG[get(STORAGE.avatarColor, 'green')] || AVATAR_BG.green;
+    if (avatarPreview) avatarPreview.style.background = AVATAR_BG;
     refreshAvatarPhoto();
   }
 })();
