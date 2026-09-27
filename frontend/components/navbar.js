@@ -21,7 +21,7 @@
 
   const landingMobileActions = isSignedIn
     ? '<div class="nav-actions"><a href="/home/home.html" class="btn btn-primary">Continue to Dashboard</a></div>'
-    : '<div class="nav-actions"><a href="/signin/signin.html" class="btn btn-secondary">Sign In</a><a href="/signin/signin.html" class="btn btn-primary">Start Free</a></div>';
+    : '<div class="nav-actions"><a href="/signin/signin.html" class="btn btn-secondary">Sign In</a><a href="/onboarding/onboarding.html" class="btn btn-primary">Start Free</a></div>';
 
   const landing =
     '<nav class="msn-nav msn-over-media-landing" data-morph-nav aria-label="Primary navigation">' +

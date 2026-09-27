@@ -124,18 +124,19 @@ input, select { font-family: inherit; }
   background: var(--primary-hover);
   box-shadow: var(--shadow-glow);
 }
+
+.btn-primary:focus-visible {
   box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.1), 0 18px 36px -8px rgba(var(--accent-rgb), 0.38);
 }
 
 .btn-secondary {
   background: var(--card);
-  color: var(--text);
+  color: rgb(255, 255, 255);
   border: 1px solid var(--border);
 }
 .btn-secondary:hover {
   border-color: var(--primary);
   color: var(--primary-hover);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
 
