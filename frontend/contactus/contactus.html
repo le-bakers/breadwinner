@@ -12,30 +12,11 @@
 <link rel="stylesheet" href="/shared.css">
 <link rel="stylesheet" href="/contactus/contactus.css">
 </head>
-<body>
+<body class="has-morph-nav">
 
 <a class="sr-only" href="#main-content">Skip to main content</a>
 
-<header class="navbar">
-	<div class="nav-inner">
-		<a class="logo" href="/index/index.html">
-			<img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="36">
-		</a>
-		<div class="nav-actions">
-			<a href="/signin/signin.html" class="btn btn-ghost">Sign In</a>
-			<a href="/signin/signin.html" class="btn btn-primary">Start Free</a>
-		</div>
-		<button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false">
-			<span></span><span></span><span></span>
-		</button>
-	</div>
-	<div class="mobile-menu" id="mobileMenu">
-		<div class="nav-actions">
-			<a href="/signin/signin.html" class="btn btn-secondary">Sign In</a>
-			<a href="/signin/signin.html" class="btn btn-primary">Start Free</a>
-		</div>
-	</div>
-</header>
+<div data-navbar="other"></div>
 
 <main id="main-content">
 	<section class="contact-hero">
@@ -132,40 +113,10 @@
 	</section>
 </main>
 
-<footer class="footer">
-	<div class="container">
-		<div class="footer-inner">
-			<div>
-				<a class="logo" href="/index/index.html">
-					<img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="36">
-				</a>
-				<p class="footer-tagline">Gluten-free grocery tracking, simplified.</p>
-			</div>
-			<div class="footer-links">
-				<div class="footer-col">
-					<h4>Product</h4>
-					<a href="/index/index.html#how-it-works">How it Works</a>
-					<a href="/signin/signin.html">Sign In</a>
-					<a href="/signin/signin.html">Start Free</a>
-				</div>
-				<div class="footer-col">
-					<h4>Company</h4>
-					  <a href="/about/about.html">About Us</a>
-					<a href="/contactus/contactus.html">Contact</a>
-				</div>
-				<div class="footer-col">
-					<h4>Legal</h4>
-					<a href="/legal/privacy.html">Privacy</a>
-					<a href="/legal/terms.html">Terms</a>
-				</div>
-			</div>
-		</div>
-		<div class="footer-bottom">
-			<p>&copy; 2026 BreadWinner. All rights reserved.</p>
-		</div>
-	</div>
-</footer>
+<div data-footer></div>
 
+<script src="/components/navbar.js"></script>
+<script src="/components/footer.js"></script>
 <script src="/shared.js"></script>
 <script src="/contactus/contactus.js"></script>
 </body>

@@ -23,7 +23,7 @@
   --shadow-lg: 0 20px 40px -12px rgba(31, 41, 55, 0.12), 0 8px 16px -8px rgba(31, 41, 55, 0.06);
   --shadow-glow: 0 0 0 1px rgba(var(--accent-rgb), 0.08), 0 12px 32px -8px rgba(var(--accent-rgb), 0.28);
 
-  --radius-sm: 10px;
+  --radius-sm: 15px;
   --radius-md: 16px;
   --radius-lg: 20px;
   --radius-full: 999px;
@@ -92,7 +92,7 @@ input, select { font-family: inherit; }
 .container {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 0 24px;
+  padding: 116px 24px;
 }
 
 /* ---------- Buttons ---------- */
@@ -122,28 +122,23 @@ input, select { font-family: inherit; }
 }
 .btn-primary:hover {
   background: var(--primary-hover);
-  transform: translateY(-2px);
+  box-shadow: var(--shadow-glow);
+}
+
+.btn-primary:focus-visible {
   box-shadow: 0 0 0 1px rgba(var(--accent-rgb), 0.1), 0 18px 36px -8px rgba(var(--accent-rgb), 0.38);
 }
 
 .btn-secondary {
   background: var(--card);
-  color: var(--text);
+  color: rgb(255, 255, 255);
   border: 1px solid var(--border);
 }
 .btn-secondary:hover {
   border-color: var(--primary);
   color: var(--primary-hover);
-  transform: translateY(-2px);
   box-shadow: var(--shadow-md);
 }
-
-.btn-ghost {
-  background: transparent;
-  color: var(--text);
-  padding: 10px 18px;
-}
-.btn-ghost:hover { color: var(--primary-hover); }
 
 .btn-sm { padding: 9px 18px; font-size: 13.5px; }
 
@@ -156,23 +151,12 @@ input, select { font-family: inherit; }
   animation: ripple 0.6s var(--ease-out);
   pointer-events: none;
 }
-.btn-secondary .ripple, .btn-ghost .ripple { background: rgba(var(--accent-rgb), 0.18); }
+.btn-secondary .ripple { background: rgba(var(--accent-rgb), 0.18); }
 @keyframes ripple {
   to { transform: scale(3); opacity: 0; }
 }
 
-/* ---------- Navbar ---------- */
-.navbar {
-  position: sticky;
-  top: 0;
-  z-index: 100;
-  background: rgba(248, 250, 248, 0.78);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border-bottom: 1px solid var(--border);
-  transition: box-shadow 0.3s var(--ease-out);
-}
-.navbar.scrolled { box-shadow: var(--shadow-sm); }
+/* ---------- Navbar (legacy fixed elements shared with morph nav) ---------- */
 .nav-inner {
   max-width: 1200px;
   margin: 0 auto;
@@ -195,44 +179,8 @@ input, select { font-family: inherit; }
 /* Theme-aware top navbar logo */
 [data-theme="dark"] .logo img { content: url(/images/breadwinner_logo_white.png); }
 [data-theme="light"] .logo img { content: url(/images/breadwinner_logo_black.png); }
-.logo-mark {
-  width: 32px; height: 32px;
-  border-radius: 9px;
-  background: linear-gradient(135deg, var(--primary), var(--primary-hover));
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 4px 10px -2px rgba(var(--accent-rgb), 0.5);
-  flex-shrink: 0;
-}
-.logo-mark svg { width: 18px; height: 18px; }
 
-.navbar .logo,
-.navbar .logo img,
-.navbar .logo:hover,
-.navbar .logo:hover img {
-  transform: none !important;
-  transition: none !important;
-  filter: none !important;
-}
-
-.nav-links {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.nav-links a {
-  padding: 9px 14px;
-  border-radius: var(--radius-full);
-  font-size: 14.5px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  transition: color 0.2s, background 0.2s;
-}
-.nav-links a:hover { color: var(--text); background: rgba(31,41,55,0.04); }
-.nav-links a.active { color: var(--primary-hover); background: var(--accent-light); }
-
-.nav-actions { display: flex; align-items: center; gap: 10px; }
-
-/* ---------- Dashboard nav extras (shared across dashboard pages) ---------- */
+/* Used by the injected app navbar (home/dashboard variants). */
 .dash-actions { gap: 14px; }
 .profile-pill { background: none; border: none; padding: 0; display: inline-flex; align-items: center; justify-content: center; color: inherit; text-decoration: none; cursor: pointer; border-radius: 50%; transition: transform 0.2s, box-shadow 0.2s; }
 .profile-pill:hover { transform: translateY(-1px); box-shadow: 0 4px 12px -2px rgba(var(--accent-rgb), 0.4); }
@@ -250,12 +198,13 @@ input, select { font-family: inherit; }
 .nav-toggle {
   display: none;
   width: 40px; height: 40px;
-  border-radius: 10px;
+  border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--card);
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  padding-right: 5px;
   gap: 4px;
 }
 .nav-toggle span {
@@ -295,7 +244,7 @@ input, select { font-family: inherit; }
   font-weight: 600;
   border-bottom: 1px solid var(--border);
   background: var(--card);
-  border-radius: var(--radius-sm, 8px);
+  border-radius: var(--radius-sm);
   margin-bottom: 6px;
   color: var(--text);
   text-align: center;
@@ -309,10 +258,6 @@ input, select { font-family: inherit; }
 .mobile-menu .btn { width: 100%; }
 
 @media (max-width: 860px) {
-  .nav-links { display: none; }
-  .nav-actions .btn-ghost { display: none; }
-  /* Hide the top-nav "Start Free" button on mobile, but keep it in the hamburger menu */
-  .nav-inner > .nav-actions .btn-primary { display: none; }
   .nav-toggle { display: flex; }
   .mobile-menu { display: block; }
 }
@@ -399,25 +344,6 @@ input, select { font-family: inherit; }
 .reveal-scale.in-view { opacity: 1; transform: scale(1); }
 
 /* ---------- Misc utilities ---------- */
-.badge {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 4px 11px;
-  border-radius: var(--radius-full);
-  font-size: 12.5px;
-  font-weight: 600;
-}
-.badge-gf { background: var(--accent-light); color: var(--primary-hover); }
-.badge-tax { background: #EFF6FF; color: #2563EB; }
-.badge-warn { background: #FEF3F2; color: #DC2626; }
-
-.shimmer {
-  background: linear-gradient(90deg, var(--border) 25%, #F3F4F6 37%, var(--border) 63%);
-  background-size: 400% 100%;
-  animation: shimmer 1.4s ease infinite;
-}
-@keyframes shimmer { 0% { background-position: 100% 50%; } 100% { background-position: 0 50%; } }
 /* ============================================
    BreadWinner â€” Account + Settings design tokens,
    theme system, mobile nav, and UI controls.
@@ -441,7 +367,6 @@ input, select { font-family: inherit; }
   --shadow-lg: 0 20px 44px -12px rgba(0,0,0,0.6), 0 8px 18px -8px rgba(0,0,0,0.4);
   --shadow-glow: 0 0 0 1px rgba(var(--accent-rgb), 0.16), 0 12px 32px -8px rgba(var(--accent-rgb), 0.32);
 }
-:root[data-theme="dark"] .navbar { background: rgba(16, 22, 15, 0.82); }
 :root[data-theme="dark"] .mobile-menu { background: rgba(16, 22, 15, 0.98); }
 :root[data-theme="dark"] .mobile-bottom-nav { background: rgba(20, 27, 19, 0.9); }
 :root[data-theme="dark"] .toast-wrap { background: #EDF3EC; color: #10160F; }
@@ -620,19 +545,6 @@ input, select { font-family: inherit; }
 .segmented button svg { width: 15px; height: 15px; }
 .segmented button.active { background: var(--card); color: var(--primary-hover); box-shadow: var(--shadow-sm); }
 @media (max-width: 380px) { .segmented button { padding: 8px 10px; } }
-
-/* ---------- Avatar swatches ---------- */
-.swatch-label { display: block; font-size: 12px; font-weight: 700; color: var(--text-secondary); margin: 18px 0 10px; }
-.avatar-swatches, .accent-swatches { display: flex; gap: 12px; flex-wrap: wrap; }
-.avatar-swatch {
-  width: 34px; height: 34px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  padding: 0;
-  transition: transform 0.2s var(--ease-out), border-color 0.2s;
-}
-.avatar-swatch:hover { transform: scale(1.1); }
-.avatar-swatch.active { border-color: var(--text); box-shadow: 0 0 0 2px var(--card), 0 0 0 4px var(--border); }
 
 /* ---------- Avatar preview ---------- */
 .avatar-xl {
@@ -844,14 +756,7 @@ input, select { font-family: inherit; }
    (all disabled by both Reduce Motion settings)
    ============================================ */
 
-/* ---------- Page entrance: navbar slides down, main content fades up ---------- */
-.navbar {
-  animation: navSlideDown 0.55s var(--ease-out) backwards;
-}
-@keyframes navSlideDown {
-  from { transform: translateY(-16px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
-}
+/* ---------- Page entrance: main content fades up ---------- */
 .account-main {
   animation: contentFadeUp 0.6s var(--ease-out) 0.08s backwards;
 }
@@ -885,7 +790,7 @@ input, select { font-family: inherit; }
 .btn:focus-visible { transition-duration: 0.1s; }
 
 /* ---------- Floating-label inputs: smoother focus ring ---------- */
-.field-group input, .field-group .select, .select, .field-group input[type="text"], .field-group input[type="email"] {
+.field-group input, .field-group input[type="text"], .field-group input[type="email"] {
   transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background 0.2s var(--ease-out);
 }
 
@@ -895,26 +800,10 @@ input, select { font-family: inherit; }
               transform 0.18s var(--ease-out), box-shadow 0.2s var(--ease-out);
 }
 .segmented button:active { transform: scale(0.94); }
-.segmented button.active svg { animation: iconPop 0.3s var(--ease-out); }
-@keyframes iconPop {
-  0% { transform: scale(0.7); }
-  60% { transform: scale(1.15); }
-  100% { transform: scale(1); }
-}
 
 /* ---------- Toggle switch: subtle hover glow ---------- */
 .switch:hover .switch-track { box-shadow: 0 0 0 5px rgba(var(--accent-rgb), 0.08); }
 .switch-track { transition: background 0.25s var(--ease-out), box-shadow 0.2s var(--ease-out); }
-
-/* ---------- Swatches: playful hover + selection bounce ---------- */
-.avatar-swatch { transition: transform 0.2s var(--ease-out), border-color 0.2s, box-shadow 0.2s var(--ease-out); }
-.avatar-swatch:hover { transform: scale(1.15) rotate(6deg); }
-.avatar-swatch.active { animation: swatchSelect 0.35s var(--ease-out); }
-@keyframes swatchSelect {
-  0% { transform: scale(0.85); }
-  60% { transform: scale(1.12); }
-  100% { transform: scale(1); }
-}
 
 /* ---------- Avatar pill: gentle hover lift ---------- */
 .profile-pill { transition: transform 0.2s var(--ease-out); }
@@ -938,28 +827,242 @@ input, select { font-family: inherit; }
 /* ---------- Toast: slight overshoot on entry ---------- */
 .toast-wrap.show { transition: opacity 0.3s var(--ease-out), transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
 
-/* ---------- Logo: playful hover tilt ---------- */
-@media (hover: hover) {
-  .logo img { transition: transform 0.25s var(--ease-out); }
-  .logo:hover img { transform: rotate(-3deg) scale(1.04); }
-}
-
-/* Disable logo hover tilt for the footer logo (index.html) and the sign-in top bar */
-.footer .logo,
-.footer .logo img,
-.footer .logo:hover,
-.footer .logo:hover img,
-.signin-panel .logo,
-.signin-panel .logo img,
-.signin-panel .logo:hover,
-.signin-panel .logo:hover img {
-  transform: none !important;
-  transition: none !important;
-}
-
-/* ---------- Nav links: animated underline-ish press ---------- */
-.nav-links a { transition: color 0.2s var(--ease-out), background 0.2s var(--ease-out), transform 0.15s var(--ease-out); }
-.nav-links a:active { transform: scale(0.96); }
-
 /* ---------- Static overview fields: value pop when updated ---------- */
 .field-static .value { transition: color 0.2s var(--ease-out); }
+
+/* ============================================
+   Morphing Scroll Navbar (msn-*)
+   Ported from the React MorphingScrollNavbar component into the plain
+   HTML/CSS/JS stack (the scroll behaviour lives in shared.js). Opt in per
+   page with:
+     <nav class="msn-nav" data-morph-nav aria-label="Primary navigation">
+       <div class="msn-shell">
+         <a class="msn-brand logo" href="#top">logo</a>
+         <div class="msn-links"><a href="#section">Label</a></div>
+         <div class="msn-actions">
+           <a class="msn-button msn-button-ghost" href="...">Sign In</a>
+           <a class="msn-button msn-button-primary" href="...">Start Free</a>
+         </div>
+       </div>
+     </nav>
+   Add class="has-morph-nav" on <body> so <main> clears the fixed bar and
+   anchor targets clear the shell. Hero pages should set --msn-clearance: 0
+   and add .msn-over-media-landing to the nav when the resting bar sits on a dark
+   background (it then uses light ink and the white logo).
+
+    
+   ============================================ */
+
+.msn-nav {
+  /* Local names mapped onto the shared design tokens, so the navbar
+     follows the user's accent colour and the [data-theme] dark palette. */
+  --paper: var(--bg);
+  --surface: var(--card);
+  --ink: var(--text);
+  --muted: var(--text-secondary);
+  --line: var(--border);
+  --accent: var(--primary);
+
+  position: fixed;
+  z-index: 100;
+  top: 0; right: 0; left: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  pointer-events: none;
+  font-family: var(--font-body);
+  color: var(--ink);
+}
+.msn-nav *, .msn-nav *::before, .msn-nav *::after { box-sizing: border-box; }
+.msn-nav a { color: inherit; text-decoration: none; }
+
+/* The bar floats above the page, so the first block needs clearance and
+   in-page anchors must not land underneath the shell. */
+body.has-morph-nav > main { padding-top: var(--msn-clearance, 0px); }
+body.has-morph-nav section[id],
+body.has-morph-nav .mobile-view[id] { scroll-margin-top: 100px; }
+body.has-morph-nav .mobile-menu { top: 76px; }
+
+.msn-shell {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  width: 100%;
+  max-width: 1180px;
+  height: 68px;
+  padding: 0 12px 0 22px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  transition: max-width 0.5s cubic-bezier(0.34, 1.32, 0.5, 1),
+              height 0.38s cubic-bezier(0.34, 1.2, 0.5, 1),
+              margin-top 0.38s ease,
+              padding 0.38s ease,
+              background-color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.4s ease;
+}
+.msn-nav.is-floating .msn-shell {
+  max-width: 960px;
+  height: 58px;
+  margin-top: 12px;
+  padding: 0 10px 0 20px;
+  border-color: color-mix(in srgb, var(--ink) 10%, transparent);
+  background: color-mix(in srgb, var(--paper) 74%, transparent);
+  -webkit-backdrop-filter: saturate(170%) blur(16px);
+  backdrop-filter: saturate(170%) blur(16px);
+  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff00 0%, transparent),
+              0 14px 40px -20px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.msn-nav.is-compact .msn-shell { max-width: 560px; height: 52px; }
+
+.msn-brand {
+  flex: none;
+  display: flex;
+  align-items: center;
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  transition: font-size 0.38s cubic-bezier(0.34, 1.2, 0.5, 1);
+}
+.msn-brand img { height: 32px; width: auto; }
+.msn-nav.is-compact .msn-brand { font-size: 22px; }
+
+/* Landing variant: the hero is a dark photo, so the resting (transparent)
+   bar uses light ink and the white logo, then returns to the themed ink
+   once it floats onto its own surface. */
+.msn-nav.msn-over-media-landing:not(.is-floating) {
+  --ink: #EFF5F0;
+  --muted: rgba(226, 236, 228, 0.76);
+  --line: rgba(255, 255, 255, 0.3);
+}
+
+
+.msn-nav.msn-over-media-landing:not(.is-floating) .msn-brand img {
+  content: url("/images/breadwinner_logo_white.png");
+}
+
+.msn-links {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  gap: 28px;
+  max-width: 640px;
+  overflow: hidden;
+  opacity: 1;
+  transition: max-width 0.45s cubic-bezier(0.34, 1.2, 0.5, 1),
+              opacity 0.28s ease,
+              transform 0.3s ease,
+              gap 0.35s ease;
+}
+.msn-nav.is-compact .msn-links {
+  max-width: 0;
+  gap: 0;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+.msn-links a {
+  position: relative;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+.msn-links a::after {
+  content: "";
+  position: absolute;
+  right: 0; bottom: -5px; left: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.msn-links a:hover,
+.msn-links a[aria-current="location"] { color: var(--ink); }
+.msn-links a:hover::after,
+.msn-links a[aria-current="location"]::after { transform: scaleX(1); }
+
+.msn-actions { display: flex; flex: none; align-items: center; gap: 10px; }
+.msn-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-sm);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: height 0.38s ease, font-size 0.38s ease, padding 0.38s ease,
+              background-color 0.18s ease, transform 0.18s ease, box-shadow 0.22s ease;
+}
+.msn-button:hover {
+  background: color-mix(in srgb, var(--surface) 80%, var(--paper));
+  box-shadow: 0 10px 22px -17px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.msn-button:active { transform: scale(0.97); }
+.msn-nav.is-compact .msn-button { height: 36px; padding: 0 14px; font-size: 12.5px; }
+
+/* Variants mirror the site's .btn-primary / .btn-secondary pairing. */
+.msn-button-primary {
+  border-color: transparent;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+.msn-button-primary:hover { background: var(--primary-hover); color: #fff; }
+.msn-button-ghost { border-color: transparent; background: transparent; color: var(--muted); }
+.msn-button-ghost:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink); }
+.msn-button-ghost:active { transform: scale(0.97); }
+
+/* Avatar action (dashboard variant) — keeps the shared avatar styling. */
+.msn-avatar { flex: none; }
+/* The navbar avatar stays still on hover too (shared .profile-pill lifts). */
+.msn-nav .msn-avatar:hover { transform: none; }
+.msn-nav .msn-avatar .avatar-circle {
+  width: 42px; height: 42px;
+  transition: width 0.38s ease, height 0.38s ease, font-size 0.38s ease;
+}
+.msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; font-size: 12.5px; }
+
+@media (max-width: 900px) {
+  .msn-nav.is-floating .msn-shell { max-width: 680px; }
+  .msn-nav.is-compact .msn-shell { max-width: 520px; }
+}
+@media (max-width: 860px) {
+  .msn-links { display: none; }
+  /* Hide the top-bar CTAs on mobile — Sign In / Start Free / Continue to
+     Dashboard already live in the hamburger (mobile) menu. The nav-toggle
+     button is not a .msn-button, so it stays visible. */
+  .msn-button { display: none; }
+}
+@media (max-width: 560px) {
+  .msn-nav { padding: 0 12px; }
+  .msn-shell,
+  .msn-nav.is-floating .msn-shell,
+  .msn-nav.is-compact .msn-shell { gap: 12px; height: 60px; padding: 0 4px 0 10px; }
+  .msn-nav.is-floating .msn-shell,
+  .msn-nav.is-compact .msn-shell { height: 52px; }
+  .msn-brand,
+  .msn-nav.is-compact .msn-brand { font-size: 23px; }
+  .msn-brand img { height: 28px; }
+  .msn-actions { gap: 7px; }
+  .msn-button,
+  .msn-nav.is-compact .msn-button { height: 40px; padding: 0 13px; font-size: 13px; }
+  .msn-nav.is-floating .msn-button,
+  .msn-nav.is-compact .msn-button { height: 36px; }
+  .msn-nav .msn-avatar .avatar-circle,
+  .msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; }
+}
