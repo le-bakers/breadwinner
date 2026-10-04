@@ -217,6 +217,7 @@
 .item-mark { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .item-mark.yes { background: var(--accent-light); color: #15803D; }
 .item-mark.no { background: #FEF3F2; color: #DC2626; }
+.item-mark.unknown { background: var(--border, #E5E7EB); color: var(--text-secondary); font-size: 11px; font-weight: 700; }
 .item-name { flex: 1; font-weight: 500; }
 .item-price { color: var(--text-secondary); font-weight: 600; }
 
@@ -291,7 +292,7 @@
   gap: 10px;
   padding: 0 20px;
   box-shadow: var(--shadow-glow);
-  transition: background 0.25s, box-shadow 0.35s var(--ease-out), transform 0.35s var(--ease-out), padding 0.35s var(--ease-out);
+  transition: background 0.25s, box-shadow 0.35s var(--ease-out), transform 0.35s var(--ease-out);
   cursor: pointer;
   font-family: var(--font-body);
 }
@@ -301,7 +302,6 @@
   white-space: nowrap;
   font-weight: 700;
   font-size: 14.5px;
-  transition: max-width 0.35s var(--ease-out);
 }
 .fab:hover {
   background: var(--primary-hover);
@@ -330,6 +330,8 @@
   animation: cameraOverlayFade 0.25s var(--ease-out);
 }
 .camera-overlay[hidden] { display: none; }
+/* Parts of the scanner set "display: flex", which beats the hidden attribute. This makes hidden win. */
+.camera-overlay [hidden] { display: none !important; }
 @keyframes cameraOverlayFade {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -635,6 +637,9 @@
 .camera-footer { min-height: 106px; padding: 16px 28px calc(16px + env(safe-area-inset-bottom)); background: #172219; border-top: 1px solid #2A342B; }
 .camera-caption, .camera-caption-end { color: #9BAA9C; }
 .camera-caption-end { color: #86EFAC; }
+.camera-upload-btn { background: none; border: 0; padding: 12px 0; min-height: 44px; font-family: inherit; cursor: pointer; text-decoration: underline; text-underline-offset: 3px; }
+.camera-upload-btn:hover { color: #BBF7D0; }
+.camera-upload-btn:focus-visible { outline: 2px solid #86EFAC; outline-offset: 4px; border-radius: 4px; }
 .shutter-btn { width: 76px; height: 76px; border: 5px solid #86EFAC; background: transparent; box-shadow: 0 0 0 6px rgba(134,239,172,.14); }
 .shutter-inner { width: 58px; height: 58px; border: 0; background: #F0FDF4; transition: transform .18s var(--ease-out), background .18s; }
 .shutter-btn:hover .shutter-inner { border: 0; background: #BBF7D0; transform: scale(.92); }

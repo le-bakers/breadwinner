@@ -127,7 +127,7 @@
 </div>
 
 <!-- Hidden file input for upload -->
-<input type="file" id="fileInput" accept="image/*" capture="environment" style="display:none">
+<input type="file" id="fileInput" accept="image/*" style="display:none">
 
 
 <!-- ============ CAMERA OVERLAY ============ -->
@@ -165,7 +165,7 @@
       <button class="shutter-btn" id="cameraCaptureBtn" aria-label="Take photo" disabled>
         <span class="shutter-inner"></span>
       </button>
-      <p class="camera-caption-end">Take photo</p>
+      <button class="camera-caption-end camera-upload-btn" id="cameraUploadBtn" type="button">Upload a photo</button>
     </div>
 
     <div class="camera-preview" id="cameraPreview" hidden>
@@ -234,6 +234,6 @@
 
 <script src="/components/navbar.js"></script>
 <script src="/shared.js"></script>
-<script src="/home/home.js?v=3"></script>
+<script src="/home/home.js?v=6"></script>
 </body>
 </html>
