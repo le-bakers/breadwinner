@@ -133,7 +133,57 @@
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleRow(row, expand); }
     });
 
+    // stopPropagation keeps a press on the trash button from also opening the row
+    const deleteBtn = frag.querySelector('.row-delete-btn');
+    deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); askToDeleteReceipt(receipt, deleteBtn); });
+    deleteBtn.addEventListener('keydown', (e) => e.stopPropagation());
+
     return frag;
+  }
+
+  /* ---------- Delete a receipt (asks first) ---------- */
+  const deleteModal = document.getElementById('deleteReceiptModal');
+  const deleteCancelBtn = document.getElementById('deleteReceiptCancel');
+  const deleteConfirmBtn = document.getElementById('deleteReceiptConfirm');
+  let receiptToDelete = null;
+  let deleteOpenedFrom = null;
+
+  function askToDeleteReceipt(receipt, button) {
+    receiptToDelete = receipt;
+    deleteOpenedFrom = button;
+    deleteModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    deleteCancelBtn.focus();
+  }
+
+  function closeDeleteModal() {
+    deleteModal.hidden = true;
+    document.body.style.overflow = '';
+    receiptToDelete = null;
+    // Put keyboard focus back where it was (if that row still exists)
+    if (deleteOpenedFrom && deleteOpenedFrom.isConnected) deleteOpenedFrom.focus();
+    deleteOpenedFrom = null;
+  }
+
+  function deleteReceipt() {
+    const index = RECEIPTS.indexOf(receiptToDelete);
+    if (index !== -1) {
+      RECEIPTS.splice(index, 1);
+      saveReceipts();
+      applyFilters();
+      updateMetrics();
+      toast('Receipt deleted');
+    }
+    closeDeleteModal();
+  }
+
+  if (deleteModal) {
+    deleteCancelBtn.addEventListener('click', closeDeleteModal);
+    deleteConfirmBtn.addEventListener('click', deleteReceipt);
+    deleteModal.addEventListener('click', (e) => { if (e.target === deleteModal) closeDeleteModal(); });
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !deleteModal.hidden) closeDeleteModal();
+    });
   }
 
   function toggleRow(row, expand) {
@@ -460,13 +510,17 @@
 
   async function processReceipt(blob) {
     let items = [];
-    let scanWorked = true;
+    let scanProblem = '';
     try { items = await scanReceipt(blob); }
-    catch (error) { scanWorked = false; }
+    catch (error) {
+      // fetch throws a TypeError when nothing answers at API_BASE (the Python server is off)
+      if (error instanceof TypeError) scanProblem = 'Photo saved, but the scanner server is not running, so no items were read.';
+      else scanProblem = 'Photo saved, but that file could not be read as a receipt.';
+    }
 
     addReceiptToHistory(await makeThumbnail(blob), items);
 
-    if (!scanWorked) toast('Photo saved, but the receipt could not be read. Is the scanner running?');
+    if (scanProblem) toast(scanProblem);
     else if (!items.length) toast('No items found. Try a clearer, flatter photo.');
     else toast('Found ' + items.length + (items.length === 1 ? ' item' : ' items') + '. Open the receipt to review.');
   }

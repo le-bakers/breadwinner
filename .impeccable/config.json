@@ -1,0 +1,17 @@
+{
+  "detector": {
+    "ignoreRules": [],
+    "ignoreFiles": [],
+    "ignoreValues": [
+      {
+        "rule": "broken-image",
+        "value": "*",
+        "files": [
+          "frontend/home/home.html"
+        ],
+        "createdAt": "2026-10-04T15:43:06.083Z",
+        "reason": "Claude: false positive - #cameraPreviewImg has no src on purpose; home.js sets it after a photo is taken and the element is hidden until then"
+      }
+    ]
+  }
+}
