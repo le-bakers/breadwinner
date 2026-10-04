@@ -120,6 +120,12 @@ window.BreadWinner = window.BreadWinner || {};
     document.querySelectorAll('a[href$="signin.html"]').forEach((a) => {
       a.setAttribute('href', a.getAttribute('href').replace(/signin\/signin\.html$/, 'home/home.html'));
     });
+    // Match the navbar: when already signed in, relabel the landing page's big
+    // "Start Free" buttons (hero + CTA) to "Continue to Dashboard". Their href
+    // is repointed to the dashboard by the block above.
+    document.querySelectorAll('a.btn-lg[href$="signin.html"]').forEach((a) => {
+      if (a.textContent.trim() === 'Start Free') a.textContent = 'Continue to Dashboard';
+    });
   }
   /* ---------- Sitewide Settings (persisted under breadwinner_settings) ---------- */
   const SETTINGS_KEY = 'breadwinner_settings';
