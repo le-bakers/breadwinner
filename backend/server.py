@@ -1,10 +1,7 @@
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import requests
 
 import kroger
-import ocr
-import receipt_parser
 
 app = FastAPI()
 
@@ -32,24 +29,3 @@ def kroger_search(zip: str, term: str):
     results = kroger.search_products(term, location_id)
 
     return {"location_id": location_id, "results": results}
-
-
-@app.post("/scan")
-def scan(file: UploadFile):
-    # The photo is read, turned into text, and thrown away. Nothing is saved on the server.
-    image_bytes = file.file.read()
-
-    if not image_bytes:
-        raise HTTPException(status_code=400, detail="The uploaded file was empty.")
-
-    try:
-        text = ocr.extract_text(image_bytes)
-    except requests.RequestException:
-        # Only happens with the Google engine: bad key, billing off, or no internet
-        raise HTTPException(status_code=502, detail="The text-reading service is not available right now.")
-    except Exception:
-        raise HTTPException(status_code=422, detail="Could not read that file as a receipt photo.")
-
-    items = receipt_parser.parse_receipt(text)
-
-    return {"text": text, "items": items}

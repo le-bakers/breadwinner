@@ -217,7 +217,6 @@
 .item-mark { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .item-mark.yes { background: var(--accent-light); color: #15803D; }
 .item-mark.no { background: #FEF3F2; color: #DC2626; }
-.item-mark.unknown { background: var(--border, #E5E7EB); color: var(--text-secondary); font-size: 11px; font-weight: 700; }
 .item-name { flex: 1; font-weight: 500; }
 .item-price { color: var(--text-secondary); font-weight: 600; }
 
