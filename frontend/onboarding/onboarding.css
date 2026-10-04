@@ -5,7 +5,7 @@
 body { min-height: 100vh; }
 
 /* ---------- Main shell ---------- */
-.onboard-main { padding: 56px 24px 40px; }
+.onboard-main { padding: 148px 24px 40px; }
 .onboard-shell {
   max-width: 880px;
   margin: 0 auto;
