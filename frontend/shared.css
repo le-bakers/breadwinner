@@ -1066,3 +1066,250 @@ body.has-morph-nav .mobile-menu { top: 76px; }
   .msn-nav .msn-avatar .avatar-circle,
   .msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; }
 }
+
+/* ============================================
+   Scrintal-style Landing Navbar (scn-*)
+   Mirrors the scrintal.com look: a dark, dismissible announcement bar on
+   top with a frosted floating pill nav just below it. Over the dark hero
+   the resting pill uses light green-tinted ink + the white logo; once it
+   floats it becomes the white glass surface. Only the landing hero page
+   opts in (body.has-scrintal-landing) — every other page keeps the msn-*
+   morphing nav above.
+   ============================================ */
+
+.has-scrintal-landing { --scn-announce-h: 40px; }
+
+/* Announcement bar — full-width black strip, lighter copy + CTA. */
+.scn-announce {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 101;
+  height: var(--scn-announce-h);
+  padding: 0 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  background: #101514;
+  color: rgba(232, 240, 233, 0.86);
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  transition: margin-top 0.4s var(--ease-out), opacity 0.3s var(--ease-out);
+}
+.scn-announce-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.scn-announce-link {
+  color: #fff;
+  font-weight: 700;
+  white-space: nowrap;
+}
+.scn-announce-link:hover { text-decoration: underline; }
+.scn-announce-close {
+  margin-left: 6px;
+  width: 26px; height: 26px;
+  flex: none;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.08);
+  color: #fff;
+  font-size: 16px;
+  line-height: 1;
+  transition: background 0.2s ease;
+}
+.scn-announce-close:hover { background: rgba(255, 255, 255, 0.2); }
+
+/* Dismiss collapses the bar and lifts the pill nav to the very top. */
+body.scn-announce-hidden .scn-announce {
+  margin-top: calc(-1 * var(--scn-announce-h));
+  opacity: 0;
+  pointer-events: none;
+}
+body.scn-announce-hidden .scn-nav { top: 0; }
+
+/* The pill nav — floats over the hero, then gains a glass surface. */
+.scn-nav {
+  --paper: var(--bg);
+  --surface: var(--card);
+  --ink: var(--text);
+  --muted: var(--text-secondary);
+  --line: var(--border);
+  --accent: var(--primary);
+
+  position: fixed;
+  z-index: 100;
+  top: var(--scn-announce-h);
+  right: 0; left: 0;
+  display: flex;
+  justify-content: center;
+  padding: 0 20px;
+  pointer-events: none;
+  font-family: var(--font-body);
+  color: var(--ink);
+  transition: top 0.4s var(--ease-out);
+}
+.scn-nav *, .scn-nav *::before, .scn-nav *::after { box-sizing: border-box; }
+.scn-nav a { color: inherit; text-decoration: none; }
+
+.scn-shell {
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 22px;
+  width: 100%;
+  max-width: 1180px;
+  height: 68px;
+  padding: 0 12px 0 22px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-lg);
+  background: transparent;
+  transition: max-width 0.5s cubic-bezier(0.34, 1.32, 0.5, 1),
+              height 0.38s cubic-bezier(0.34, 1.2, 0.5, 1),
+              margin-top 0.38s ease,
+              padding 0.38s ease,
+              background-color 0.3s ease,
+              border-color 0.3s ease,
+              box-shadow 0.4s ease;
+}
+.scn-nav.is-floating .scn-shell {
+  max-width: 1040px;
+  height: 60px;
+  margin-top: 10px;
+  padding: 0 12px 0 22px;
+  border-color: color-mix(in srgb, var(--ink) 10%, transparent);
+  background: color-mix(in srgb, var(--paper) 76%, transparent);
+  -webkit-backdrop-filter: saturate(170%) blur(18px);
+  backdrop-filter: saturate(170%) blur(18px);
+  box-shadow: 0 14px 40px -20px color-mix(in srgb, var(--ink) 45%, transparent);
+}
+.scn-nav.is-compact .scn-shell { max-width: 640px; height: 54px; }
+
+/* Over the dark hero the resting pill uses light ink + the white logo. */
+.scn-nav:not(.is-floating) {
+  --ink: #EFF5F0;
+  --muted: rgba(226, 236, 228, 0.76);
+  --line: rgba(255, 255, 255, 0.3);
+}
+.scn-nav:not(.is-floating) .scn-brand img { content: url("/images/breadwinner_logo_white.png"); }
+
+.scn-brand {
+  flex: none;
+  display: flex;
+  align-items: center;
+  font-size: 25px;
+  font-weight: 800;
+  line-height: 1;
+  letter-spacing: -0.045em;
+  transition: font-size 0.38s cubic-bezier(0.34, 1.2, 0.5, 1);
+}
+.scn-brand img { height: 32px; width: auto; }
+.scn-nav.is-compact .scn-brand { font-size: 22px; }
+
+.scn-links {
+  display: flex;
+  justify-content: center;
+  margin: 0 auto;
+  gap: 30px;
+  max-width: 660px;
+  overflow: hidden;
+  opacity: 1;
+  transition: max-width 0.45s cubic-bezier(0.34, 1.2, 0.5, 1),
+              opacity 0.28s ease,
+              transform 0.3s ease,
+              gap 0.35s ease;
+}
+.scn-nav.is-compact .scn-links {
+  max-width: 0;
+  gap: 0;
+  opacity: 0;
+  transform: translateY(-8px);
+  pointer-events: none;
+}
+.scn-links a {
+  position: relative;
+  color: var(--muted);
+  font-size: 15px;
+  font-weight: 500;
+  white-space: nowrap;
+  transition: color 0.15s ease;
+}
+.scn-links a::after {
+  content: "";
+  position: absolute;
+  right: 0; bottom: -6px; left: 0;
+  height: 2px;
+  border-radius: 2px;
+  background: var(--accent);
+  transform: scaleX(0);
+  transform-origin: 0 50%;
+  transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+.scn-links a:hover,
+.scn-links a[aria-current="location"] { color: var(--ink); }
+.scn-links a:hover::after,
+.scn-links a[aria-current="location"]::after { transform: scaleX(1); }
+
+.scn-actions { display: flex; flex: none; align-items: center; gap: 10px; }
+.scn-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  height: 42px;
+  padding: 0 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-full);
+  background: var(--surface);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 13.5px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: height 0.38s ease, font-size 0.38s ease, padding 0.38s ease,
+              background-color 0.18s ease, transform 0.18s ease, box-shadow 0.22s ease;
+}
+.scn-button:hover { box-shadow: 0 10px 22px -17px color-mix(in srgb, var(--ink) 45%, transparent); }
+.scn-button:active { transform: scale(0.97); }
+.scn-nav.is-compact .scn-button { height: 38px; padding: 0 16px; font-size: 12.5px; }
+
+.scn-button-primary {
+  border-color: transparent;
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+.scn-button-primary:hover { background: var(--primary-hover); color: #fff; }
+.scn-button-ghost { border-color: transparent; background: transparent; color: var(--muted); }
+.scn-button-ghost:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink); }
+
+/* Clearance for the fixed bar + anchors for in-page jumps. */
+body.has-scrintal-landing > main { padding-top: 0; }
+body.has-scrintal-landing section[id],
+body.has-scrintal-landing .mobile-view[id] { scroll-margin-top: 150px; }
+body.has-scrintal-landing .mobile-menu { top: 118px; }
+body.scn-announce-hidden.has-scrintal-landing .mobile-menu { top: 78px; }
+body.scn-announce-hidden.has-scrintal-landing section[id] { scroll-margin-top: 108px; }
+
+@media (max-width: 900px) {
+  .scn-nav.is-floating .scn-shell { max-width: 720px; }
+  .scn-nav.is-compact .scn-shell { max-width: 560px; }
+}
+@media (max-width: 860px) {
+  /* Centre links + top-bar CTAs live in the hamburger (mobile) menu, so only
+     the logo and the nav-toggle remain visible here. */
+  .scn-links { display: none; }
+  .scn-button { display: none; }
+}
+@media (max-width: 560px) {
+  .has-scrintal-landing { --scn-announce-h: 34px; }
+  .scn-announce { font-size: 12px; gap: 8px; padding: 0 12px; }
+  .scn-announce-text { max-width: 60vw; }
+  .scn-nav { padding: 0 12px; }
+  .scn-shell,
+  .scn-nav.is-floating .scn-shell,
+  .scn-nav.is-compact .scn-shell { gap: 12px; height: 60px; padding: 0 4px 0 10px; }
+  .scn-nav.is-floating .scn-shell,
+  .scn-nav.is-compact .scn-shell { height: 54px; }
+  .scn-brand { font-size: 23px; }
+  .scn-brand img { height: 28px; }
+}

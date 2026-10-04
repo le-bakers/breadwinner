@@ -310,6 +310,64 @@ window.BreadWinner = window.BreadWinner || {};
 })(window.BreadWinner);
 
 /* ============================================
+   Scrintal-style landing navbar (scn-*)
+   Floating glass pill + top announcement bar. A scroll listener toggles
+   .is-floating (frosted white surface) and .is-compact (hides the centre
+   links while scrolling down). The bar's close button collapses it and
+   lifts the pill nav to the very top.
+   ============================================ */
+(function () {
+  'use strict';
+
+  function initScrintalNav(nav) {
+    if (!nav || nav.dataset.scrintalNavReady === 'true') return;
+    nav.dataset.scrintalNavReady = 'true';
+
+    let direction = 'up';
+    let lastY = window.scrollY;
+    let frame = 0;
+
+    function update() {
+      frame = 0;
+      const y = window.scrollY;
+      const delta = y - lastY;
+      if (delta > 4) direction = 'down';
+      else if (delta < -4) direction = 'up';
+
+      const floating = y >= 8;
+      nav.classList.toggle('is-floating', floating);
+      nav.classList.toggle('is-compact', floating && direction === 'down');
+
+      lastY = y;
+    }
+
+    function onScroll() {
+      if (!frame) frame = window.requestAnimationFrame(update);
+    }
+
+    update();
+    window.addEventListener('scroll', onScroll, { passive: true });
+    window.addEventListener('resize', onScroll);
+
+    // Announcement dismiss — collapses the bar, lifts the nav, and adjusts
+    // the hero/anchor clearance via the body-level .scn-announce-hidden class.
+    const closeBtn = document.querySelector('.scn-announce-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', function () {
+        const bar = closeBtn.closest('.scn-announce');
+        document.body.classList.add('scn-announce-hidden');
+        if (bar) bar.setAttribute('aria-hidden', 'true');
+      });
+    }
+  }
+
+  document.querySelectorAll('[data-scrintal-nav]').forEach(initScrintalNav);
+
+  window.BreadWinner = window.BreadWinner || {};
+  window.BreadWinner.initScrintalNav = initScrintalNav;
+})();
+
+/* ============================================
    Morphing Scroll Navbar (msn-*)
    Ported from the React MorphingScrollNavbar component. A single
    requestAnimationFrame-throttled scroll listener drives two things:
