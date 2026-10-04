@@ -131,7 +131,8 @@ input, select { font-family: inherit; }
 
 .btn-secondary {
   background: var(--card);
-  color: rgba(255, 255, 255, 0.37);
+  color: rgba(255, 255, 255);
+  background-color: rgba(0,0,0,0.25)
   border: 1px solid var(--border);
 }
 .btn-secondary:hover {
