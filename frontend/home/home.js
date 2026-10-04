@@ -1,5 +1,5 @@
 /* ============================================
-   BreadWinner â€” Dashboard JS
+   BreadWinner — Dashboard JS
    ============================================ */
 
 (function () {
@@ -76,7 +76,7 @@
     const expand = frag.querySelector('.receipt-expand');
 
     frag.querySelector('.cell-name-text').textContent = receipt.name;
-    frag.querySelector('.cell-date').textContent = dateFormatter.format(new Date(receipt.date));
+    frag.querySelector('.cell-date').textContent = dateFormatter.format(new Date(receipt.date + 'T00:00'));
     frag.querySelector('.cell-items').textContent = receipt.items;
     frag.querySelector('.cell-gf').textContent = receipt.gfItems;
     if (receipt.imageUrl) {
@@ -84,7 +84,7 @@
     }
 
     const overchargeCell = frag.querySelector('.cell-overcharge');
-    overchargeCell.textContent = receipt.overcharge > 0 ? money(receipt.overcharge) : 'â€”';
+    overchargeCell.textContent = receipt.overcharge > 0 ? money(receipt.overcharge) : '—';
     overchargeCell.classList.toggle('zero', receipt.overcharge === 0);
 
     const statusCell = frag.querySelector('.cell-status');
@@ -97,8 +97,9 @@
     receipt.lines.forEach((line) => {
       const li = document.createElement('li');
       const mark = document.createElement('span');
-      mark.className = 'item-mark ' + (line.gf ? 'yes' : 'no');
-      mark.innerHTML = line.gf
+      mark.className = 'item-mark ' + (line.gf === null ? 'unknown' : line.gf ? 'yes' : 'no');
+      if (line.gf === null) mark.title = 'Not checked for gluten-free yet';
+      mark.innerHTML = line.gf === null ? '?' : line.gf
         ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
         : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
 
@@ -425,19 +426,67 @@
     }
   }
 
-  function addReceiptToHistory(imageUrl) {
+  /* ---------- Receipt scanning ---------- */
+  // Where the Python server lives. Change this when the backend is deployed.
+  const API_BASE = 'http://127.0.0.1:8000';
+
+  function toast(message) {
+    if (window.BreadWinner && window.BreadWinner.toast) window.BreadWinner.toast(message);
+  }
+
+  async function scanReceipt(blob) {
+    const form = new FormData();
+    form.append('file', blob, 'receipt.jpg');
+    const response = await fetch(API_BASE + '/scan', { method: 'POST', body: form });
+    if (!response.ok) throw new Error('Scan failed: ' + response.status);
+    return (await response.json()).items;
+  }
+
+  // Browser storage only holds about 5 MB, so keep a small copy of the photo, not the original
+  async function makeThumbnail(blob) {
+    try {
+      const bitmap = await createImageBitmap(blob);
+      const scale = Math.min(1, 800 / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement('canvas');
+      canvas.width = Math.round(bitmap.width * scale);
+      canvas.height = Math.round(bitmap.height * scale);
+      canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      return canvas.toDataURL('image/jpeg', 0.7);
+    } catch (error) {
+      return blobToDataUrl(blob);
+    }
+  }
+
+  async function processReceipt(blob) {
+    let items = [];
+    let scanWorked = true;
+    try { items = await scanReceipt(blob); }
+    catch (error) { scanWorked = false; }
+
+    addReceiptToHistory(await makeThumbnail(blob), items);
+
+    if (!scanWorked) toast('Photo saved, but the receipt could not be read. Is the scanner running?');
+    else if (!items.length) toast('No items found. Try a clearer, flatter photo.');
+    else toast('Found ' + items.length + (items.length === 1 ? ' item' : ' items') + '. Open the receipt to review.');
+  }
+
+  function addReceiptToHistory(imageUrl, items) {
     const now = new Date();
-    const dateStr = now.toISOString().split('T')[0];
+    // Today's date where the user is (toISOString would give the date in London)
+    const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
     const storeName = 'Captured Receipt';
+
+    // gf: null means "not checked yet" (gluten-free detection is not built yet)
+    const lines = items.map((item) => ({ name: item.name, price: item.price, gf: null, tax: false }));
 
     const newReceipt = {
       name: storeName,
       date: dateStr,
-      items: 0,
+      items: lines.length,
       gfItems: 0,
       overcharge: 0,
       status: 'review',
-      lines: [],
+      lines,
       imageUrl
     };
 
@@ -455,12 +504,13 @@
   async function confirmAndAddReceipt() {
     if (!capturedBlob) return;
     cameraConfirmBtn.disabled = true;
+    if (cameraStatus) cameraStatus.textContent = 'Reading receipt…';
     try {
-      addReceiptToHistory(await blobToDataUrl(capturedBlob));
+      await processReceipt(capturedBlob);
     } catch (error) {
-      cameraConfirmBtn.disabled = false;
       if (cameraStatus) cameraStatus.textContent = 'Could not save photo';
     }
+    cameraConfirmBtn.disabled = false;
   }
 
   function closeCamera() {
@@ -503,7 +553,8 @@
       const file = fileInput.files && fileInput.files[0];
       fileInput.value = '';
       if (!file) return;
-      try { addReceiptToHistory(await blobToDataUrl(file)); }
+      toast('Reading receipt…');
+      try { await processReceipt(file); }
       catch (error) { console.error('Could not save uploaded receipt:', error); }
     });
   }

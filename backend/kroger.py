@@ -9,6 +9,7 @@ CLIENT_ID = os.getenv("KROGER_CLIENT_ID")
 CLIENT_SECRET = os.getenv("KROGER_CLIENT_SECRET")
 TOKEN_URL = "https://api.kroger.com/v1/connect/oauth2/token"
 BASE_URL = "https://api.kroger.com/v1"
+TIMEOUT = 10  # seconds to wait for Kroger before giving up
 
 _token_cache = {"access_token": None, "expires_at": 0}
 
@@ -23,6 +24,7 @@ def get_access_token():
         data={"grant_type": "client_credentials", "scope": "product.compact"},
         auth=(CLIENT_ID, CLIENT_SECRET),
         headers={"Content-Type": "application/x-www-form-urlencoded"},
+        timeout=TIMEOUT,
     )
     response.raise_for_status()
     data = response.json()
@@ -40,6 +42,7 @@ def find_nearest_location(zip_code):
         f"{BASE_URL}/locations",
         headers={"Authorization": f"Bearer {token}"},
         params={"filter.zipCode.near": zip_code, "filter.limit": 1},
+        timeout=TIMEOUT,
     )
     response.raise_for_status()
     locations = response.json()["data"]
@@ -60,6 +63,7 @@ def search_products(search_term, location_id, limit=3):
             "filter.locationId": location_id,
             "filter.limit": limit,
         },
+        timeout=TIMEOUT,
     )
     response.raise_for_status()
     products = response.json()["data"]
@@ -86,6 +90,9 @@ if __name__ == "__main__":
     location_id = find_nearest_location(zip_code)
     print(f"Nearest location: {location_id}")
 
-    results = search_products("white bread", location_id)
-    for r in results:
-        print(r)
+    if location_id is None:
+        print("No Kroger-banner store near that zip code.")
+    else:
+        results = search_products("white bread", location_id)
+        for r in results:
+            print(r)

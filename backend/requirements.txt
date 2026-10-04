@@ -1,3 +1,10 @@
 requests
 python-dotenv
 pillow
+fastapi
+uvicorn
+pytest
+httpx
+python-multipart
+rapidocr
+onnxruntime
