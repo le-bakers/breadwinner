@@ -258,15 +258,5 @@ body.has-morph-nav .hero { padding-top: 130px; }
   body.has-morph-nav .hero { padding-top: 96px; }
 }
 
-/* Scrintal-style landing (index only): the fixed announcement bar (~40px)
-   plus the pill nav (~68px) sit above the hero, so nudge the hero copy
-   down accordingly, and pull it back up once the bar is dismissed. */
-body.has-scrintal-landing .hero { padding-top: calc(40px + 68px + 64px); }
-body.scn-announce-hidden.has-scrintal-landing .hero { padding-top: 158px; }
-@media (max-width: 560px) {
-  body.has-scrintal-landing .hero { padding-top: calc(34px + 60px + 48px); }
-  body.scn-announce-hidden.has-scrintal-landing .hero { padding-top: 118px; }
-}
-
 /* ---------- Footer extra ---------- */
 .footer-tagline { color: var(--text-secondary); font-size: 14px; margin-top: 10px; max-width: 220px; }
