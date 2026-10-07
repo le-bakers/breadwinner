@@ -178,8 +178,8 @@ input, select { font-family: inherit; }
   letter-spacing: -0.02em;
 }
 /* Theme-aware top navbar logo */
-[data-theme="dark"] .logo img { content: url(/images/breadwinner_logo_white.png); }
-[data-theme="light"] .logo img { content: url(/images/breadwinner_logo_black.png); }
+[data-theme="dark"] .logo img { content: url(images/breadwinner_logo_white.png); }
+[data-theme="light"] .logo img { content: url(images/breadwinner_logo_black.png); }
 
 /* Used by the injected app navbar (home/dashboard variants). */
 .dash-actions { gap: 14px; }
@@ -943,7 +943,7 @@ body.has-morph-nav .mobile-menu { top: 76px; }
 
 
 .msn-nav.msn-over-media-landing:not(.is-floating) .msn-brand img {
-  content: url("/images/breadwinner_logo_white.png");
+  content: url("images/breadwinner_logo_white.png");
 }
 
 .msn-links {
@@ -1067,4 +1067,3 @@ body.has-morph-nav .mobile-menu { top: 76px; }
   .msn-nav .msn-avatar .avatar-circle,
   .msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; }
 }
-
