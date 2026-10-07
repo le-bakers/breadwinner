@@ -209,14 +209,14 @@
 .c-blob-2 { width: 260px; height: 260px; bottom: -90px; left: -60px; }
 
 .carousel { position: relative; z-index: 1; width: 100%; max-width: 420px; }
-.carousel-track { position: relative; height: 460px; }
+.carousel-track { position: relative; display: grid; }
 
 .carousel-slide {
-  position: absolute;
-  inset: 0;
+  grid-area: 1 / 1;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   text-align: center;
   padding: 20px;
   opacity: 0;
@@ -241,14 +241,6 @@
   backdrop-filter: blur(6px);
 }
 .slide-icon svg { width: 24px; height: 24px; }
-
-.slide-illustration {
-  width: 100%;
-  max-width: 300px;
-  border-radius: var(--radius-lg);
-  margin-bottom: 26px;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.18);
-}
 
 .carousel-slide h2 {
   color: rgba(255,255,255,0.75);

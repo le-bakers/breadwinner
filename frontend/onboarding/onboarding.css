@@ -26,7 +26,10 @@ body { min-height: 100vh; }
   gap: 16px;
   margin-bottom: 10px;
 }
-.onboard-header .eyebrow { margin: 142px; }
+.onboard-header .eyebrow {
+  padding-top: 100px;
+  margin: 0px;
+ }
 .progress-label {
   color: var(--text-secondary);
   font-size: 13px;
