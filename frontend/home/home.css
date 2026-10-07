@@ -179,6 +179,22 @@
 }
 .receipt-row.open .row-expand-btn { transform: rotate(180deg); border-color: var(--primary); }
 
+.cell-actions { display: flex; align-items: center; gap: 8px; }
+.row-delete-btn {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  cursor: pointer;
+  transition: color 0.2s, border-color 0.2s, background 0.2s;
+}
+.row-delete-btn:hover { color: #DC2626; border-color: #DC2626; background: #FEF2F2; }
+.row-delete-btn:focus-visible { outline: 2px solid #DC2626; outline-offset: 2px; }
+:root[data-theme="dark"] .row-delete-btn:hover { background: rgba(220,38,38,0.14); }
+
 .receipt-expand {
   display: grid;
   grid-template-rows: 0fr;
@@ -238,6 +254,8 @@
   .receipt-row { grid-template-columns: 1fr auto; }
   .receipt-row-head span:not(:first-child) { display: none; }
   .cell-date, .cell-items, .cell-gf { display: none; }
+  /* Bigger buttons so they are easy to tap with a thumb */
+  .row-expand-btn, .row-delete-btn { width: 40px; height: 40px; }
 
   /* Scale the expanded receipt dropdown to the table borders on mobile */
   .receipt-expand .expand-inner {

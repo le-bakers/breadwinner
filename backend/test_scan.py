@@ -3,6 +3,7 @@
 
 from fastapi.testclient import TestClient
 
+from ocr import group_into_rows
 from receipt_parser import parse_receipt
 from server import app
 from unit_price import calculate_deduction, parse_size
@@ -63,6 +64,27 @@ def test_misread_total_is_not_an_item_but_similar_foods_are():
 
 def test_text_with_no_items_gives_empty_list():
     assert parse_receipt("THANK YOU FOR SHOPPING\n04/12/2026 3:15 PM") == []
+
+
+# ---------- ocr: grouping text pieces into rows ----------
+
+def piece(text, left, right, middle, rise=0):
+    """A fake piece of OCR text, 34 tall. rise = how much lower its right end is."""
+    return {
+        "text": text, "left": left, "center": (left + right) / 2, "width": right - left,
+        "middle": middle, "height": 34, "rise": rise,
+    }
+
+
+def test_tilted_photo_keeps_each_item_on_its_own_row():
+    # Measured from a real restaurant receipt photo (2026-10-04): rows are only 27 apart
+    # and each price sits about 7 lower than its name. The old code glued Lunch and Coke together.
+    pieces = [
+        piece("1 Coffee", 163, 266, 547.5, rise=2), piece("3.00", 588, 647, 553.5),
+        piece("2 Lunch", 159, 254, 575, rise=3), piece("45.90", 576, 649, 582),
+        piece("1 Coke", 159, 240, 602, rise=3), piece("3.00", 589, 649, 610),
+    ]
+    assert group_into_rows(pieces) == "1 Coffee 3.00\n2 Lunch 45.90\n1 Coke 3.00"
 
 
 # ---------- unit_price ----------

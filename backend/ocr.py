@@ -3,7 +3,7 @@ import base64
 import requests
 from dotenv import load_dotenv
 
-load_dotenv()  # reads backend/.env and loads the settings into memory
+load_dotenv()  
 
 # Which OCR to use: "local" (free, runs on this computer) or "google" (needs billing turned on)
 OCR_ENGINE = os.getenv("OCR_ENGINE", "local")
@@ -11,8 +11,7 @@ OCR_ENGINE = os.getenv("OCR_ENGINE", "local")
 API_KEY = os.getenv("GOOGLE_VISION_API_KEY")
 VISION_URL = "https://vision.googleapis.com/v1/images:annotate"
 
-_local_engine = None  # the local OCR model is slow to load, so we load it once and reuse it
-
+_local_engine = None  
 
 def extract_text(image_bytes):
     """Turn a receipt photo (raw bytes) into text, one receipt row per line."""
@@ -31,30 +30,45 @@ def extract_text_local(image_bytes):
     if result.boxes is None:
         return ""  # no readable text in the image
 
-    # Each piece of text comes with a box: 4 corner points, starting top-left
+    # Each piece of text comes with a box: 4 corner points (each one is x, y)
     pieces = []
     for box, text in zip(result.boxes, result.txts):
-        top = box[0][1]
-        bottom = box[2][1]
+        top_left, top_right, bottom_right, bottom_left = box
         pieces.append({
             "text": text,
-            "left": box[0][0],
-            "middle": (top + bottom) / 2,
-            "height": bottom - top,
+            "left": top_left[0],
+            "center": (top_left[0] + bottom_right[0]) / 2,
+            "middle": (top_left[1] + bottom_right[1]) / 2,
+            "height": bottom_left[1] - top_left[1],
+            "width": top_right[0] - top_left[0],
+            "rise": top_right[1] - top_left[1],  # how much lower the right end is than the left end
         })
 
     return group_into_rows(pieces)
 
 
+def straighten(pieces):
+    """A photo is almost never perfectly level, so a price on the right sits a little
+    lower (or higher) than its item name on the left. Measure that tilt and undo it."""
+    total_width = sum(piece["width"] for piece in pieces)
+    if total_width <= 0:
+        return
+
+    tilt = sum(piece["rise"] for piece in pieces) / total_width
+    for piece in pieces:
+        piece["middle"] = piece["middle"] - tilt * piece["center"]
+
+
 def group_into_rows(pieces):
     """The OCR reads an item name and its price as two separate pieces.
     Pieces at about the same height on the page belong to the same row."""
+    straighten(pieces)
     pieces.sort(key=lambda piece: piece["middle"])
 
     rows = []
     for piece in pieces:
         last_row = rows[-1] if rows else None
-        if last_row and abs(piece["middle"] - last_row[-1]["middle"]) < piece["height"] * 0.6:
+        if last_row and abs(piece["middle"] - last_row[0]["middle"]) < piece["height"] * 0.6:
             last_row.append(piece)
         else:
             rows.append([piece])
@@ -88,12 +102,12 @@ def extract_text_google(image_bytes):
         headers={"X-Goog-Api-Key": API_KEY},
         timeout=30,
     )
-    response.raise_for_status()  # stops here with a clear error if the key/request is bad
+    response.raise_for_status()  
     result = response.json()
 
     annotations = result["responses"][0]
     if "fullTextAnnotation" not in annotations:
-        return ""  # Google found no readable text in the image
+        return ""  
 
     return annotations["fullTextAnnotation"]["text"]
 

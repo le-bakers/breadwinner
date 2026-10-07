@@ -30,6 +30,7 @@ def is_not_an_item(word):
 
 
 def parse_receipt(text):
+    print(text)
     """Turn receipt text into a list of items: [{"name": ..., "price": ..., "upc": ...}]"""
     items = []
 

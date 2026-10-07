@@ -187,6 +187,21 @@
   </div>
 </div>
 
+<!-- ============ CONFIRM DELETE RECEIPT MODAL ============ -->
+<div class="modal-overlay" id="deleteReceiptModal" hidden>
+  <div class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="deleteReceiptTitle" aria-describedby="deleteReceiptText">
+    <span class="modal-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </span>
+    <h3 id="deleteReceiptTitle">Delete this receipt?</h3>
+    <p id="deleteReceiptText">This removes the photo and its items from this device. This can't be undone.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="deleteReceiptCancel">Cancel</button>
+      <button type="button" class="btn btn-danger" id="deleteReceiptConfirm">Delete Receipt</button>
+    </div>
+  </div>
+</div>
+
 <!-- Row template used by JS -->
 <template id="rowTemplate">
   <div class="receipt-row" role="row" tabindex="0">
@@ -204,6 +219,9 @@
     <span class="cell-actions">
       <button class="row-expand-btn" aria-label="Expand receipt details">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="row-delete-btn" type="button" aria-label="Delete receipt">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
       </button>
     </span>
   </div>
@@ -234,6 +252,6 @@
 
 <script src="/components/navbar.js"></script>
 <script src="/shared.js"></script>
-<script src="/home/home.js?v=6"></script>
+<script src="/home/home.js?v=7"></script>
 </body>
 </html>
