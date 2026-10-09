@@ -1,26 +1,21 @@
-import os
-import base64
-import requests
-from dotenv import load_dotenv
+import io
 
-load_dotenv()  
+from PIL import Image, ImageOps
 
-# Which OCR to use: "local" (free, runs on this computer) or "google" (needs billing turned on)
-OCR_ENGINE = os.getenv("OCR_ENGINE", "local")
+SMALL_PHOTO = 1600  # pixels on the longer side. Phone photos are bigger; pictures saved from a website are smaller
+ENLARGE_BY = 2.5    # how many times bigger enlarge_small_photo makes a small photo
 
-API_KEY = os.getenv("GOOGLE_VISION_API_KEY")
-VISION_URL = "https://vision.googleapis.com/v1/images:annotate"
+# The reader scores every piece of text from 0 (a guess) to 1 (certain).
+# A row holding a piece below this score gets UNSURE_MARK in front, so the app can ask the user to check it.
+UNSURE_BELOW = 0.8
+UNSURE_MARK = "(?)"
 
-_local_engine = None  
+_local_engine = None  # the text-reading model is big, so it is loaded once, on the first scan
+
 
 def extract_text(image_bytes):
-    """Turn a receipt photo (raw bytes) into text, one receipt row per line."""
-    if OCR_ENGINE == "google":
-        return extract_text_google(image_bytes)
-    return extract_text_local(image_bytes)
-
-
-def extract_text_local(image_bytes):
+    """Turn a receipt photo (raw bytes) into text, one receipt row per line.
+    Runs on this computer with RapidOCR: free, no internet, no limits."""
     global _local_engine
     if _local_engine is None:
         from rapidocr import RapidOCR
@@ -32,10 +27,11 @@ def extract_text_local(image_bytes):
 
     # Each piece of text comes with a box: 4 corner points (each one is x, y)
     pieces = []
-    for box, text in zip(result.boxes, result.txts):
+    for box, text, score in zip(result.boxes, result.txts, result.scores):
         top_left, top_right, bottom_right, bottom_left = box
         pieces.append({
             "text": text,
+            "sure": score >= UNSURE_BELOW,
             "left": top_left[0],
             "center": (top_left[0] + bottom_right[0]) / 2,
             "middle": (top_left[1] + bottom_right[1]) / 2,
@@ -45,6 +41,22 @@ def extract_text_local(image_bytes):
         })
 
     return group_into_rows(pieces)
+
+
+def enlarge_small_photo(image_bytes):
+    """In a small photo the letters are only a few pixels tall, and some get misread.
+    Returns a bigger copy to read as a second try, or None when the photo is already big."""
+    image = Image.open(io.BytesIO(image_bytes))
+    if max(image.size) >= SMALL_PHOTO:
+        return None
+
+    image = ImageOps.exif_transpose(image)  # stand the photo upright the way the phone meant it
+    image = image.convert("RGB")
+    image = image.resize((round(image.width * ENLARGE_BY), round(image.height * ENLARGE_BY)), Image.LANCZOS)
+
+    buffer = io.BytesIO()
+    image.save(buffer, format="PNG")
+    return buffer.getvalue()
 
 
 def straighten(pieces):
@@ -76,40 +88,12 @@ def group_into_rows(pieces):
     lines = []
     for row in rows:
         row.sort(key=lambda piece: piece["left"])
-        lines.append(" ".join(piece["text"] for piece in row))
+        line = " ".join(piece["text"] for piece in row)
+        if not all(piece["sure"] for piece in row):
+            line = UNSURE_MARK + " " + line
+        lines.append(line)
 
     return "\n".join(lines)
-
-
-def extract_text_google(image_bytes):
-    # NOT TESTED YET: Google returns 403 until billing is turned on for the project.
-    # Google's API only accepts images as base64 text, not raw bytes
-    image_base64 = base64.b64encode(image_bytes).decode("utf-8")
-
-    request_body = {
-        "requests": [
-            {
-                "image": {"content": image_base64},
-                "features": [{"type": "TEXT_DETECTION"}],
-            }
-        ]
-    }
-
-    # The key goes in a header, not the URL, so an error message can never print it
-    response = requests.post(
-        VISION_URL,
-        json=request_body,
-        headers={"X-Goog-Api-Key": API_KEY},
-        timeout=30,
-    )
-    response.raise_for_status()  
-    result = response.json()
-
-    annotations = result["responses"][0]
-    if "fullTextAnnotation" not in annotations:
-        return ""  
-
-    return annotations["fullTextAnnotation"]["text"]
 
 
 if __name__ == "__main__":

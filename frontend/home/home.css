@@ -234,8 +234,60 @@
 .item-mark.yes { background: var(--accent-light); color: #15803D; }
 .item-mark.no { background: #FEF3F2; color: #DC2626; }
 .item-mark.unknown { background: var(--border, #E5E7EB); color: var(--text-secondary); font-size: 11px; font-weight: 700; }
-.item-name { flex: 1; font-weight: 500; }
+.item-name { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
 .item-price { color: var(--text-secondary); font-weight: 600; }
+.item-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
+.item-badges:empty { display: none; }
+.badge { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: var(--radius-full); white-space: nowrap; }
+.badge-added { background: var(--border); color: var(--text-secondary); }
+.badge-unsure { background: #FEF3C7; color: #92400E; border: none; font-family: inherit; cursor: pointer; }
+.badge-unsure:hover { background: #FDE68A; }
+.badge-unsure:focus-visible { outline: 2px solid #B45309; outline-offset: 2px; }
+
+.item-remove-btn {
+  width: 24px; height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+.item-remove-btn:hover { color: #DC2626; background: #FEF2F2; }
+.item-remove-btn:focus-visible { outline: 2px solid #DC2626; outline-offset: 2px; }
+
+/* Says whether the items add up to the subtotal printed on the receipt */
+.items-check { font-size: 13px; line-height: 1.5; padding: 10px 14px; border-radius: 10px; margin-bottom: 12px; }
+.items-check.ok { background: var(--accent-light); color: #15803D; }
+.items-check.warn { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+
+/* Type in an item the scanner missed */
+.add-item-form { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.add-item-form input {
+  min-width: 0;
+  padding: 9px 14px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.add-item-form input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.1); }
+.add-item-name { flex: 1 1 180px; }
+.add-item-price { flex: 0 1 96px; }
+.add-item-form .btn { background: var(--card); color: var(--primary-hover); }
+.add-item-error { flex-basis: 100%; font-size: 13px; color: #DC2626; }
+
+:root[data-theme="dark"] .badge-unsure { background: rgba(251,191,36,0.16); color: #FCD34D; }
+:root[data-theme="dark"] .badge-unsure:hover { background: rgba(251,191,36,0.26); }
+:root[data-theme="dark"] .item-remove-btn:hover { background: rgba(220,38,38,0.14); }
+:root[data-theme="dark"] .items-check.ok { color: #4ADE80; }
+:root[data-theme="dark"] .items-check.warn { background: rgba(251,191,36,0.1); color: #FCD34D; border-color: rgba(251,191,36,0.3); }
+:root[data-theme="dark"] .add-item-error { color: #F87171; }
 
 .receipt-empty {
   padding: 48px 24px;
@@ -266,6 +318,13 @@
   .receipt-expand.open .expand-inner { padding: 18px; }
   .expand-receipt-img { max-width: 100%; height: auto; }
   .expand-item-list li { padding: 10px 12px; }
+  .item-remove-btn { width: 36px; height: 36px; margin: -6px -6px -6px 0; }
+  /* Tags drop to their own line so a long item name keeps its room */
+  .expand-item-list li { flex-wrap: wrap; }
+  .item-badges { order: 1; flex-basis: 100%; justify-content: flex-start; padding-left: 28px; }
+  /* 16px text stops iPhones from zooming in when a box is tapped */
+  .add-item-form input { font-size: 16px; min-height: 44px; }
+  .add-item-form .btn { flex: 1 1 100%; }
 }
 
 @media (max-width: 560px) {

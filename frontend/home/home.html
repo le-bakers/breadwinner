@@ -230,7 +230,15 @@
       <img class="expand-receipt-img" src="/images/placeholder-receipt.svg" alt="Placeholder scanned receipt image">
       <div class="expand-items">
         <h4>Items</h4>
+        <p class="items-check" role="status" hidden></p>
         <ul class="expand-item-list"></ul>
+        <!-- For anything the scanner missed or misread -->
+        <form class="add-item-form" novalidate>
+          <input class="add-item-name" type="text" placeholder="Item name" aria-label="Item name" maxlength="60" autocomplete="off">
+          <input class="add-item-price" type="text" inputmode="decimal" placeholder="Price" aria-label="Price in dollars" autocomplete="off">
+          <button class="btn btn-secondary btn-sm" type="submit">+ Add item</button>
+          <p class="add-item-error" role="alert" hidden></p>
+        </form>
       </div>
     </div>
   </div>
@@ -252,6 +260,6 @@
 
 <script src="/components/navbar.js"></script>
 <script src="/shared.js"></script>
-<script src="/home/home.js?v=7"></script>
+<script src="/home/home.js?v=8"></script>
 </body>
 </html>

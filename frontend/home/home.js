@@ -93,7 +93,37 @@
     pill.textContent = receipt.status === 'processed' ? 'Processed' : 'Needs Review';
     statusCell.appendChild(pill);
 
-    const list = frag.querySelector('.expand-item-list');
+    renderLines(receipt, row, expand);
+
+    // Typing in an item the scanner missed
+    const addForm = frag.querySelector('.add-item-form');
+    addForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      addLine(receipt, row, expand);
+    });
+
+    // A closed receipt can't be tabbed into
+    expand.inert = true;
+
+    row.addEventListener('click', () => toggleRow(row, expand));
+    row.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleRow(row, expand); }
+    });
+
+    // stopPropagation keeps a press on the trash button from also opening the row
+    const deleteBtn = frag.querySelector('.row-delete-btn');
+    deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); askToDeleteReceipt(receipt, deleteBtn); });
+    deleteBtn.addEventListener('keydown', (e) => e.stopPropagation());
+
+    return frag;
+  }
+
+  /* ---------- The items inside one receipt ---------- */
+  // Draws the item list. Called again after every add or remove, so the screen always matches what is saved.
+  function renderLines(receipt, row, expand) {
+    const list = expand.querySelector('.expand-item-list');
+    list.textContent = '';
+
     receipt.lines.forEach((line) => {
       const li = document.createElement('li');
       const mark = document.createElement('span');
@@ -108,37 +138,102 @@
       name.textContent = line.name;
 
       const badges = document.createElement('span');
-      badges.style.display = 'flex';
-      badges.style.gap = '6px';
+      badges.className = 'item-badges';
       if (line.gf) {
         const b = document.createElement('span'); b.className = 'badge badge-gf'; b.textContent = 'GF'; badges.appendChild(b);
       }
       if (line.tax) {
         const b = document.createElement('span'); b.className = 'badge badge-tax'; b.textContent = 'Tax Deductible'; badges.appendChild(b);
       }
+      if (line.added) {
+        const b = document.createElement('span'); b.className = 'badge badge-added'; b.textContent = 'Added by you'; badges.appendChild(b);
+      }
+      if (line.unsure) {
+        // The scanner was not confident about this line. Pressing the tag says "I checked, it's right".
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.className = 'badge badge-unsure';
+        b.textContent = 'Hard to read · mark OK';
+        b.title = 'The scanner was not sure about this line. Compare it with the photo, then press here if it is right, or remove it and add it again.';
+        b.addEventListener('click', () => { line.unsure = false; saveLines(receipt, row, expand); });
+        badges.appendChild(b);
+      }
 
       const price = document.createElement('span');
       price.className = 'item-price';
       price.textContent = money(line.price);
 
+      const removeBtn = document.createElement('button');
+      removeBtn.type = 'button';
+      removeBtn.className = 'item-remove-btn';
+      removeBtn.setAttribute('aria-label', 'Remove ' + line.name);
+      removeBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>';
+      removeBtn.addEventListener('click', () => {
+        receipt.lines.splice(receipt.lines.indexOf(line), 1);
+        saveLines(receipt, row, expand);
+        toast('Removed ' + line.name);
+      });
+
       li.appendChild(mark);
       li.appendChild(name);
       li.appendChild(badges);
       li.appendChild(price);
+      li.appendChild(removeBtn);
       list.appendChild(li);
     });
 
-    row.addEventListener('click', () => toggleRow(row, expand));
-    row.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleRow(row, expand); }
-    });
+    row.querySelector('.cell-items').textContent = receipt.lines.length;
+    row.querySelector('.cell-gf').textContent = receipt.gfItems;
+    showItemsCheck(receipt, expand);
+  }
 
-    // stopPropagation keeps a press on the trash button from also opening the row
-    const deleteBtn = frag.querySelector('.row-delete-btn');
-    deleteBtn.addEventListener('click', (e) => { e.stopPropagation(); askToDeleteReceipt(receipt, deleteBtn); });
-    deleteBtn.addEventListener('keydown', (e) => e.stopPropagation());
+  // Many receipts print a subtotal. If the items don't add up to it, a line is missing or a price was misread.
+  function showItemsCheck(receipt, expand) {
+    const note = expand.querySelector('.items-check');
+    if (typeof receipt.subtotal !== 'number') { note.hidden = true; return; }
 
-    return frag;
+    const itemsTotal = receipt.lines.reduce((sum, line) => sum + line.price, 0);
+    const addsUp = Math.abs(itemsTotal - receipt.subtotal) < 0.005;
+    note.hidden = false;
+    note.className = 'items-check ' + (addsUp ? 'ok' : 'warn');
+    note.textContent = addsUp
+      ? 'These items add up to the subtotal printed on the receipt (' + money(receipt.subtotal) + ').'
+      : 'These items add up to ' + money(itemsTotal) + ', but the receipt’s subtotal says ' + money(receipt.subtotal)
+        + '. An item may be missing or a price misread. Compare with the photo, then remove or add items below.';
+  }
+
+  function saveLines(receipt, row, expand) {
+    receipt.items = receipt.lines.length;
+    receipt.gfItems = receipt.lines.filter((line) => line.gf).length;
+    saveReceipts();
+    renderLines(receipt, row, expand);
+    updateMetrics();
+  }
+
+  function addLine(receipt, row, expand) {
+    const nameInput = expand.querySelector('.add-item-name');
+    const priceInput = expand.querySelector('.add-item-price');
+    const error = expand.querySelector('.add-item-error');
+
+    const name = nameInput.value.trim();
+    // Accepts "4.99", "$4.99" and "4,99"
+    const price = Number(priceInput.value.trim().replace('$', '').replace(',', '.'));
+
+    let problem = '';
+    if (!name) problem = 'Type the item’s name.';
+    else if (!priceInput.value.trim() || !Number.isFinite(price) || price <= 0) problem = 'Type the price as a number, like 4.99.';
+
+    error.textContent = problem;
+    error.hidden = !problem;
+    if (problem) { (name ? priceInput : nameInput).focus(); return; }
+
+    // gf: null means "not checked yet". added: true keeps typed-in items apart from scanned ones.
+    receipt.lines.push({ name, price: Math.round(price * 100) / 100, gf: null, tax: false, added: true });
+    saveLines(receipt, row, expand);
+
+    nameInput.value = '';
+    priceInput.value = '';
+    nameInput.focus();  // ready for the next item
   }
 
   /* ---------- Delete a receipt (asks first) ---------- */
@@ -189,6 +284,7 @@
   function toggleRow(row, expand) {
     const isOpen = row.classList.toggle('open');
     expand.classList.toggle('open', isOpen);
+    expand.inert = !isOpen;
     const btn = row.querySelector('.row-expand-btn');
     btn.setAttribute('aria-label', isOpen ? 'Collapse receipt details' : 'Expand receipt details');
   }
@@ -490,7 +586,7 @@
     form.append('file', blob, 'receipt.jpg');
     const response = await fetch(API_BASE + '/scan', { method: 'POST', body: form });
     if (!response.ok) throw new Error('Scan failed: ' + response.status);
-    return (await response.json()).items;
+    return response.json();  // { engine, items, subtotal }
   }
 
   // Browser storage only holds about 5 MB, so keep a small copy of the photo, not the original
@@ -510,29 +606,37 @@
 
   async function processReceipt(blob) {
     let items = [];
+    let subtotal = null;
     let scanProblem = '';
-    try { items = await scanReceipt(blob); }
+    try {
+      const scan = await scanReceipt(blob);
+      items = scan.items;
+      subtotal = scan.subtotal;
+    }
     catch (error) {
       // fetch throws a TypeError when nothing answers at API_BASE (the Python server is off)
       if (error instanceof TypeError) scanProblem = 'Photo saved, but the scanner server is not running, so no items were read.';
       else scanProblem = 'Photo saved, but that file could not be read as a receipt.';
     }
 
-    addReceiptToHistory(await makeThumbnail(blob), items);
+    addReceiptToHistory(await makeThumbnail(blob), items, subtotal);
 
+    const hardToRead = items.filter((item) => item.unsure).length;
     if (scanProblem) toast(scanProblem);
     else if (!items.length) toast('No items found. Try a clearer, flatter photo.');
+    else if (hardToRead) toast('Found ' + items.length + ' items. ' + hardToRead + (hardToRead === 1 ? ' was' : ' were') + ' hard to read. Open the receipt to check.');
     else toast('Found ' + items.length + (items.length === 1 ? ' item' : ' items') + '. Open the receipt to review.');
   }
 
-  function addReceiptToHistory(imageUrl, items) {
+  function addReceiptToHistory(imageUrl, items, subtotal) {
     const now = new Date();
     // Today's date where the user is (toISOString would give the date in London)
     const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
     const storeName = 'Captured Receipt';
 
     // gf: null means "not checked yet" (gluten-free detection is not built yet)
-    const lines = items.map((item) => ({ name: item.name, price: item.price, gf: null, tax: false }));
+    // unsure: true means the scanner was not confident about that line
+    const lines = items.map((item) => ({ name: item.name, price: item.price, gf: null, tax: false, unsure: item.unsure === true }));
 
     const newReceipt = {
       name: storeName,
@@ -541,6 +645,7 @@
       gfItems: 0,
       overcharge: 0,
       status: 'review',
+      subtotal,  // the subtotal printed on the receipt, or null when the scanner found none
       lines,
       imageUrl
     };
