@@ -6,27 +6,27 @@
 			'<div class="container">' +
 				'<div class="footer-inner">' +
 					'<div>' +
-						'<a class="logo" href="/index/index.html">' +
-							'<img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="36">' +
+						'<a class="logo" href="../index/index.html">' +
+							'<img src="../images/breadwinner_logo_black.png" alt="BreadWinner" height="36">' +
 						'</a>' +
 						'<p class="footer-tagline">Gluten-free grocery tracking, simplified.</p>' +
 					'</div>' +
 					'<div class="footer-links">' +
 						'<div class="footer-col">' +
 							'<h4>Product</h4>' +
-							'<a href="/index/index.html#how-it-works">How it Works</a>' +
-							'<a href="/signin/signin.html">Sign In</a>' +
-							'<a href="/signin/signin.html">Start Free</a>' +
+							'<a href="../index/index.html#how-it-works">How it Works</a>' +
+							'<a href="../signin/signin.html">Sign In</a>' +
+							'<a href="../signin/signin.html">Start Free</a>' +
 						'</div>' +
 						'<div class="footer-col">' +
 							'<h4>Company</h4>' +
-							'<a href="/about/about.html">About Us</a>' +
-							'<a href="/contactus/contactus.html">Contact</a>' +
+							'<a href="../about/about.html">About Us</a>' +
+							'<a href="../contactus/contactus.html">Contact</a>' +
 						'</div>' +
 						'<div class="footer-col">' +
 							'<h4>Legal</h4>' +
-							'<a href="/legal/privacy.html">Privacy</a>' +
-							'<a href="/legal/terms.html">Terms</a>' +
+							'<a href="../legal/privacy.html">Privacy</a>' +
+							'<a href="../legal/terms.html">Terms</a>' +
 						'</div>' +
 					'</div>' +
 				'</div>' +

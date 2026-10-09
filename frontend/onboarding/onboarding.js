@@ -14,31 +14,29 @@
   const stepDots = document.getElementById('stepDots');
   const accountForm = document.getElementById('accountForm');
 
-  let current = 0; // index into steps[]
-  const total = steps.length; // includes account form + tutorial slides + done
+  let current = 0;
+  const total = steps.length;
 
-  // Build progress dots (excluding the account-form step, which uses the form's own submit button)
   const tourStartIndex = 1;
-  const tourStepCount = steps.length - 2; // exclude account form (0) and done (last)
+  const tourStepCount = steps.length - 2;
   for (let i = 0; i < tourStepCount; i++) {
     const dot = document.createElement('span');
     stepDots.appendChild(dot);
   }
 
   function updateProgress() {
-    const pct = Math.round(((current + 1) / total) * 100);
+    const pct = current === total - 1 ? 100 : Math.round(((current + 1) / (total - 1)) * 100);
     progressFill.style.width = pct + '%';
     progressBar.setAttribute('aria-valuenow', String(pct));
 
     if (current === 0) {
-      progressLabel.textContent = 'Step 1 of 2 · Create your account';
+      progressLabel.textContent = 'Step 1 of 5 · Create your account';
     } else if (current === steps.length - 1) {
       progressLabel.textContent = "You're all set!";
     } else {
-      progressLabel.textContent = 'Step 2 of 2 · Quick tour';
+      progressLabel.textContent = `Step ${current + 1} of 5 · Quick tour`;
     }
 
-    // Update dots
     const dots = Array.from(stepDots.children);
     dots.forEach((d, i) => {
       d.classList.toggle('active', i === current - tourStartIndex);
@@ -59,7 +57,6 @@
     void steps[current].offsetWidth;
     steps[current].classList.add('active');
 
-    // Nav button visibility
     const isAccountStep = current === 0;
     const isDoneStep = current === steps.length - 1;
 
@@ -67,10 +64,6 @@
     nextBtn.hidden = isAccountStep || isDoneStep;
 
     if (!isAccountStep && !isDoneStep) {
-      // Ensure the next button shows "Next" text
-      if (!nextBtn.textContent.trim() || nextBtn.textContent.trim() === '') {
-        nextBtn.innerHTML = 'Next <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
-      }
     }
 
     updateProgress();
