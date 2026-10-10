@@ -47,22 +47,46 @@
   const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const money = (n) => '$' + n.toFixed(2);
 
-  function updateMetrics() {
-    const totalOvercharge = RECEIPTS.reduce((sum, receipt) => sum + Number(receipt.overcharge || 0), 0);
-    const totalGfItems = RECEIPTS.reduce((sum, receipt) => sum + Number(receipt.gfItems || 0), 0);
-    const averageOvercharge = RECEIPTS.length ? totalOvercharge / RECEIPTS.length : 0;
-    const values = {
-      receiptsCount: { value: RECEIPTS.length, text: String(RECEIPTS.length) },
-      gfItemsCount: { value: totalGfItems, text: String(totalGfItems) },
-      totalOvercharge: { value: totalOvercharge, text: money(totalOvercharge) },
-      averageOvercharge: { value: averageOvercharge, text: money(averageOvercharge) }
+  function updateMetrics(animate) {
+    var values = {
+      totalOvercharge: { value: 50, text: money(50) },
+      receiptsCount: { value: 50, text: '50' },
+      gfItemsCount: { value: 50, text: '50' },
+      averageOvercharge: { value: 50, text: money(50) }
     };
-    Object.keys(values).forEach((id) => {
-      const element = document.getElementById(id);
-      if (!element) return;
-      element.dataset.target = String(values[id].value);
-      element.textContent = values[id].text;
+    var order = ['totalOvercharge', 'receiptsCount', 'gfItemsCount', 'averageOvercharge'];
+    order.forEach(function (id, i) {
+      // Stagger each digit roll on load so they cascade into place;
+      // instant when recalculating after add/delete.
+      var delay = animate ? 200 + i * 150 : 0;
+      setTimeout(function () {
+        var element = document.getElementById(id);
+        if (!element) return;
+        // Configure number-flow formatting (vanilla props, not attributes)
+        if ('format' in element || element.tagName === 'NUMBER-FLOW') {
+          try {
+            if (id === 'totalOvercharge' || id === 'averageOvercharge') {
+              element.format = { style: 'currency', currency: 'USD' };
+            } else {
+              element.format = { maximumFractionDigits: 0 };
+            }
+            element.trend = 0; // digits move individually (like the demo's trend={false})
+          } catch (e) { /* ignore */ }
+        }
+        if (typeof element.update === 'function') {
+          element.update(values[id].value);
+        } else {
+          element.textContent = values[id].text;
+        }
+      }, delay);
     });
+    // If <number-flow> wasn't defined yet (CDN still loading), the code
+    // above fell back to textContent — re-run once it's ready so the
+    // first animated .update() hydrates properly.
+    if (!updateMetrics._nfHooked && window.customElements && window.customElements.whenDefined) {
+      updateMetrics._nfHooked = true;
+      window.customElements.whenDefined('number-flow').then(function () { updateMetrics(animate); });
+    }
   }
 
   const table = document.getElementById('receiptTable');
@@ -207,7 +231,7 @@
     receipt.gfItems = receipt.lines.filter((line) => line.gf).length;
     saveReceipts();
     renderLines(receipt, row, expand);
-    updateMetrics();
+    updateMetrics(false);
   }
 
   function addLine(receipt, row, expand) {
@@ -266,7 +290,7 @@
       RECEIPTS.splice(index, 1);
       saveReceipts();
       applyFilters();
-      updateMetrics();
+      updateMetrics(false);
       toast('Receipt deleted');
     }
     closeDeleteModal();
@@ -323,37 +347,15 @@
 
   if (table && template) {
     render(RECEIPTS);
-    updateMetrics();
+    updateMetrics(true); // load-in: stagger digit rolls 0 -> 50
     searchInput.addEventListener('input', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
   }
 
   /* ---------- Animated stat counters ---------- */
-  const statEls = document.querySelectorAll('[data-counter]');
-  if (statEls.length && 'IntersectionObserver' in window) {
-    const io = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (!entry.isIntersecting) return;
-        const el = entry.target;
-        const target = parseFloat(el.dataset.target || '0');
-        const prefix = el.dataset.prefix || '';
-        const decimals = parseInt(el.dataset.decimals || '0', 10);
-        const duration = 1200;
-        const start = performance.now();
-
-        function tick(now) {
-          const progress = Math.min((now - start) / duration, 1);
-          const eased = 1 - Math.pow(1 - progress, 3);
-          const value = target * eased;
-          el.textContent = prefix + (decimals ? value.toFixed(decimals) : Math.round(value));
-          if (progress < 1) requestAnimationFrame(tick);
-        }
-        requestAnimationFrame(tick);
-        io.unobserve(el);
-      });
-    }, { threshold: 0.4 });
-    statEls.forEach((el) => io.observe(el));
-  }
+  // NOTE: the summary uses <number-flow> now (updated via updateMetrics),
+  // so the old [data-counter] rAF loop is intentionally removed — it would
+  // fight number-flow by overwriting textContent mid-roll.
 
   if (window.BreadWinner && window.BreadWinner.staggerReveal) {
     window.BreadWinner.staggerReveal('.summary-panel', 80);
@@ -562,7 +564,7 @@
 
   function showReceiptHistory() {
     applyFilters();
-    updateMetrics();
+    updateMetrics(false);
     if (!window.matchMedia('(max-width: 860px)').matches) return;
     switchMobileView('receipt');
     const receiptItem = bottomNav && bottomNav.querySelector('[data-nav="receipt"]');

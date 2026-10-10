@@ -56,6 +56,10 @@
 .summary-stat-value { font-family: var(--font-display); font-size: 25px; font-weight: 800; line-height: 1.15; }
 .summary-stat-label { color: var(--text-secondary); font-size: 13px; margin-top: 3px; }
 
+/* number-flow rolls digits; keep it inline and tabular so it doesn't shift mid-animation */
+number-flow { display: inline-block; line-height: 1; }
+number-flow::part(number) { font-variant-numeric: tabular-nums; }
+
 @media (max-width: 700px) {
   .summary-panel { grid-template-columns: 1fr; }
   .summary-total { min-height: 206px; padding: 30px 26px; }

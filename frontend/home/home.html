@@ -12,6 +12,7 @@
 <link rel="stylesheet" href="../shared.css">
 <link rel="stylesheet" href="./home.css">
 <link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
+<script type="module" src="https://cdn.jsdelivr.net/npm/@number-flow/element@latest/dist/index.js"></script>
 </head>
 <body class="has-morph-nav">
 
@@ -37,20 +38,20 @@
       <!-- ============ SUMMARY ============ -->
       <section class="summary-panel" aria-label="Summary statistics">
         <div class="summary-total">
-          <p class="summary-value" id="totalOvercharge" data-counter data-target="0" data-prefix="$" data-decimals="2">$0.00</p>
+          <number-flow class="summary-value" id="totalOvercharge">0</number-flow>
           <p class="summary-label">Total overcharge</p>
         </div>
         <div class="summary-details">
           <div class="summary-stat">
-            <p class="summary-stat-value" id="receiptsCount" data-counter data-target="0" data-prefix="">0</p>
+            <number-flow class="summary-stat-value" id="receiptsCount">0</number-flow>
             <p class="summary-stat-label">Receipts scanned</p>
           </div>
           <div class="summary-stat">
-            <p class="summary-stat-value" id="gfItemsCount" data-counter data-target="0" data-prefix="">0</p>
+            <number-flow class="summary-stat-value" id="gfItemsCount">0</number-flow>
             <p class="summary-stat-label">GF items</p>
           </div>
           <div class="summary-stat">
-            <p class="summary-stat-value" id="averageOvercharge" data-counter data-target="0" data-prefix="$" data-decimals="2">$0.00</p>
+            <number-flow class="summary-stat-value" id="averageOvercharge">0</number-flow>
             <p class="summary-stat-label">Average overcharge</p>
           </div>
         </div>
