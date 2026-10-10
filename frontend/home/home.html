@@ -9,9 +9,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../shared.css">
-<link rel="stylesheet" href="./home.css">
-<link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="/home/home.css">
+<link rel="icon" type="image/x-icon" href="/images/breadwinner_icon.png">
 </head>
 <body class="has-morph-nav">
 
@@ -34,46 +34,25 @@
         </div>
       </section>
 
-      <!-- ============ STATS ============ -->
-      <section class="stats-grid" aria-label="Summary statistics">
-        <div class="stat-card reveal">
-          <div class="stat-top">
-            <span class="stat-icon" style="background:#DCFCE7">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </span>
-          </div>
-          <p class="stat-value" id="receiptsCount" data-counter data-target="0" data-prefix="">0</p>
-          <p class="stat-label">Receipts Scanned</p>
+      <!-- ============ SUMMARY ============ -->
+      <section class="summary-panel reveal" aria-label="Summary statistics">
+        <div class="summary-total">
+          <p class="summary-value" id="totalOvercharge" data-counter data-target="0" data-prefix="$" data-decimals="2">$0.00</p>
+          <p class="summary-label">Total overcharge</p>
         </div>
-
-        <div class="stat-card reveal">
-          <div class="stat-top">
-            <span class="stat-icon" style="background:#DCFCE7">
-              <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#16A34A" stroke-width="1.8"/><path d="M8.5 12.5l2.5 2.5l5-5" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-            </span>
+        <div class="summary-details">
+          <div class="summary-stat">
+            <p class="summary-stat-value" id="receiptsCount" data-counter data-target="0" data-prefix="">0</p>
+            <p class="summary-stat-label">Receipts scanned</p>
           </div>
-          <p class="stat-value" id="gfItemsCount" data-counter data-target="0" data-prefix="">0</p>
-          <p class="stat-label">Gluten-Free Items</p>
-        </div>
-
-        <div class="stat-card reveal">
-          <div class="stat-top">
-            <span class="stat-icon" style="background:#FEF3F2">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke="#DC2626" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#DC2626" stroke-width="1.8"/></svg>
-            </span>
+          <div class="summary-stat">
+            <p class="summary-stat-value" id="gfItemsCount" data-counter data-target="0" data-prefix="">0</p>
+            <p class="summary-stat-label">GF items</p>
           </div>
-          <p class="stat-value" id="totalOvercharge" data-counter data-target="0" data-prefix="$" data-decimals="2">$0.00</p>
-          <p class="stat-label">Total Overcharge</p>
-        </div>
-
-        <div class="stat-card reveal">
-          <div class="stat-top">
-            <span class="stat-icon" style="background:#EFF6FF">
-              <svg viewBox="0 0 24 24" fill="none"><path d="M12 3V21M7 7H15.5C17 7 18 8 18 9.5C18 11 17 12 15.5 12H8.5C7 12 6 13 6 14.5C6 16 7 17 8.5 17H17" stroke="#2563EB" stroke-width="1.8" stroke-linecap="round"/></svg>
-            </span>
+          <div class="summary-stat">
+            <p class="summary-stat-value" id="averageOvercharge" data-counter data-target="0" data-prefix="$" data-decimals="2">$0.00</p>
+            <p class="summary-stat-label">Average overcharge</p>
           </div>
-          <p class="stat-value" id="averageOvercharge" data-counter data-target="0" data-prefix="$" data-decimals="2">$0.00</p>
-          <p class="stat-label">Average Overcharge</p>
         </div>
       </section>
     </div>
@@ -247,10 +226,10 @@
 <!-- ============ MOBILE BOTTOM NAVBAR ============ -->
 <nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile navigation">
   <div class="bottom-nav-pill" id="bottomNavPill" aria-hidden="true"></div>
-  <a href="./home.html" class="bottom-nav-item active" data-nav="dashboard" aria-label="Dashboard">
+  <a href="/home/home.html" class="bottom-nav-item active" data-nav="dashboard" aria-label="Dashboard">
     <svg viewBox="0 0 24 24" fill="none"><rect x="3" y="3" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="12" width="7" height="9" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="16" width="7" height="5" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
   </a>
-  <a href="./home.html#receipts" class="bottom-nav-item" data-nav="receipt" aria-label="Receipts">
+  <a href="/home/home.html#receipts" class="bottom-nav-item" data-nav="receipt" aria-label="Receipts">
     <svg viewBox="0 0 24 24" fill="none"><path d="M6 2h12v20l-2-1.5L14 22l-2-1.5L10 22l-2-1.5L6 22V2z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 7h6M9 11h6M9 15h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
   </a>
   <a href="../settings/settings.html" class="bottom-nav-item" data-nav="settings" aria-label="Settings">
@@ -258,8 +237,8 @@
   </a>
 </nav>
 
-<script src="../components/navbar.js"></script>
-<script src="../shared.js"></script>
-<script src="./home.js?v=8"></script>
+<script src="/components/navbar.js"></script>
+<script src="/shared.js"></script>
+<script src="/home/home.js?v=3"></script>
 </body>
 </html>

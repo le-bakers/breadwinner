@@ -356,7 +356,7 @@
   }
 
   if (window.BreadWinner && window.BreadWinner.staggerReveal) {
-    window.BreadWinner.staggerReveal('.stat-card', 80);
+    window.BreadWinner.staggerReveal('.summary-panel', 80);
   }
 
   /* ---------- Camera workspace ---------- */

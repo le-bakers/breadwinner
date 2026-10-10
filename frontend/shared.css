@@ -178,8 +178,13 @@ input, select { font-family: inherit; }
   letter-spacing: -0.02em;
 }
 /* Theme-aware top navbar logo */
+<<<<<<< Updated upstream
 [data-theme="dark"] .logo img { content: url(images/breadwinner_logo_white.png); }
 [data-theme="light"] .logo img { content: url(images/breadwinner_logo_black.png); }
+=======
+[data-theme="dark"] .logo img { content: url(./images/breadwinner_logo_white.png); }
+[data-theme="light"] .logo img { content: url(./images/breadwinner_logo_black.png); }
+>>>>>>> Stashed changes
 
 /* Used by the injected app navbar (home/dashboard variants). */
 .dash-actions { gap: 14px; }
@@ -943,7 +948,11 @@ body.has-morph-nav .mobile-menu { top: 76px; }
 
 
 .msn-nav.msn-over-media-landing:not(.is-floating) .msn-brand img {
+<<<<<<< Updated upstream
   content: url("images/breadwinner_logo_white.png");
+=======
+  content: url("./images/breadwinner_logo_white.png");
+>>>>>>> Stashed changes
 }
 
 .msn-links {
