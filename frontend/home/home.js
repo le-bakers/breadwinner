@@ -48,45 +48,142 @@
   const money = (n) => '$' + n.toFixed(2);
 
   function updateMetrics(animate) {
-    var values = {
-      totalOvercharge: { value: 50, text: money(50) },
-      receiptsCount: { value: 50, text: '50' },
-      gfItemsCount: { value: 50, text: '50' },
-      averageOvercharge: { value: 50, text: money(50) }
-    };
-    var order = ['totalOvercharge', 'receiptsCount', 'gfItemsCount', 'averageOvercharge'];
-    order.forEach(function (id, i) {
-      // Stagger each digit roll on load so they cascade into place;
-      // instant when recalculating after add/delete.
-      var delay = animate ? 200 + i * 150 : 0;
-      setTimeout(function () {
-        var element = document.getElementById(id);
-        if (!element) return;
-        // Configure number-flow formatting (vanilla props, not attributes)
-        if ('format' in element || element.tagName === 'NUMBER-FLOW') {
-          try {
-            if (id === 'totalOvercharge' || id === 'averageOvercharge') {
-              element.format = { style: 'currency', currency: 'USD' };
-            } else {
-              element.format = { maximumFractionDigits: 0 };
-            }
-            element.trend = 0; // digits move individually (like the demo's trend={false})
-          } catch (e) { /* ignore */ }
-        }
-        if (typeof element.update === 'function') {
-          element.update(values[id].value);
-        } else {
-          element.textContent = values[id].text;
-        }
-      }, delay);
-    });
-    // If <number-flow> wasn't defined yet (CDN still loading), the code
-    // above fell back to textContent — re-run once it's ready so the
-    // first animated .update() hydrates properly.
-    if (!updateMetrics._nfHooked && window.customElements && window.customElements.whenDefined) {
-      updateMetrics._nfHooked = true;
-      window.customElements.whenDefined('number-flow').then(function () { updateMetrics(animate); });
+    // Demo: every stat starts at 0, then rolls to 50 on load.
+    primeOdometers();
+    rollTo('totalOvercharge', 50, animate ? 200 : 0);
+    rollTo('receiptsCount', 50, animate ? 350 : 0);
+    rollTo('gfItemsCount', 50, animate ? 500 : 0);
+    rollTo('averageOvercharge', 50, animate ? 650 : 0);
+  }
+
+  /* ---------- Hand-rolled odometer (no libraries) ----------
+     Each digit becomes a 1em-tall window over a 0-9 reel. Rolling
+     translates the reel so the target digit slides into view.
+     Plain text is kept for screen readers + no-JS via aria-label. */
+  function primeOdometers() {
+    // Guarantee every odometer visibly starts at a single "0" (e.g. "$0.00" /
+    // "0") before the load-in roll. rollTo() later rebuilds the "50" shape
+    // and left-pads the previous reading, so the reels still slide 0 -> 50.
+    var ids = ['totalOvercharge', 'receiptsCount', 'gfItemsCount', 'averageOvercharge'];
+    for (var k = 0; k < ids.length; k++) {
+      var el = document.getElementById(ids[k]);
+      if (!el) continue;
+      var format = el.getAttribute('data-format') || 'int';
+      var split = layoutOdometer(el, 0);
+      var reels = el.querySelectorAll('.odo-reel');
+      for (var i = 0; i < reels.length; i++) {
+        reels[i].classList.remove('rolling');
+        reels[i].style.transform = 'translateY(0%)';
+      }
+      el.setAttribute('data-shown', format === 'money' ? '000' : '0');
+      void el.offsetHeight; // commit the zero state before the roll starts
     }
+  }
+
+  function currentDigits(el) {
+    // (odometer helpers — see the "Hand-rolled odometer" note above)
+    var text = el.getAttribute('data-shown');
+    if (text === null || text === undefined) {
+      var raw = (el.textContent || '').replace(/[^0-9]/g, '');
+      text = raw === '' ? '0' : raw;
+    }
+    return String(text);
+  }
+
+  function splitValue(el, value) {
+    // Returns { prefix, digits, decimals } so "$50.00" becomes "$" + "5000"
+    // with 2 decimals — the "$" and "." render as static spans, every
+    // digit gets its own sliding reel.
+    var format = el.getAttribute('data-format') || 'int';
+    var fixed = format === 'money' ? Number(value).toFixed(2) : String(Math.round(Number(value)));
+    var parts = fixed.split('.');
+    var digits = parts.join('');
+    var out = { prefix: format === 'money' ? '$' : '', digits: digits, decimals: parts.length > 1 ? parts[1].length : 0 };
+    return out;
+  }
+
+  function layoutOdometer(el, targetValue) {
+    // Rebuilds reels only when the digit COUNT or decimal layout changes
+    // (e.g. "0" -> "50.00"); same-shape updates just slide the reels.
+    var split = splitValue(el, targetValue);
+    var key = split.prefix + '|' + split.digits.length + '|' + split.decimals;
+    if (el.getAttribute('data-layout') === key) return split;
+    el.setAttribute('data-layout', key);
+    el.innerHTML = '';
+    var frag = document.createDocumentFragment();
+    if (split.prefix) {
+      var pre = document.createElement('span');
+      pre.className = 'odo-static';
+      pre.textContent = split.prefix;
+      frag.appendChild(pre);
+    }
+    var intLen = split.digits.length - split.decimals;
+    for (var i = 0; i < split.digits.length; i++) {
+      if (split.decimals && i === intLen) {
+        var dot = document.createElement('span');
+        dot.className = 'odo-static';
+        dot.textContent = '.';
+        frag.appendChild(dot);
+      }
+      var window = document.createElement('span');
+      window.className = 'odo-digit';
+      window.setAttribute('aria-hidden', 'true');
+      var reel = document.createElement('span');
+      reel.className = 'odo-reel';
+      for (var d = 0; d <= 9; d++) {
+        var cell = document.createElement('span');
+        cell.textContent = String(d);
+        reel.appendChild(cell);
+      }
+      reel.style.transform = 'translateY(0%)';
+      window.appendChild(reel);
+      frag.appendChild(window);
+    }
+    el.appendChild(frag);
+    return split;
+  }
+
+  function rollTo(id, value, delay) {
+    var el = document.getElementById(id);
+    if (!el) return;
+    var split = layoutOdometer(el, value);
+    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    var wait = reduceMotion ? 0 : (delay || 0);
+    setTimeout(function () {
+      var reels = el.querySelectorAll('.odo-reel');
+      var from = currentDigits(el);
+      // Left-pad the previous reading so positions line up (e.g. "5" -> "05").
+      while (from.length < split.digits.length) from = '0' + from;
+      for (var i = 0; i < reels.length; i++) {
+        (function (reel, index) {
+          var fromDigit = Number(from[index] || '0');
+          var toDigit = Number(split.digits[index]);
+          var start = -fromDigit * 100;
+          var end = -toDigit * 100;
+          if (reduceMotion) {
+            reel.classList.remove('rolling');
+            reel.style.transform = 'translateY(' + end + '%)';
+            return;
+          }
+          // Force the reel to start from the *current* digit with no
+          // transition, then slide to the target on the next frame.
+          reel.classList.remove('rolling');
+          reel.style.transform = 'translateY(' + start + '%)';
+          void reel.offsetHeight; // reflow: commit the start position
+          reel.classList.add('rolling');
+          reel.style.transform = 'translateY(' + end + '%)';
+          // Clear the motion blur once the reel settles so "50" lands crisp.
+          if (reel._settleTimer) clearTimeout(reel._settleTimer);
+          reel._settleTimer = setTimeout(function () {
+            reel.classList.remove('rolling');
+            reel.style.transform = 'translateY(' + end + '%)';
+          }, 1250);
+        })(reels[i], i);
+      }
+      el.setAttribute('data-shown', split.digits);
+      var format = el.getAttribute('data-format') || 'int';
+      el.setAttribute('aria-label', format === 'money' ? (Number(value).toFixed(2) + ' dollars') : String(value));
+    }, wait);
   }
 
   const table = document.getElementById('receiptTable');
@@ -353,9 +450,7 @@
   }
 
   /* ---------- Animated stat counters ---------- */
-  // NOTE: the summary uses <number-flow> now (updated via updateMetrics),
-  // so the old [data-counter] rAF loop is intentionally removed — it would
-  // fight number-flow by overwriting textContent mid-roll.
+  // The summary odometer above handles the digit-roll animation.
 
   if (window.BreadWinner && window.BreadWinner.staggerReveal) {
     window.BreadWinner.staggerReveal('.summary-panel', 80);

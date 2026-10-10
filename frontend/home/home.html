@@ -12,7 +12,6 @@
 <link rel="stylesheet" href="../shared.css">
 <link rel="stylesheet" href="./home.css">
 <link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
-<script type="module" src="https://cdn.jsdelivr.net/npm/@number-flow/element@latest/dist/index.js"></script>
 </head>
 <body class="has-morph-nav">
 
@@ -38,20 +37,20 @@
       <!-- ============ SUMMARY ============ -->
       <section class="summary-panel" aria-label="Summary statistics">
         <div class="summary-total">
-          <number-flow class="summary-value" id="totalOvercharge">0</number-flow>
+          <p class="summary-value odometer" id="totalOvercharge" data-format="money" data-value="50" aria-label="50 dollars">$0.00</p>
           <p class="summary-label">Total overcharge</p>
         </div>
         <div class="summary-details">
           <div class="summary-stat">
-            <number-flow class="summary-stat-value" id="receiptsCount">0</number-flow>
+            <p class="summary-stat-value odometer" id="receiptsCount" data-format="int" data-value="50" aria-label="50">0</p>
             <p class="summary-stat-label">Receipts scanned</p>
           </div>
           <div class="summary-stat">
-            <number-flow class="summary-stat-value" id="gfItemsCount">0</number-flow>
+            <p class="summary-stat-value odometer" id="gfItemsCount" data-format="int" data-value="50" aria-label="50">0</p>
             <p class="summary-stat-label">GF items</p>
           </div>
           <div class="summary-stat">
-            <number-flow class="summary-stat-value" id="averageOvercharge">0</number-flow>
+            <p class="summary-stat-value odometer" id="averageOvercharge" data-format="money" data-value="50" aria-label="50 dollars">$0.00</p>
             <p class="summary-stat-label">Average overcharge</p>
           </div>
         </div>
