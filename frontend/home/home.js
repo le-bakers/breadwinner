@@ -47,144 +47,90 @@
   const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const money = (n) => '$' + n.toFixed(2);
 
-  function updateMetrics(animate) {
-    // Demo: every stat starts at 0, then rolls to 50 on load.
-    primeOdometers();
-    rollTo('totalOvercharge', 50, animate ? 200 : 0);
-    rollTo('receiptsCount', 50, animate ? 350 : 0);
-    rollTo('gfItemsCount', 50, animate ? 500 : 0);
-    rollTo('averageOvercharge', 50, animate ? 650 : 0);
-  }
+  function animateMetric(id, target, format, delay) {
+    // From-scratch odometer (no libraries): each digit is a 1em-tall window
+    // over a vertical 0-9 reel. Rolling = translateY the reel; edges are
+    // softened with a mask fade + frosted blur strips (see home.css).
+    const element = document.getElementById(id);
+    if (!element) return;
+    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const label = format === 'money' ? (Number(target).toFixed(2) + ' dollars') : String(target);
 
-  /* ---------- Hand-rolled odometer (no libraries) ----------
-     Each digit becomes a 1em-tall window over a 0-9 reel. Rolling
-     translates the reel so the target digit slides into view.
-     Plain text is kept for screen readers + no-JS via aria-label. */
-  function primeOdometers() {
-    // Guarantee every odometer visibly starts at a single "0" (e.g. "$0.00" /
-    // "0") before the load-in roll. rollTo() later rebuilds the "50" shape
-    // and left-pads the previous reading, so the reels still slide 0 -> 50.
-    var ids = ['totalOvercharge', 'receiptsCount', 'gfItemsCount', 'averageOvercharge'];
-    for (var k = 0; k < ids.length; k++) {
-      var el = document.getElementById(ids[k]);
-      if (!el) continue;
-      var format = el.getAttribute('data-format') || 'int';
-      var split = layoutOdometer(el, 0);
-      var reels = el.querySelectorAll('.odo-reel');
-      for (var i = 0; i < reels.length; i++) {
-        reels[i].classList.remove('rolling');
-        reels[i].style.transform = 'translateY(0%)';
+    const fixed = format === 'money' ? Number(target).toFixed(2) : String(Math.round(Number(target)));
+    const parts = fixed.split('.');
+    const digits = parts.join('');
+    const decimals = parts.length > 1 ? parts[1].length : 0;
+
+    // Build (or reuse) the reel structure once per digit-shape.
+    const key = (format === 'money' ? '$' : '') + '|' + digits.length + '|' + decimals;
+    if (element.getAttribute('data-layout') !== key) {
+      element.setAttribute('data-layout', key);
+      element.innerHTML = '';
+      const frag = document.createDocumentFragment();
+      if (format === 'money') {
+        const pre = document.createElement('span');
+        pre.className = 'odo-static';
+        pre.textContent = '$';
+        frag.appendChild(pre);
       }
-      el.setAttribute('data-shown', format === 'money' ? '000' : '0');
-      void el.offsetHeight; // commit the zero state before the roll starts
-    }
-  }
-
-  function currentDigits(el) {
-    // (odometer helpers — see the "Hand-rolled odometer" note above)
-    var text = el.getAttribute('data-shown');
-    if (text === null || text === undefined) {
-      var raw = (el.textContent || '').replace(/[^0-9]/g, '');
-      text = raw === '' ? '0' : raw;
-    }
-    return String(text);
-  }
-
-  function splitValue(el, value) {
-    // Returns { prefix, digits, decimals } so "$50.00" becomes "$" + "5000"
-    // with 2 decimals — the "$" and "." render as static spans, every
-    // digit gets its own sliding reel.
-    var format = el.getAttribute('data-format') || 'int';
-    var fixed = format === 'money' ? Number(value).toFixed(2) : String(Math.round(Number(value)));
-    var parts = fixed.split('.');
-    var digits = parts.join('');
-    var out = { prefix: format === 'money' ? '$' : '', digits: digits, decimals: parts.length > 1 ? parts[1].length : 0 };
-    return out;
-  }
-
-  function layoutOdometer(el, targetValue) {
-    // Rebuilds reels only when the digit COUNT or decimal layout changes
-    // (e.g. "0" -> "50.00"); same-shape updates just slide the reels.
-    var split = splitValue(el, targetValue);
-    var key = split.prefix + '|' + split.digits.length + '|' + split.decimals;
-    if (el.getAttribute('data-layout') === key) return split;
-    el.setAttribute('data-layout', key);
-    el.innerHTML = '';
-    var frag = document.createDocumentFragment();
-    if (split.prefix) {
-      var pre = document.createElement('span');
-      pre.className = 'odo-static';
-      pre.textContent = split.prefix;
-      frag.appendChild(pre);
-    }
-    var intLen = split.digits.length - split.decimals;
-    for (var i = 0; i < split.digits.length; i++) {
-      if (split.decimals && i === intLen) {
-        var dot = document.createElement('span');
-        dot.className = 'odo-static';
-        dot.textContent = '.';
-        frag.appendChild(dot);
+      const intLen = digits.length - decimals;
+      for (let i = 0; i < digits.length; i++) {
+        if (decimals && i === intLen) {
+          const dot = document.createElement('span');
+          dot.className = 'odo-static';
+          dot.textContent = '.';
+          frag.appendChild(dot);
+        }
+        const win = document.createElement('span');
+        win.className = 'odo-digit';
+        win.setAttribute('aria-hidden', 'true');
+        const reel = document.createElement('span');
+        reel.className = 'odo-reel';
+        for (let d = 0; d <= 9; d++) {
+          const cell = document.createElement('span');
+          cell.textContent = String(d);
+          reel.appendChild(cell);
+        }
+        reel.style.transform = 'translateY(0.12em)'; // pinned at 0 before the roll (0.12em centers in the 1.24em window)
+        win.appendChild(reel);
+        frag.appendChild(win);
       }
-      var window = document.createElement('span');
-      window.className = 'odo-digit';
-      window.setAttribute('aria-hidden', 'true');
-      var reel = document.createElement('span');
-      reel.className = 'odo-reel';
-      for (var d = 0; d <= 9; d++) {
-        var cell = document.createElement('span');
-        cell.textContent = String(d);
-        reel.appendChild(cell);
-      }
-      reel.style.transform = 'translateY(0%)';
-      window.appendChild(reel);
-      frag.appendChild(window);
+      element.appendChild(frag);
     }
-    el.appendChild(frag);
-    return split;
-  }
 
-  function rollTo(id, value, delay) {
-    var el = document.getElementById(id);
-    if (!el) return;
-    var split = layoutOdometer(el, value);
-    var reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    var wait = reduceMotion ? 0 : (delay || 0);
-    setTimeout(function () {
-      var reels = el.querySelectorAll('.odo-reel');
-      var from = currentDigits(el);
-      // Left-pad the previous reading so positions line up (e.g. "5" -> "05").
-      while (from.length < split.digits.length) from = '0' + from;
-      for (var i = 0; i < reels.length; i++) {
-        (function (reel, index) {
-          var fromDigit = Number(from[index] || '0');
-          var toDigit = Number(split.digits[index]);
-          var start = -fromDigit * 100;
-          var end = -toDigit * 100;
-          if (reduceMotion) {
-            reel.classList.remove('rolling');
-            reel.style.transform = 'translateY(' + end + '%)';
-            return;
-          }
-          // Force the reel to start from the *current* digit with no
-          // transition, then slide to the target on the next frame.
+    const reels = element.querySelectorAll('.odo-reel');
+    setTimeout(() => {
+      for (let i = 0; i < reels.length; i++) {
+        const reel = reels[i];
+        // Reel strip is 10 digits tall (10em), so % would resolve against the
+        // whole strip — offset in em instead: digit N sits N em down, plus
+        // 0.12em to center it in the taller 1.24em window.
+        const end = 0.12 - Number(digits[i]);
+        if (reduceMotion) {
           reel.classList.remove('rolling');
-          reel.style.transform = 'translateY(' + start + '%)';
-          void reel.offsetHeight; // reflow: commit the start position
-          reel.classList.add('rolling');
-          reel.style.transform = 'translateY(' + end + '%)';
-          // Clear the motion blur once the reel settles so "50" lands crisp.
-          if (reel._settleTimer) clearTimeout(reel._settleTimer);
-          reel._settleTimer = setTimeout(function () {
-            reel.classList.remove('rolling');
-            reel.style.transform = 'translateY(' + end + '%)';
-          }, 1250);
-        })(reels[i], i);
+          reel.style.transform = 'translateY(' + end + 'em)';
+          continue;
+        }
+        reel.classList.remove('rolling');
+        reel.style.transform = 'translateY(0.12em)'; // start from 0 every time
+        void reel.offsetHeight; // reflow: commit the start position
+        reel.classList.add('rolling');
+        reel.style.transform = 'translateY(' + end + 'em)';
+        // Clear motion blur once settled so the digit lands crisp.
+        if (reel._settleTimer) clearTimeout(reel._settleTimer);
+        reel._settleTimer = setTimeout(() => {
+          reel.classList.remove('rolling');
+          reel.style.transform = 'translateY(' + end + 'em)';
+        }, 1250);
       }
-      el.setAttribute('data-shown', split.digits);
-      var format = el.getAttribute('data-format') || 'int';
-      el.setAttribute('aria-label', format === 'money' ? (Number(value).toFixed(2) + ' dollars') : String(value));
-    }, wait);
+      element.setAttribute('aria-label', label);
+    }, reduceMotion ? 0 : delay);
   }
+
+  animateMetric('totalOvercharge', 50, 'money', 150);
+  animateMetric('receiptsCount', 50, 'int', 300);
+  animateMetric('gfItemsCount', 50, 'int', 450);
+  animateMetric('averageOvercharge', 50, 'money', 600);
 
   const table = document.getElementById('receiptTable');
   const template = document.getElementById('rowTemplate');
@@ -444,13 +390,9 @@
 
   if (table && template) {
     render(RECEIPTS);
-    updateMetrics(true); // load-in: stagger digit rolls 0 -> 50
     searchInput.addEventListener('input', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
   }
-
-  /* ---------- Animated stat counters ---------- */
-  // The summary odometer above handles the digit-roll animation.
 
   if (window.BreadWinner && window.BreadWinner.staggerReveal) {
     window.BreadWinner.staggerReveal('.summary-panel', 80);
