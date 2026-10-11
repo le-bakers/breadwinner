@@ -187,6 +187,18 @@ def test_photo_is_read_only_once_when_the_first_reading_is_fine_or_the_photo_is_
     assert len(photos) == 1
 
 
+def test_small_photo_is_read_again_when_totals_do_not_add_up_even_without_unsure_rows(monkeypatch):
+    photos = use_pretend_ocr(monkeypatch, [
+        "BREAD 6.49\nSUBTOTAL 6.48",
+        "BREAD 6.49\nSUBTOTAL 6.49",
+    ])
+    items, subtotal = server.read_locally(photo_bytes(600, 800))
+
+    assert len(photos) == 2
+    assert items == [{"name": "BREAD", "price": 6.49, "upc": None, "unsure": False}]
+    assert subtotal == 6.49
+
+
 # ---------- unit_price ----------
 
 def test_parse_size():
