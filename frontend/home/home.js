@@ -127,10 +127,20 @@
     }, reduceMotion ? 0 : delay);
   }
 
-  animateMetric('totalOvercharge', 50, 'money', 150);
-  animateMetric('receiptsCount', 50, 'int', 300);
-  animateMetric('gfItemsCount', 50, 'int', 450);
-  animateMetric('averageOvercharge', 50, 'money', 600);
+  // The dashboard numbers are added up from the saved receipts, so they are always real.
+  // animate = true staggers the four rolls (page load); false updates them all at once.
+  function updateMetrics(animate) {
+    const total = Math.round(RECEIPTS.reduce((sum, receipt) => sum + (receipt.overcharge || 0), 0) * 100) / 100;
+    const gfItems = RECEIPTS.reduce((sum, receipt) => sum + (receipt.gfItems || 0), 0);
+    const average = RECEIPTS.length ? total / RECEIPTS.length : 0;
+
+    animateMetric('totalOvercharge', total, 'money', animate ? 150 : 0);
+    animateMetric('receiptsCount', RECEIPTS.length, 'int', animate ? 300 : 0);
+    animateMetric('gfItemsCount', gfItems, 'int', animate ? 450 : 0);
+    animateMetric('averageOvercharge', average, 'money', animate ? 600 : 0);
+  }
+
+  updateMetrics(true);
 
   const table = document.getElementById('receiptTable');
   const template = document.getElementById('rowTemplate');
@@ -144,21 +154,9 @@
 
     frag.querySelector('.cell-name-text').textContent = receipt.name;
     frag.querySelector('.cell-date').textContent = dateFormatter.format(new Date(receipt.date + 'T00:00'));
-    frag.querySelector('.cell-items').textContent = receipt.items;
-    frag.querySelector('.cell-gf').textContent = receipt.gfItems;
     if (receipt.imageUrl) {
       frag.querySelector('.expand-receipt-img').src = receipt.imageUrl;
     }
-
-    const overchargeCell = frag.querySelector('.cell-overcharge');
-    overchargeCell.textContent = receipt.overcharge > 0 ? money(receipt.overcharge) : '—';
-    overchargeCell.classList.toggle('zero', receipt.overcharge === 0);
-
-    const statusCell = frag.querySelector('.cell-status');
-    const pill = document.createElement('span');
-    pill.className = 'status-pill ' + (receipt.status === 'processed' ? 'status-processed' : 'status-review');
-    pill.textContent = receipt.status === 'processed' ? 'Processed' : 'Needs Review';
-    statusCell.appendChild(pill);
 
     renderLines(receipt, row, expand);
 
@@ -193,24 +191,63 @@
 
     receipt.lines.forEach((line) => {
       const li = document.createElement('li');
-      const mark = document.createElement('span');
+
+      // The circle shows our gluten-free guess. Pressing it is how the user corrects the guess.
+      const mark = document.createElement('button');
+      mark.type = 'button';
       mark.className = 'item-mark ' + (line.gf === null ? 'unknown' : line.gf ? 'yes' : 'no');
-      if (line.gf === null) mark.title = 'Not checked for gluten-free yet';
+      mark.setAttribute('aria-pressed', line.gf ? 'true' : 'false');
+      mark.setAttribute('aria-label', line.name + (line.gf ? ': gluten-free. Press if it is not.' : ': not marked gluten-free. Press if it is.'));
+      mark.title = line.gf ? (line.gfReason || 'Marked gluten-free') + '. Press if it is not.' : 'Press if this is a gluten-free product';
       mark.innerHTML = line.gf === null ? '?' : line.gf
         ? '<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg>'
-        : '<svg width="10" height="10" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="3" stroke-linecap="round"/></svg>';
+        : '';
+      mark.addEventListener('click', () => {
+        line.gf = !line.gf;
+        if (line.gf && !line.gfReason) line.gfReason = 'Marked gluten-free by you';
+        // A saved comparison is kept but only counted while the item is marked gluten-free,
+        // so a mis-tap on the circle loses nothing
+        saveLines(receipt, row, expand);
+        focusLine(receipt, expand, line, '.item-mark');
+      });
 
       const name = document.createElement('span');
       name.className = 'item-name';
       name.textContent = line.name;
+      if (line.plainName && line.plainName.toLowerCase() !== line.name.toLowerCase()) {
+        // The receipt's own text stays the record. The plain-English guess only helps reading it.
+        const plain = document.createElement('span');
+        plain.className = 'item-plain';
+        plain.textContent = line.plainName;
+        name.appendChild(plain);
+      }
 
       const badges = document.createElement('span');
       badges.className = 'item-badges';
       if (line.gf) {
-        const b = document.createElement('span'); b.className = 'badge badge-gf'; b.textContent = 'GF'; badges.appendChild(b);
-      }
-      if (line.tax) {
-        const b = document.createElement('span'); b.className = 'badge badge-tax'; b.textContent = 'Tax Deductible'; badges.appendChild(b);
+        const b = document.createElement('button');
+        b.type = 'button';
+        if (line.compare) {
+          b.className = 'badge badge-tax' + (line.compare.warnings.length ? ' badge-check' : '');
+          b.textContent = '+' + money(line.compare.deduction) + ' overcharge';
+          b.title = line.compare.warnings.concat('Press to change the comparison.').join(' ');
+        } else {
+          b.className = 'badge badge-compare';
+          b.textContent = 'Compare price';
+          b.title = 'Find what the regular version costs';
+        }
+        b.addEventListener('click', () => window.BreadWinner.openCompare({
+          line,
+          apiBase: API_BASE,
+          opener: b,
+          onSave: (compare) => {
+            line.compare = compare;
+            saveLines(receipt, row, expand);
+            focusLine(receipt, expand, line, '.badge-tax');
+            toast('Saved. ' + money(compare.deduction) + ' counted for ' + line.name);
+          }
+        }));
+        badges.appendChild(b);
       }
       if (line.added) {
         const b = document.createElement('span'); b.className = 'badge badge-added'; b.textContent = 'Added by you'; badges.appendChild(b);
@@ -249,9 +286,50 @@
       list.appendChild(li);
     });
 
-    row.querySelector('.cell-items').textContent = receipt.lines.length;
-    row.querySelector('.cell-gf').textContent = receipt.gfItems;
+    showRowTotals(receipt, row, expand);
     showItemsCheck(receipt, expand);
+  }
+
+  // Redrawing the list replaces every button, so keyboard focus is put back on the line just changed
+  function focusLine(receipt, expand, line, selector) {
+    const li = expand.querySelectorAll('.expand-item-list li')[receipt.lines.indexOf(line)];
+    const target = li && li.querySelector(selector);
+    if (target) target.focus();
+  }
+
+  // Adds up one receipt from its lines. Run after every change, so the saved totals never go stale.
+  function tally(receipt) {
+    const gfLines = receipt.lines.filter((line) => line.gf);
+    const overcharge = gfLines.reduce((sum, line) => sum + (line.compare ? line.compare.deduction : 0), 0);
+    // Still needs the user when a line was hard to read, or a gluten-free item has no comparison yet
+    const waiting = receipt.lines.some((line) => line.unsure || (line.gf && !line.compare));
+
+    receipt.items = receipt.lines.length;
+    receipt.gfItems = gfLines.length;
+    receipt.overcharge = Math.round(overcharge * 100) / 100;
+    receipt.status = waiting ? 'review' : 'processed';
+  }
+
+  // The numbers in the table row, and the total under the item list
+  function showRowTotals(receipt, row, expand) {
+    row.querySelector('.cell-items').textContent = receipt.items;
+    row.querySelector('.cell-gf').textContent = receipt.gfItems;
+
+    const overchargeCell = row.querySelector('.cell-overcharge');
+    overchargeCell.textContent = receipt.overcharge > 0 ? money(receipt.overcharge) : '—';
+    overchargeCell.classList.toggle('zero', !(receipt.overcharge > 0));
+
+    const statusCell = row.querySelector('.cell-status');
+    statusCell.textContent = '';
+    const pill = document.createElement('span');
+    pill.className = 'status-pill ' + (receipt.status === 'processed' ? 'status-processed' : 'status-review');
+    pill.textContent = receipt.status === 'processed' ? 'Processed' : 'Needs Review';
+    statusCell.appendChild(pill);
+
+    const total = expand.querySelector('.receipt-total');
+    total.hidden = !receipt.gfItems;
+    total.textContent = 'Overcharge counted on this receipt: ' + money(receipt.overcharge || 0)
+      + '. An organized estimate, not tax advice. Confirm with a tax professional.';
   }
 
   // Many receipts print a subtotal. If the items don't add up to it, a line is missing or a price was misread.
@@ -270,8 +348,7 @@
   }
 
   function saveLines(receipt, row, expand) {
-    receipt.items = receipt.lines.length;
-    receipt.gfItems = receipt.lines.filter((line) => line.gf).length;
+    tally(receipt);
     saveReceipts();
     renderLines(receipt, row, expand);
     updateMetrics(false);
@@ -661,10 +738,13 @@
     addReceiptToHistory(await makeThumbnail(blob), items, subtotal);
 
     const hardToRead = items.filter((item) => item.unsure).length;
+    const looksGf = items.filter((item) => item.gf).length;
+    const found = 'Found ' + items.length + (items.length === 1 ? ' item' : ' items');
     if (scanProblem) toast(scanProblem);
     else if (!items.length) toast('No items found. Try a clearer, flatter photo.');
-    else if (hardToRead) toast('Found ' + items.length + ' items. ' + hardToRead + (hardToRead === 1 ? ' was' : ' were') + ' hard to read. Open the receipt to check.');
-    else toast('Found ' + items.length + (items.length === 1 ? ' item' : ' items') + '. Open the receipt to review.');
+    else if (hardToRead) toast(found + '. ' + hardToRead + (hardToRead === 1 ? ' was' : ' were') + ' hard to read. Open the receipt to check.');
+    else if (looksGf) toast(found + ', ' + looksGf + (looksGf === 1 ? ' looks' : ' look') + ' gluten-free. Open the receipt to compare prices.');
+    else toast(found + '. None looked gluten-free. Open the receipt to check.');
   }
 
   function addReceiptToHistory(imageUrl, items, subtotal) {
@@ -673,21 +753,28 @@
     const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
     const storeName = 'Captured Receipt';
 
-    // gf: null means "not checked yet" (gluten-free detection is not built yet)
+    // gf: the server's guess (true/false) that this is a gluten-free product. The user can flip it.
+    // gfReason: why it guessed so. plainName: a plain-English reading of the receipt's short name.
+    // regularTerm: what to search for to price the regular version.
     // unsure: true means the scanner was not confident about that line
-    const lines = items.map((item) => ({ name: item.name, price: item.price, gf: null, tax: false, unsure: item.unsure === true }));
+    const lines = items.map((item) => ({
+      name: item.name,
+      price: item.price,
+      gf: typeof item.gf === 'boolean' ? item.gf : null,
+      gfReason: item.gf_reason || null,
+      plainName: item.plain_name || null,
+      regularTerm: item.regular_term || null,
+      unsure: item.unsure === true
+    }));
 
     const newReceipt = {
       name: storeName,
       date: dateStr,
-      items: lines.length,
-      gfItems: 0,
-      overcharge: 0,
-      status: 'review',
       subtotal,  // the subtotal printed on the receipt, or null when the scanner found none
       lines,
       imageUrl
     };
+    tally(newReceipt);  // fills in items, gfItems, overcharge and status
 
     RECEIPTS.unshift(newReceipt);
     saveReceipts();

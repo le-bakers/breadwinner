@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared.css">
-<link rel="stylesheet" href="./home.css">
+<link rel="stylesheet" href="./home.css?v=2">
 <link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
 </head>
 <body class="has-morph-nav">
@@ -39,6 +39,7 @@
         <div class="summary-total">
           <p class="summary-value odometer" id="totalOvercharge" data-format="money" aria-label="50 dollars">$0.00</p>
           <p class="summary-label">Total overcharge</p>
+          <p class="estimate-note">An organized estimate from your receipts, not tax advice. Confirm with a tax professional before claiming a deduction.</p>
         </div>
         <div class="summary-details">
           <div class="summary-stat">
@@ -78,6 +79,7 @@
             </div>
           </div>
         </div>
+        <p class="estimate-note receipts-note">Overcharge amounts are organized estimates, not tax advice. Confirm with a tax professional.</p>
 
         <div class="receipt-table" id="receiptTable">
           <div class="receipt-row receipt-row-head" role="row">
@@ -181,6 +183,70 @@
   </div>
 </div>
 
+<!-- ============ COMPARE PRICE POPUP (run by compare.js) ============ -->
+<div class="modal-overlay" id="compareModal" hidden>
+  <form class="modal-card compare-card" role="dialog" aria-modal="true" aria-labelledby="compareTitle" novalidate>
+    <h3 id="compareTitle">Compare with the regular version</h3>
+    <p class="compare-item"><span id="compareItemName"></span> <strong id="compareItemPrice"></strong></p>
+
+    <fieldset class="compare-group">
+      <legend>1. Your gluten-free item</legend>
+      <div class="compare-fields">
+        <label class="grow">Package size <input id="compareGfSize" type="text" placeholder="14 oz" autocomplete="off" maxlength="20"></label>
+        <label>How many <input id="compareQuantity" type="number" min="1" max="99" value="1" inputmode="numeric"></label>
+      </div>
+      <p class="compare-hint">The size is printed on the package. Leave it blank if you don't know it.</p>
+    </fieldset>
+
+    <fieldset class="compare-group">
+      <legend>2. The regular version</legend>
+      <div class="compare-tabs">
+        <button type="button" class="compare-tab" data-pane="kroger">Search Kroger</button>
+        <button type="button" class="compare-tab" data-pane="manual">Type it in</button>
+        <button type="button" class="compare-tab" data-pane="none">None exists</button>
+      </div>
+
+      <div id="compareKroger">
+        <div class="compare-fields">
+          <label class="grow">Search for <input id="compareTerm" type="text" placeholder="white bread" autocomplete="off" maxlength="60"></label>
+          <label>Zip code <input id="compareZip" type="text" inputmode="numeric" maxlength="5" placeholder="45202" autocomplete="postal-code"></label>
+          <button type="button" class="btn btn-secondary btn-sm" id="compareSearchBtn">Search</button>
+        </div>
+        <p class="compare-hint">Today's regular shelf price at the Kroger-family store nearest that zip code (Kroger, Ralphs, Fred Meyer, King Soopers and others).</p>
+        <p class="compare-hint compare-search-note" id="compareSearchNote" role="status" hidden></p>
+        <div class="compare-results" id="compareResults" role="radiogroup" aria-label="Regular products found"></div>
+      </div>
+
+      <div id="compareManual" hidden>
+        <div class="compare-fields">
+          <label class="grow">Product <input id="compareManualName" type="text" placeholder="Store-brand white bread" autocomplete="off" maxlength="60"></label>
+          <label>Price <input id="compareManualPrice" type="text" inputmode="decimal" placeholder="3.49" autocomplete="off"></label>
+          <label>Size <input id="compareManualSize" type="text" placeholder="20 oz" autocomplete="off" maxlength="20"></label>
+        </div>
+        <p class="compare-hint">Read it off a shelf tag, or look it up at
+          <a id="compareLinkWalmart" href="https://www.walmart.com" target="_blank" rel="noopener">Walmart</a>,
+          <a id="compareLinkTarget" href="https://www.target.com" target="_blank" rel="noopener">Target</a> or
+          <a id="compareLinkCostco" href="https://www.costco.com" target="_blank" rel="noopener">Costco</a>.
+          Use the store you would really have shopped at.</p>
+      </div>
+
+      <div id="compareNone" hidden>
+        <p class="compare-hint">Some gluten-free items have no regular version, like xanthan gum. The whole price is counted for those.</p>
+      </div>
+    </fieldset>
+
+    <!-- Stays in view while the rest of the popup scrolls, so the result and Save are never hidden -->
+    <div class="compare-footer">
+      <div class="compare-outcome" id="compareOutcome" role="status" aria-live="polite" hidden></div>
+      <p class="estimate-note">An organized estimate, not tax advice. Confirm with a tax professional.</p>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="compareCancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="compareSave" disabled>Save</button>
+      </div>
+    </div>
+  </form>
+</div>
+
 <!-- Row template used by JS -->
 <template id="rowTemplate">
   <div class="receipt-row" role="row" tabindex="0">
@@ -209,8 +275,10 @@
       <img class="expand-receipt-img" src="../images/placeholder-receipt.svg" alt="Placeholder scanned receipt image">
       <div class="expand-items">
         <h4>Items</h4>
+        <p class="items-hint">The green ticks are our guess at the gluten-free products. Tap a circle to change it, then compare each gluten-free item with its regular version.</p>
         <p class="items-check" role="status" hidden></p>
         <ul class="expand-item-list"></ul>
+        <p class="receipt-total" role="status" hidden></p>
         <!-- For anything the scanner missed or misread -->
         <form class="add-item-form" novalidate>
           <input class="add-item-name" type="text" placeholder="Item name" aria-label="Item name" maxlength="60" autocomplete="off">
@@ -239,6 +307,7 @@
 
 <script src="../components/navbar.js"></script>
 <script src="../shared.js"></script>
-<script src="./home.js?v=4"></script>
+<script src="./compare.js?v=1"></script>
+<script src="./home.js?v=5"></script>
 </body>
 </html>

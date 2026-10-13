@@ -1,12 +1,15 @@
 import os
 
+import requests
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 
 import gemini
+import gf_detect
 import kroger
 import ocr
 import receipt_parser
+import unit_price
 
 app = FastAPI()
 
@@ -32,14 +35,63 @@ def health_check():
 
 @app.get("/kroger/search")
 def kroger_search(zip: str, term: str):
-    location_id = kroger.find_nearest_location(zip)
+    if not (zip.isdigit() and len(zip) == 5):
+        raise HTTPException(status_code=422, detail="Type a 5-digit zip code.")
+
+    try:
+        location_id = kroger.find_nearest_location(zip)
+        # Ask for more than 3, because some products come back without a price at this store
+        products = kroger.search_products(term, location_id, limit=10) if location_id else []
+    except requests.RequestException:
+        raise HTTPException(status_code=502, detail="Kroger could not be reached right now.")
 
     if location_id is None:
         raise HTTPException(status_code=404, detail="No Kroger-banner store near that zip code.")
 
-    results = kroger.search_products(term, location_id)
+    # "price" is Kroger's regular shelf price, not a sale price. A sale would make the
+    # regular item look cheaper than usual and the extra cost look bigger than it is.
+    results = [product for product in products if product["price"]][:3]
 
     return {"location_id": location_id, "results": results}
+
+
+LOWEST_PRICE, HIGHEST_PRICE = 0.01, 999.99
+
+
+@app.get("/deduction")
+def deduction(gf_price: float, gf_size: str = "", quantity: int = 1,
+              regular_price: float = None, regular_size: str = ""):
+    """The extra cost of one gluten-free receipt line, compared with the regular version.
+    Leave regular_price out when no regular version exists. An organized estimate, not tax advice."""
+    prices = [gf_price] if regular_price is None else [gf_price, regular_price]
+    for price in prices:
+        if not LOWEST_PRICE <= price <= HIGHEST_PRICE:
+            raise HTTPException(status_code=422, detail="Prices must be between $0.01 and $999.99.")
+    if not 1 <= quantity <= 99:
+        raise HTTPException(status_code=422, detail="How many you bought must be between 1 and 99.")
+
+    if regular_price is None:
+        # Some gluten-free items have no regular version (xanthan gum), so the whole price is extra cost
+        return {
+            "deduction": round(gf_price, 2),
+            "scaled_regular_price": 0,
+            "sizes_comparable": True,
+            "warnings": ["Counted in full, because you said no regular version of this item exists."],
+        }
+
+    result = unit_price.calculate_deduction(gf_price, gf_size, regular_price, regular_size, quantity)
+
+    # Warnings never block anything. They tell the user which numbers deserve a second look.
+    result["warnings"] = []
+    if not result["sizes_comparable"]:
+        result["warnings"].append(
+            "The package sizes could not be compared, so the full prices were compared instead. "
+            "Add both sizes (like 14 oz and 20 oz) for a fairer number."
+        )
+    if result["deduction"] == 0:
+        result["warnings"].append("The regular version costs the same or more, so nothing is counted for this item.")
+
+    return result
 
 
 @app.post("/scan")
@@ -55,6 +107,9 @@ def scan(file: UploadFile):
     except Exception:
         raise HTTPException(status_code=422, detail="Could not read that file as a receipt photo.")
 
+    # Guess which items are gluten-free products. The website shows the guesses and the user corrects them.
+    gf_detect.add_guesses(items)
+
     # "engine" says who read it ("gemini" or "local"), which helps when an item looks wrong.
     # "subtotal" is the receipt's own subtotal (or null). The website warns when the items don't add up to it.
     return {"engine": engine, "items": items, "subtotal": subtotal}
@@ -64,8 +119,8 @@ def read_items(image_bytes):
     """Returns who read the photo, the list of items they found, and the receipt's subtotal."""
     if OCR_ENGINE == "gemini":
         try:
-            # Gemini is not asked for the subtotal yet, so there is nothing to check its items against
-            return "gemini", gemini.read_receipt(image_bytes), None
+            items, subtotal = gemini.read_receipt(image_bytes)
+            return "gemini", items, subtotal
         except gemini.GeminiUnavailable as reason:
             print(f"Gemini was skipped ({reason}). Reading the photo on this computer instead.")
 

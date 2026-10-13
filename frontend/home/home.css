@@ -288,7 +288,7 @@
 }
 .item-mark { flex-shrink: 0; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; }
 .item-mark.yes { background: var(--accent-light); color: #15803D; }
-.item-mark.no { background: #FEF3F2; color: #DC2626; }
+.item-mark.no { background: transparent; box-shadow: inset 0 0 0 1.5px #9CA3AF; }
 .item-mark.unknown { background: var(--border, #E5E7EB); color: var(--text-secondary); font-size: 11px; font-weight: 700; }
 .item-name { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
 .item-price { color: var(--text-secondary); font-weight: 600; }
@@ -338,6 +338,111 @@
 .add-item-form .btn { background: var(--card); color: var(--primary-hover); }
 .add-item-error { flex-basis: 100%; font-size: 13px; color: #DC2626; }
 
+/* ---------- Gluten-free guesses and price comparison ---------- */
+/* The circle is a button: it shows the gluten-free guess and flips it when pressed */
+.item-mark { position: relative; border: none; padding: 0; font-family: inherit; cursor: pointer; transition: box-shadow 0.2s, background 0.2s; }
+.item-mark::after { content: ''; position: absolute; inset: -11px; }  /* a bigger area to tap */
+.item-mark:hover { box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.25); }
+.item-mark.no:hover { box-shadow: inset 0 0 0 1.5px var(--primary-hover), 0 0 0 3px rgba(var(--accent-rgb), 0.25); }
+.item-mark:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 3px; }
+.item-plain { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--text-secondary); }
+
+button.badge { border: none; font-family: inherit; cursor: pointer; transition: background 0.2s; }
+button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 2px; }
+.badge-compare { background: #15803D; color: #fff; }
+.badge-compare:hover { background: #166534; }
+.badge-tax { background: var(--accent-light); color: #15803D; }
+.badge-tax:hover { background: #BBF7D0; }
+.badge-tax.badge-check { background: #FEF3C7; color: #92400E; }  /* saved, but with a warning worth a look */
+.badge-tax.badge-check:hover { background: #FDE68A; }
+
+.items-hint { font-size: 13px; line-height: 1.5; color: var(--text-secondary); margin-bottom: 12px; }
+.receipt-total { margin-top: 12px; font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
+
+/* The "not tax advice" line that sits next to every dollar total */
+.estimate-note { font-size: 12.5px; line-height: 1.5; color: var(--text-secondary); }
+.summary-total .estimate-note { margin-top: 12px; max-width: 46ch; }
+.receipts-note { margin: -6px 0 14px; }
+
+.compare-card { max-width: 540px; max-height: calc(100dvh - 40px); overflow-y: auto; padding: 26px; }
+.modal-card p.compare-item { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 18px; font-size: 14.5px; font-weight: 500; color: var(--text); overflow-wrap: anywhere; }
+.compare-group { min-width: 0; margin: 0 0 16px; padding: 0; border: none; }
+.compare-group:last-of-type { margin-bottom: 14px; }
+.compare-group legend { margin-bottom: 10px; padding: 0; font-size: 12.5px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text-secondary); }
+.compare-fields { display: flex; flex-wrap: wrap; align-items: flex-end; gap: 10px; }
+.compare-fields label { display: flex; flex: 1 1 96px; flex-direction: column; gap: 5px; min-width: 0; font-size: 12.5px; font-weight: 600; color: var(--text-secondary); }
+.compare-fields label.grow { flex: 3 1 170px; }
+.compare-fields input {
+  width: 100%;
+  min-width: 0;
+  padding: 10px 12px;
+  font-size: 14px;
+  font-family: inherit;
+  font-weight: 400;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.compare-fields input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.1); }
+.compare-fields .btn { flex: 0 0 auto; }
+.modal-card p.compare-hint { margin-top: 8px; font-size: 12.5px; line-height: 1.5; }
+.compare-hint a { color: var(--primary-hover); font-weight: 600; text-decoration: underline; }
+.modal-card p.compare-search-note { font-weight: 600; color: var(--text); }
+
+.compare-tabs { display: flex; gap: 4px; margin-bottom: 12px; padding: 4px; background: var(--bg); border: 1px solid var(--border); border-radius: 12px; }
+.compare-tab { flex: 1; padding: 8px 6px; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--text-secondary); background: none; border: none; border-radius: 9px; cursor: pointer; transition: background 0.2s, color 0.2s; }
+.compare-tab.active { background: var(--card); color: var(--text); box-shadow: var(--shadow-sm); }
+.compare-tab:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 1px; }
+
+.compare-results { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+.compare-results:empty { display: none; }
+.compare-result {
+  display: flex; justify-content: space-between; align-items: center; gap: 12px;
+  width: 100%;
+  padding: 10px 12px;
+  font-family: inherit; font-size: 13.5px; text-align: left;
+  color: var(--text);
+  background: var(--card);
+  border: 1.5px solid var(--border);
+  border-radius: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+.compare-result:hover { border-color: var(--primary); }
+.compare-result:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 2px; }
+.compare-result[aria-checked="true"] { border-color: var(--primary); background: var(--accent-light); }
+.compare-result-name { min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
+.compare-result-detail { flex-shrink: 0; font-weight: 600; white-space: nowrap; color: var(--text-secondary); }
+
+/* The result and the buttons stay pinned to the bottom of the popup while the rest scrolls */
+.compare-footer { position: sticky; bottom: -26px; margin: 0 -26px -26px; padding: 14px 26px 26px; background: var(--card); border-top: 1px solid var(--border); }
+.compare-outcome { margin-bottom: 8px; padding: 10px 14px; border-radius: 12px; }
+.compare-outcome strong { display: block; font-family: var(--font-display); font-size: 20px; font-weight: 800; }
+.modal-card .compare-outcome p { margin-top: 2px; font-size: 12.5px; line-height: 1.45; color: inherit; }
+.compare-outcome.ok { background: var(--accent-light); color: #166534; }
+.compare-outcome.warn { background: #FFFBEB; color: #92400E; border: 1px solid #FDE68A; }
+.compare-card .modal-actions { margin-top: 12px; }
+.compare-card .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+@media (max-width: 620px) {
+  .compare-card { padding: 20px; }
+  .compare-footer { bottom: -20px; margin: 0 -20px -20px; padding: 12px 20px 20px; }
+  /* 16px text stops iPhones from zooming in when a box is tapped */
+  .compare-fields input { font-size: 16px; min-height: 44px; }
+  .compare-fields .btn { flex: 1 1 100%; min-height: 44px; }
+  .compare-tab { min-height: 40px; padding: 8px 2px; font-size: 12.5px; }
+  button.badge { padding: 7px 12px; }
+}
+
+:root[data-theme="dark"] .item-mark.no { box-shadow: inset 0 0 0 1.5px #6B7A6C; }
+:root[data-theme="dark"] .badge-tax { color: #4ADE80; }
+:root[data-theme="dark"] .badge-tax:hover { background: rgba(var(--accent-rgb), 0.26); }
+:root[data-theme="dark"] .badge-tax.badge-check { background: rgba(251,191,36,0.16); color: #FCD34D; }
+:root[data-theme="dark"] .badge-tax.badge-check:hover { background: rgba(251,191,36,0.26); }
+:root[data-theme="dark"] .compare-outcome.ok { color: #4ADE80; }
+:root[data-theme="dark"] .compare-outcome.warn { background: rgba(251,191,36,0.1); color: #FCD34D; border-color: rgba(251,191,36,0.3); }
 :root[data-theme="dark"] .badge-unsure { background: rgba(251,191,36,0.16); color: #FCD34D; }
 :root[data-theme="dark"] .badge-unsure:hover { background: rgba(251,191,36,0.26); }
 :root[data-theme="dark"] .item-remove-btn:hover { background: rgba(220,38,38,0.14); }

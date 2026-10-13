@@ -35,12 +35,25 @@ For each product give:
 - price: the amount charged for that line, as a number. If the line shows a quantity or a weight
   (like "2 @ 3.99" or "1.25 lb @ 0.59/lb"), use the line total, not the price for one.
 - upc: the 12 to 14 digit barcode number printed on that product's line or right under it,
-  or null if there is none. Never guess one.
+  or "" if there is none. Never guess one.
+
+- plain_name: your best guess at what the product is, in plain English, like
+  "Udi's gluten-free white bread". It only helps the shopper recognize the line.
+  Use "" if you cannot tell.
+- gluten_free: true only for a specialty gluten-free product, made to replace a food that normally
+  contains wheat (gluten-free bread, pasta, flour, crackers, cookies, cereal, pizza and so on).
+  Use false for foods that never contain gluten anyway (fruit, milk, eggs, meat, rice),
+  and false whenever you are not sure.
+- regular_version: when gluten_free is true, a short grocery search for the ordinary version of
+  the same food, like "white bread" or "penne pasta", with no brand name. Otherwise "".
 
 Do not list subtotal, total, tax, payment, change, coupon, discount, savings or loyalty lines.
 If a product's name and price are printed on two lines, join them into one product.
 If you cannot read a product's price, leave that product out instead of guessing.
-If the photo is not a receipt, return an empty list."""
+If the photo is not a receipt, return an empty list.
+
+Also give subtotal: the SUBTOTAL printed on the receipt, before tax. Use 0 if no subtotal is
+printed, or if the receipt has any coupon or discount lines."""
 
 # The exact shape Gemini must answer in, so the answer is always the same kind of JSON
 ANSWER_SHAPE = {
@@ -53,13 +66,17 @@ ANSWER_SHAPE = {
                 "properties": {
                     "name": {"type": "string"},
                     "price": {"type": "number"},
-                    "upc": {"type": ["string", "null"]},
+                    "upc": {"type": "string"},
+                    "plain_name": {"type": "string"},
+                    "gluten_free": {"type": "boolean"},
+                    "regular_version": {"type": "string"},
                 },
-                "required": ["name", "price", "upc"],
+                "required": ["name", "price", "upc", "plain_name", "gluten_free", "regular_version"],
             },
         },
+        "subtotal": {"type": "number"},
     },
-    "required": ["items"],
+    "required": ["items", "subtotal"],
 }
 
 
@@ -68,7 +85,9 @@ class GeminiUnavailable(Exception):
 
 
 def read_receipt(image_bytes):
-    """Send a receipt photo to Gemini and get back [{"name": ..., "price": ..., "upc": ...}].
+    """Send a receipt photo to Gemini and get back (items, subtotal).
+    Each item is {"name", "price", "upc", "unsure", "plain_name", "gf", "regular_term"}.
+    The subtotal is None when the receipt has none to check the items against.
     Raises GeminiUnavailable when no model could do it, so the caller can use the local reader."""
     if not API_KEY:
         raise GeminiUnavailable("there is no GEMINI_API_KEY in .env")
@@ -83,7 +102,9 @@ def read_receipt(image_bytes):
             ],
         }],
         "generationConfig": {
-            "responseFormat": {"text": {"mimeType": "application/json", "schema": ANSWER_SHAPE}},
+            # Must be the code word APPLICATION_JSON. Google's guide shows "application/json",
+            # but a plain web request like this one is refused with it (error 400, seen 2026-10-12).
+            "responseFormat": {"text": {"mimeType": "APPLICATION_JSON", "schema": ANSWER_SHAPE}},
         },
     }
 
@@ -113,7 +134,8 @@ def read_receipt(image_bytes):
             continue
 
         try:
-            return clean_items(read_answer(response.json()))
+            answer = read_answer(response.json())
+            return clean_items(answer["items"]), clean_subtotal(answer.get("subtotal"))
         except (KeyError, IndexError, TypeError, ValueError, AttributeError):
             print(f"Gemini {model} gave an answer that could not be understood")
 
@@ -148,19 +170,30 @@ def count_request():
 
 
 def error_message(response):
-    """Google's own explanation of what went wrong, if it sent one."""
+    """Google's own explanation of what went wrong, if it sent one.
+    Its short reason code (like API_KEY_SERVICE_BLOCKED) goes in front: that code names the exact cause."""
     try:
-        return response.json()["error"]["message"]
-    except (KeyError, TypeError, ValueError):
+        error = response.json()["error"]
+        message = error["message"]
+        reason = error.get("status")  # a general word, like PERMISSION_DENIED
+        for detail in error.get("details") or []:
+            if detail.get("reason"):
+                reason = detail["reason"]  # the exact cause, when Google gives one
+                break
+    except (KeyError, TypeError, ValueError, AttributeError):
         return "no details given"
+
+    if reason:
+        return f"[{reason}] {message}"
+    return message
 
 
 def read_answer(data):
-    """Pull the list of items out of Gemini's reply."""
+    """Pull Gemini's answer ({"items": [...], "subtotal": ...}) out of its reply."""
     parts = data["candidates"][0]["content"]["parts"]
     # Skip the model's private "thinking" notes; the real answer is the rest
     text = "".join(part["text"] for part in parts if "text" in part and not part.get("thought"))
-    return json.loads(text)["items"]
+    return json.loads(text)
 
 
 def clean_items(raw_items):
@@ -176,9 +209,32 @@ def clean_items(raw_items):
         if not (isinstance(upc, str) and upc.isdigit() and 12 <= len(upc) <= 14):
             upc = None
 
-        items.append({"name": name, "price": round(float(price), 2), "upc": upc})
+        items.append({
+            "name": name,
+            "price": round(float(price), 2),
+            "upc": upc,
+            "unsure": False,  # Gemini does not say how sure it is, so no line is marked "hard to read"
+            "plain_name": short_text(raw.get("plain_name")),
+            # These two are Gemini's guesses. gf_detect.py double-checks them and the user confirms.
+            "gf": raw.get("gluten_free") is True,
+            "regular_term": short_text(raw.get("regular_version")),
+        })
 
     return items
+
+
+def short_text(value):
+    """A tidy piece of text, or None when Gemini left it empty."""
+    if not isinstance(value, str):
+        return None
+    return value.strip()[:60] or None
+
+
+def clean_subtotal(value):
+    """The receipt's subtotal as a number, or None when Gemini found none (it answers 0 then)."""
+    if isinstance(value, (int, float)) and value > 0:
+        return round(float(value), 2)
+    return None
 
 
 if __name__ == "__main__":
@@ -186,5 +242,8 @@ if __name__ == "__main__":
     import sys
 
     with open(sys.argv[1], "rb") as image_file:
-        for item in read_receipt(image_file.read()):
-            print(item)
+        found_items, found_subtotal = read_receipt(image_file.read())
+
+    for item in found_items:
+        print(item)
+    print("Subtotal:", found_subtotal)

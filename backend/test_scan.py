@@ -6,10 +6,12 @@ import io
 import json
 
 import pytest
+import requests
 from fastapi.testclient import TestClient
 from PIL import Image
 
 import gemini
+import gf_detect
 import server
 from ocr import enlarge_small_photo, group_into_rows
 from receipt_parser import find_subtotal, parse_receipt
@@ -221,6 +223,125 @@ def test_cheaper_gf_item_is_zero_not_negative():
     assert calculate_deduction(2.00, "14 oz", 3.49, "14 oz")["deduction"] == 0
 
 
+def test_two_packages_on_one_receipt_line_count_twice():
+    # 2 GF loaves for $12.98 is $6.49 each, and each one cost $4.05 extra
+    assert calculate_deduction(12.98, "14 oz", 3.49, "20 oz", quantity=2)["deduction"] == 8.09
+
+
+def test_sizes_typed_by_hand_are_understood():
+    assert parse_size("14oz") == parse_size("14 ounces") == parse_size("14 OZ")
+    assert parse_size("1.5 lbs") == ("weight", 1.5 * 453.592)
+
+
+# ---------- gf_detect ----------
+
+def guess(name, **extra):
+    return gf_detect.add_guesses([{"name": name, **extra}])[0]
+
+
+def test_gluten_free_brand_is_spotted_and_gets_a_regular_version_to_search():
+    item = guess("UDI'S WHT BREAD")
+    assert item["gf"] is True
+    assert item["gf_reason"] == "Udi's is a gluten-free brand"
+    assert item["regular_term"] == "white bread"
+
+
+def test_gluten_free_label_is_spotted():
+    for name in ["GF PASTA PENNE", "G/F ROTINI", "Gluten Free Bagels", "GLTN FREE CRACKERS"]:
+        assert guess(name)["gf_reason"] == "The receipt line says gluten-free"
+    assert guess("GF PASTA PENNE")["regular_term"] == "penne pasta"
+    assert guess("GF ROLLED OATS")["regular_term"] == "oats"
+
+
+def test_ordinary_items_are_not_marked_gluten_free():
+    # GV is Walmart's Great Value brand, and "GF" hiding inside a longer word does not count
+    for name in ["GV WHT BREAD", "BANANAS", "KRO 2% MILK GAL", "EGGFREE MAYO"]:
+        item = guess(name)
+        assert item["gf"] is False
+        assert item["gf_reason"] is None
+        assert item["regular_term"] is None
+
+
+def test_unknown_gluten_free_food_has_no_search_suggestion():
+    item = guess("GF XANTHAN GUM")
+    assert item["gf"] is True
+    assert item["regular_term"] is None
+
+
+def test_gemini_opinion_is_used_when_the_lists_find_nothing():
+    item = guess("CYN BKHSE 7GRN", plain_name="Seven grain loaf", gf=True, regular_term="multigrain bread")
+    assert item["gf_reason"] == "AI guess from the product name"
+    assert item["regular_term"] == "multigrain bread"
+
+    # Gemini's plain-English name can also reveal a brand the receipt abbreviated
+    item = guess("CYN BKHSE 7GRN", plain_name="Canyon Bakehouse 7-grain bread", gf=False)
+    assert item["gf_reason"] == "Canyon Bakehouse is a gluten-free brand"
+    assert item["regular_term"] == "white bread"
+
+
+# ---------- GET /deduction ----------
+
+def test_deduction_does_the_bread_math():
+    response = client.get("/deduction", params={
+        "gf_price": 6.49, "gf_size": "14 oz", "regular_price": 3.49, "regular_size": "20 oz",
+    })
+    assert response.json() == {
+        "deduction": 4.05, "scaled_regular_price": 2.44, "sizes_comparable": True, "warnings": [],
+    }
+
+
+def test_deduction_warns_when_sizes_are_missing_or_nothing_is_counted():
+    no_sizes = client.get("/deduction", params={"gf_price": 6.49, "regular_price": 3.49}).json()
+    assert no_sizes["deduction"] == 3.00
+    assert len(no_sizes["warnings"]) == 1 and "sizes" in no_sizes["warnings"][0]
+
+    cheaper = client.get("/deduction", params={
+        "gf_price": 2.00, "gf_size": "14 oz", "regular_price": 3.49, "regular_size": "14 oz",
+    }).json()
+    assert cheaper["deduction"] == 0
+    assert len(cheaper["warnings"]) == 1 and "nothing is counted" in cheaper["warnings"][0]
+
+
+def test_item_with_no_regular_version_counts_in_full():
+    result = client.get("/deduction", params={"gf_price": 8.99}).json()
+    assert result["deduction"] == 8.99
+    assert len(result["warnings"]) == 1
+
+
+def test_deduction_rejects_prices_and_quantities_that_make_no_sense():
+    for params in [
+        {"gf_price": 0, "regular_price": 3.49},
+        {"gf_price": 6.49, "regular_price": 1000},
+        {"gf_price": 6.49, "regular_price": 3.49, "quantity": 0},
+        {"gf_price": "nan", "regular_price": 3.49},
+    ]:
+        assert client.get("/deduction", params=params).status_code == 422
+
+
+# ---------- GET /kroger/search (pretend Kroger, nothing is sent) ----------
+
+def test_kroger_search_rejects_a_bad_zip_without_asking_kroger():
+    assert client.get("/kroger/search", params={"zip": "4520", "term": "bread"}).status_code == 422
+
+
+def test_kroger_search_says_so_when_kroger_is_down(monkeypatch):
+    def kroger_is_down(zip_code):
+        raise requests.ConnectionError()
+
+    monkeypatch.setattr(server.kroger, "find_nearest_location", kroger_is_down)
+    assert client.get("/kroger/search", params={"zip": "45202", "term": "bread"}).status_code == 502
+
+
+def test_kroger_search_gives_three_products_and_skips_ones_with_no_price(monkeypatch):
+    products = [{"name": f"Bread {n}", "size": "20 oz", "price": price, "promo_price": 0}
+                for n, price in enumerate([None, 2.49, 0, 3.49, 1.99, 4.29])]
+    monkeypatch.setattr(server.kroger, "find_nearest_location", lambda zip_code: "01400943")
+    monkeypatch.setattr(server.kroger, "search_products", lambda term, location_id, limit: products)
+
+    results = client.get("/kroger/search", params={"zip": "45202", "term": "bread"}).json()["results"]
+    assert [product["price"] for product in results] == [2.49, 3.49, 1.99]
+
+
 # ---------- POST /scan ----------
 
 def test_scan_reads_items_from_a_receipt_image():
@@ -230,12 +351,16 @@ def test_scan_reads_items_from_a_receipt_image():
     assert response.json()["engine"] == "local"
 
     items = response.json()["items"]
-    assert items == [
-        {"name": "UDIS GF WHT BREAD", "price": 6.49, "upc": "0069899781101", "unsure": False},
-        {"name": "KRO 2% MILK GAL", "price": 3.29, "upc": None, "unsure": False},
-        {"name": "BANANAS", "price": 1.12, "upc": None, "unsure": False},
-        {"name": "SCHAR GF PASTA PENNE", "price": 4.99, "upc": None, "unsure": False},
-        {"name": "KRO LRG EGGS 12CT", "price": 2.79, "upc": None, "unsure": False},
+    assert items[0] == {
+        "name": "UDIS GF WHT BREAD", "price": 6.49, "upc": "0069899781101", "unsure": False,
+        "plain_name": None, "gf": True, "gf_reason": "Udi's is a gluten-free brand", "regular_term": "white bread",
+    }
+    assert [(item["name"], item["price"], item["gf"], item["regular_term"]) for item in items] == [
+        ("UDIS GF WHT BREAD", 6.49, True, "white bread"),
+        ("KRO 2% MILK GAL", 3.29, False, None),
+        ("BANANAS", 1.12, False, None),
+        ("SCHAR GF PASTA PENNE", 4.99, True, "penne pasta"),
+        ("KRO LRG EGGS 12CT", 2.79, False, None),
     ]
 
 
@@ -260,10 +385,16 @@ class PretendReply:
         return self.data
 
 
-def gemini_answer(items):
+def gemini_answer(items, subtotal=0):
     """What Google sends back when Gemini read the receipt."""
-    text = json.dumps({"items": items})
+    text = json.dumps({"items": items, "subtotal": subtotal})
     return PretendReply(200, {"candidates": [{"content": {"parts": [{"text": text}]}}]})
+
+
+def cleaned(name, price, upc=None, plain_name=None, gf=False, regular_term=None):
+    """One item the way gemini.py hands it on."""
+    return {"name": name, "price": price, "upc": upc, "unsure": False,
+            "plain_name": plain_name, "gf": gf, "regular_term": regular_term}
 
 
 OUT_OF_REQUESTS = PretendReply(429, {"error": {"message": "You exceeded your current quota."}})
@@ -290,23 +421,45 @@ def photo_bytes(width, height):
 
 def test_gemini_answer_is_cleaned_up(monkeypatch):
     use_pretend_gemini(monkeypatch, [gemini_answer([
-        {"name": " UDIS GF WHT BREAD ", "price": 6.489, "upc": "0069899781101"},
-        {"name": "BANANAS", "price": 1.12, "upc": "not a barcode"},
+        {"name": " UDIS GF WHT BREAD ", "price": 6.489, "upc": "0069899781101",
+         "plain_name": " Udi's gluten-free white bread ", "gluten_free": True, "regular_version": "white bread"},
+        {"name": "BANANAS", "price": 1.12, "upc": "", "plain_name": "", "gluten_free": False, "regular_version": ""},
+        {"name": "EGGS", "price": 2.79, "upc": "not a barcode", "gluten_free": "yes"},  # sloppy answer
         {"name": "", "price": 2.00, "upc": None},          # no name
         {"name": "FREE SAMPLE", "price": 0, "upc": None},  # no price
         {"name": "MILK", "price": "3.29", "upc": None},    # price is text, not a number
-    ])])
-    assert gemini.read_receipt(photo_bytes(40, 80)) == [
-        {"name": "UDIS GF WHT BREAD", "price": 6.49, "upc": "0069899781101"},
-        {"name": "BANANAS", "price": 1.12, "upc": None},
+    ], subtotal=10.40)])
+
+    items, subtotal = gemini.read_receipt(photo_bytes(40, 80))
+    assert items == [
+        cleaned("UDIS GF WHT BREAD", 6.49, upc="0069899781101",
+                plain_name="Udi's gluten-free white bread", gf=True, regular_term="white bread"),
+        cleaned("BANANAS", 1.12),
+        cleaned("EGGS", 2.79),
     ]
+    assert subtotal == 10.40
+
+
+def test_gemini_is_asked_for_json_the_way_google_accepts_it(monkeypatch):
+    sent = {}
+
+    def pretend_post(url, json, headers, timeout):
+        sent.update(json)
+        return gemini_answer([])
+
+    monkeypatch.setattr(gemini, "API_KEY", "not-a-real-key")
+    monkeypatch.setattr(gemini.requests, "post", pretend_post)
+
+    assert gemini.read_receipt(photo_bytes(40, 80)) == ([], None)  # a subtotal of 0 means "none"
+    # "application/json" here is refused by Google with error 400 (seen 2026-10-12)
+    assert sent["generationConfig"]["responseFormat"]["text"]["mimeType"] == "APPLICATION_JSON"
 
 
 def test_gemini_uses_the_second_model_when_the_first_is_out_of_requests(monkeypatch):
     bread = {"name": "BREAD", "price": 6.49, "upc": None}
     asked = use_pretend_gemini(monkeypatch, [OUT_OF_REQUESTS, gemini_answer([bread]), gemini_answer([bread])])
 
-    assert gemini.read_receipt(photo_bytes(40, 80)) == [bread]
+    assert gemini.read_receipt(photo_bytes(40, 80)) == ([cleaned("BREAD", 6.49)], None)
     assert gemini.MODELS[0] in asked[0] and gemini.MODELS[1] in asked[1]
 
     # The first model is now resting, so the next scan goes straight to the second one
@@ -324,6 +477,20 @@ def test_gemini_stops_at_the_daily_limit(monkeypatch):
     assert len(asked) == 1
 
 
+def test_gemini_refusal_shows_googles_reason_code():
+    blocked = PretendReply(403, {"error": {"message": "Requests are blocked.", "status": "PERMISSION_DENIED",
+                                           "details": [{"reason": "API_KEY_SERVICE_BLOCKED"}]}})
+    assert gemini.error_message(blocked) == "[API_KEY_SERVICE_BLOCKED] Requests are blocked."
+
+    # No exact cause given: the general word is shown instead
+    no_credits = PretendReply(402, {"error": {"message": "Credits are depleted.", "status": "FAILED_PRECONDITION"}})
+    assert gemini.error_message(no_credits) == "[FAILED_PRECONDITION] Credits are depleted."
+
+    assert gemini.error_message(OUT_OF_REQUESTS) == "You exceeded your current quota."
+    assert gemini.error_message(PretendReply(500, {})) == "no details given"
+    assert gemini.error_message(PretendReply(500, {"error": "broken"})) == "no details given"
+
+
 def test_gemini_without_a_key_sends_nothing():
     with pytest.raises(gemini.GeminiUnavailable):
         gemini.read_receipt(photo_bytes(40, 80))
@@ -336,13 +503,22 @@ def test_big_photo_is_shrunk_before_sending():
 
 
 def test_scan_uses_gemini_when_it_is_switched_on(monkeypatch):
-    bread = {"name": "UDIS GF WHT BREAD", "price": 6.49, "upc": None}
-    use_pretend_gemini(monkeypatch, [gemini_answer([bread])])
+    use_pretend_gemini(monkeypatch, [gemini_answer([
+        {"name": "UDIS WHT BRD", "price": 6.49, "upc": "", "plain_name": "Udi's white bread",
+         "gluten_free": True, "regular_version": "white sandwich bread"},
+        {"name": "BANANAS", "price": 1.12, "upc": "", "plain_name": "Bananas",
+         "gluten_free": False, "regular_version": ""},
+    ], subtotal=7.61)])
     monkeypatch.setattr(server, "OCR_ENGINE", "gemini")
 
     with open("test_receipt.png", "rb") as image_file:
         response = client.post("/scan", files={"file": image_file})
-    assert response.json() == {"engine": "gemini", "items": [bread], "subtotal": None}
+    assert response.json() == {"engine": "gemini", "subtotal": 7.61, "items": [
+        {"name": "UDIS WHT BRD", "price": 6.49, "upc": None, "unsure": False, "plain_name": "Udi's white bread",
+         "gf": True, "gf_reason": "Udi's is a gluten-free brand", "regular_term": "white sandwich bread"},
+        {"name": "BANANAS", "price": 1.12, "upc": None, "unsure": False, "plain_name": "Bananas",
+         "gf": False, "gf_reason": None, "regular_term": None},
+    ]}
 
 
 def test_scan_falls_back_to_the_local_reader_when_gemini_is_out_of_requests(monkeypatch):
