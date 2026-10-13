@@ -1,4 +1,16 @@
-/* ============================================
+const STYLE_ID = 'bw-style-shared-css';
+
+function injectStyle(cssText: string): void {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(STYLE_ID)) return;
+
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = cssText;
+  document.head.appendChild(style);
+}
+
+injectStyle(`/* ============================================
    BreadWinner â€” Shared Design System
    Tokens, reset, nav, buttons, footer, utilities
    ============================================ */
@@ -1067,3 +1079,6 @@ body.has-morph-nav .mobile-menu { top: 76px; }
   .msn-nav .msn-avatar .avatar-circle,
   .msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; }
 }
+`);
+
+export { injectStyle };

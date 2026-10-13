@@ -1,4 +1,16 @@
-/* ============================================
+const STYLE_ID = 'bw-style-signin-signin-css';
+
+function injectStyle(cssText: string): void {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(STYLE_ID)) return;
+
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = cssText;
+  document.head.appendChild(style);
+}
+
+injectStyle(`/* ============================================
    BreadWinner — Sign In Page Styles
    ============================================ */
 
@@ -295,3 +307,6 @@
   .field-row { margin-bottom: 22px; }
   .signup-prompt { font-size: 13.5px; }
 }
+`);
+
+export { injectStyle };

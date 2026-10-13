@@ -1,4 +1,15 @@
-/* ============================================
+const STYLE_ID = 'bw-style-legal-legal-css';
+function injectStyle(cssText) {
+    if (typeof document === 'undefined')
+        return;
+    if (document.getElementById(STYLE_ID))
+        return;
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = cssText;
+    document.head.appendChild(style);
+}
+injectStyle(`/* ============================================
    BreadWinner — Legal Pages Styles (Terms & Privacy)
    ============================================ */
 
@@ -214,3 +225,5 @@
   .legal-contact-card .btn { width: 100%; white-space: normal; text-align: center; }
   .back-to-top { right: 16px; bottom: 82px; }
 }
+`);
+export { injectStyle };
