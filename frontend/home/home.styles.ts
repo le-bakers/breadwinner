@@ -1,4 +1,16 @@
-/* ============================================
+const STYLE_ID = 'bw-style-home-home-css';
+
+function injectStyle(cssText: string): void {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(STYLE_ID)) return;
+
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = cssText;
+  document.head.appendChild(style);
+}
+
+injectStyle(`/* ============================================
    BreadWinner — Dashboard Styles
    ============================================ */
 
@@ -902,3 +914,6 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
   .camera-preview .camera-stage { height: min(58dvh, 500px); min-height: 220px; }
   .camera-preview-actions { flex-direction: column; }.camera-preview-actions .btn { width: 100%; }
 }
+`);
+
+export { injectStyle };

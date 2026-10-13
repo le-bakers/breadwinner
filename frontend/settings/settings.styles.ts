@@ -1,4 +1,16 @@
-/* ============================================
+const STYLE_ID = 'bw-style-settings-settings-css';
+
+function injectStyle(cssText: string): void {
+  if (typeof document === 'undefined') return;
+  if (document.getElementById(STYLE_ID)) return;
+
+  const style = document.createElement('style');
+  style.id = STYLE_ID;
+  style.textContent = cssText;
+  document.head.appendChild(style);
+}
+
+injectStyle(`/* ============================================
    BreadWinner — Settings page styles
    (sits on top of shared.css)
    ============================================ */
@@ -89,4 +101,6 @@
   min-height: 0;
   border-top: 1px solid var(--border);
   padding: 18px 20px 6px;
-}
+}`);
+
+export { injectStyle };

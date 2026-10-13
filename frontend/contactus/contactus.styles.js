@@ -1,4 +1,15 @@
-/* ============================================
+const STYLE_ID = 'bw-style-contactus-contactus-css';
+function injectStyle(cssText) {
+    if (typeof document === 'undefined')
+        return;
+    if (document.getElementById(STYLE_ID))
+        return;
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = cssText;
+    document.head.appendChild(style);
+}
+injectStyle(`/* ============================================
 	 BreadWinner - Contact Page Styles
 	 ============================================ */
 
@@ -65,3 +76,5 @@ a.contact-detail:hover strong { color: var(--primary-hover); }
 	.contact-form-card { padding: 24px 18px; }
 	.field-row-2 { grid-template-columns: 1fr; gap: 0; }
 }
+`);
+export { injectStyle };
