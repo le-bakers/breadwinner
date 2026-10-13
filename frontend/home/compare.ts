@@ -33,7 +33,7 @@
   const ZIP_STORAGE_KEY = 'breadwinner_zip';
   const money = (n) => '$' + Number(n).toFixed(2);
   // Accepts "4.99", "$4.99" and "4,99"
-  const toPrice = (text) => Number(String(text).trim().replace('$', '').replace(',', '.'));
+  const toPrice = (text) => Number(String(text).trim().replace(/\$/g, '').replace(',', '.'));
 
   let current = null;   // what home.js handed over: { line, apiBase, opener, onSave }
   let source = 'kroger'; // which of the three ways to find the regular price is showing

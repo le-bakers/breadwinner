@@ -343,7 +343,7 @@ import './home.styles.js';
         const error = expand.querySelector('.add-item-error');
         const name = nameInput.value.trim();
         // Accepts "4.99", "$4.99" and "4,99"
-        const price = Number(priceInput.value.trim().replace('$', '').replace(',', '.'));
+        const price = Number(priceInput.value.trim().replace(/\$/g, '').replace(',', '.'));
         let problem = '';
         if (!name)
             problem = 'Type the item’s name.';
