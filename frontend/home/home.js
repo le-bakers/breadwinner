@@ -147,6 +147,10 @@
   const searchInput = document.getElementById('receiptSearch');
   const sortSelect = document.getElementById('sortSelect');
 
+  const suggest = window.BreadWinner.suggest;  // suggest.js: fills in comparisons for the user to approve
+  // receipt -> its row on screen, so a suggestion that arrives late can redraw the right row
+  const ROW_PARTS = new WeakMap();
+
   function buildRow(receipt) {
     const frag = template.content.cloneNode(true);
     const row = frag.querySelector('.receipt-row');
@@ -158,6 +162,7 @@
       frag.querySelector('.expand-receipt-img').src = receipt.imageUrl;
     }
 
+    ROW_PARTS.set(receipt, { row, expand });
     renderLines(receipt, row, expand);
 
     // Typing in an item the scanner missed
@@ -205,6 +210,11 @@
       mark.addEventListener('click', () => {
         line.gf = !line.gf;
         if (line.gf && !line.gfReason) line.gfReason = 'Marked gluten-free by you';
+        // An item bought before at the same price gets its earlier comparison back as a suggestion
+        if (line.gf && !line.compare && !line.draft) {
+          const remembered = suggest.recall(line, RECEIPTS);
+          if (remembered) line.draft = remembered;
+        }
         // A saved comparison is kept but only counted while the item is marked gluten-free,
         // so a mis-tap on the circle loses nothing
         saveLines(receipt, row, expand);
@@ -225,12 +235,40 @@
       const badges = document.createElement('span');
       badges.className = 'item-badges';
       if (line.gf) {
+        // A suggested comparison waiting for the user. It counts for nothing until it is approved.
+        const draft = line.compare ? null : line.draft;
+        if (draft) {
+          const note = document.createElement('span');
+          note.className = 'item-plain';
+          note.textContent = describeDraft(draft);
+          name.appendChild(note);
+
+          const approveBtn = document.createElement('button');
+          approveBtn.type = 'button';
+          approveBtn.className = 'badge badge-compare badge-approve';
+          approveBtn.textContent = 'Approve +' + money(draft.deduction);
+          approveBtn.setAttribute('aria-label', 'Approve ' + money(draft.deduction) + ' overcharge for ' + line.name);
+          approveBtn.title = draft.warnings.concat('Press to count this suggestion.').join(' ');
+          approveBtn.addEventListener('click', () => {
+            approve(line);
+            saveLines(receipt, row, expand);
+            focusLine(receipt, expand, line, '.badge-tax');
+            toast('Saved. ' + money(line.compare.deduction) + ' counted for ' + line.name);
+          });
+          badges.appendChild(approveBtn);
+        }
+
         const b = document.createElement('button');
         b.type = 'button';
         if (line.compare) {
           b.className = 'badge badge-tax' + (line.compare.warnings.length ? ' badge-check' : '');
           b.textContent = '+' + money(line.compare.deduction) + ' overcharge';
           b.title = line.compare.warnings.concat('Press to change the comparison.').join(' ');
+        } else if (draft) {
+          b.className = 'badge badge-change';
+          b.textContent = 'Change';
+          b.setAttribute('aria-label', 'Change the suggestion for ' + line.name);
+          b.title = 'Pick a different product, size or price';
         } else {
           b.className = 'badge badge-compare';
           b.textContent = 'Compare price';
@@ -242,6 +280,7 @@
           opener: b,
           onSave: (compare) => {
             line.compare = compare;
+            delete line.draft;
             saveLines(receipt, row, expand);
             focusLine(receipt, expand, line, '.badge-tax');
             toast('Saved. ' + money(compare.deduction) + ' counted for ' + line.name);
@@ -288,6 +327,131 @@
 
     showRowTotals(receipt, row, expand);
     showItemsCheck(receipt, expand);
+    showSuggestBar(receipt, row, expand);
+  }
+
+  /* ---------- Suggested comparisons (see suggest.js) ---------- */
+  // Turns a suggestion into a saved comparison. Only ever called by a press from the user.
+  function approve(line) {
+    const compare = Object.assign({}, line.draft);
+    delete compare.from;         // these two only describe the suggestion,
+    delete compare.sizeGuessed;  // and the user has now checked it
+    line.compare = compare;
+    delete line.draft;
+  }
+
+  // One plain sentence saying where a suggestion came from, so the user knows what they are approving
+  function describeDraft(draft) {
+    let text = 'Suggested: ';
+    if (draft.source === 'none') text += 'no regular version exists, so the whole price counts';
+    else {
+      text += 'compared with ' + draft.regularName + ' (' + (draft.regularSize ? draft.regularSize + ', ' : '')
+        + money(draft.regularPrice) + (draft.source === 'kroger' ? ' at the nearest Kroger-family store' : '') + ')';
+    }
+    if (draft.quantity > 1) text += ', for ' + draft.quantity + ' packages';
+
+    if (draft.from === 'memory') text += '. Same as you chose on ' + dateFormatter.format(new Date(draft.date + 'T00:00'));
+    else if (draft.sizeGuessed) text += '. Your package size (' + draft.gfSize + ') is from Kroger’s listing, so check it';
+    else if (!draft.sizesComparable) text += '. Press Change to add your package size for a fairer number';
+    return text + '.';
+  }
+
+  // Fills in a suggestion for every gluten-free line that has no comparison yet: first from the
+  // user's own earlier receipts, then from Kroger when a zip code is known.
+  async function makeDrafts(receipt) {
+    const zip = suggest.getZip();
+    let made = 0;
+    let problem = '';
+
+    await Promise.all(receipt.lines.map(async (line) => {
+      if (!line.gf || line.compare || line.draft) return;
+
+      let draft = suggest.recall(line, RECEIPTS);
+      if (!draft && zip && line.regularTerm) {
+        const answer = await suggest.askKroger(line, zip, API_BASE);
+        draft = answer.draft;
+        problem = problem || answer.problem;
+      }
+      // The user may have compared this line by hand while Kroger was answering
+      if (draft && !line.compare) { line.draft = draft; made += 1; }
+    }));
+
+    return { made, problem };
+  }
+
+  // The strip above the items: how many suggestions are waiting, and a way to ask Kroger for more
+  function showSuggestBar(receipt, row, expand) {
+    const bar = expand.querySelector('.suggest-bar');
+    const drafts = receipt.lines.filter((line) => line.gf && !line.compare && line.draft);
+    const canAsk = receipt.lines.some((line) => line.gf && !line.compare && !line.draft && line.regularTerm);
+    bar.textContent = '';
+    bar.hidden = !drafts.length && !canAsk;
+
+    if (drafts.length) {
+      const text = document.createElement('p');
+      text.textContent = drafts.length === 1
+        ? '1 suggested price is waiting. It only counts after you approve it.'
+        : drafts.length + ' suggested prices are waiting. They only count after you approve them.';
+      bar.appendChild(text);
+    }
+
+    if (drafts.length > 1) {
+      const all = document.createElement('button');
+      all.type = 'button';
+      all.className = 'btn btn-primary btn-sm';
+      all.textContent = 'Approve all ' + drafts.length;
+      all.addEventListener('click', () => {
+        drafts.forEach((line) => approve(line));
+        const counted = drafts.reduce((sum, line) => sum + line.compare.deduction, 0);
+        saveLines(receipt, row, expand);
+        toast('Approved ' + drafts.length + ' suggestions. ' + money(counted) + ' counted.');
+        const next = expand.querySelector('.badge-tax');
+        if (next) next.focus();
+      });
+      bar.appendChild(all);
+    }
+
+    if (canAsk) {
+      if (!drafts.length) {
+        const text = document.createElement('p');
+        text.textContent = 'Want a head start? We can suggest each regular price from the Kroger-family store nearest you.';
+        bar.appendChild(text);
+      }
+      const form = document.createElement('form');
+      form.className = 'suggest-form';
+      form.noValidate = true;
+      const zipInput = document.createElement('input');
+      zipInput.type = 'text';
+      zipInput.inputMode = 'numeric';
+      zipInput.maxLength = 5;
+      zipInput.placeholder = 'Zip code';
+      zipInput.setAttribute('aria-label', 'Zip code');
+      zipInput.autocomplete = 'postal-code';
+      zipInput.value = suggest.getZip();
+      const askBtn = document.createElement('button');
+      askBtn.type = 'submit';
+      askBtn.className = 'btn btn-secondary btn-sm';
+      askBtn.textContent = 'Suggest prices';
+      form.appendChild(zipInput);
+      form.appendChild(askBtn);
+
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const zip = zipInput.value.trim();
+        if (!/^\d{5}$/.test(zip)) { toast('Type a 5-digit zip code.'); zipInput.focus(); return; }
+        suggest.setZip(zip);
+        askBtn.disabled = true;
+        askBtn.textContent = 'Looking…';
+
+        const result = await makeDrafts(receipt);
+        saveLines(receipt, row, expand);  // redraws the list, and this strip with it
+        if (result.made) toast(result.made === 1 ? '1 price suggested. Check it, then approve.' : result.made + ' prices suggested. Check them, then approve.');
+        else toast(result.problem || 'Nothing to suggest for these items. Use “Compare price” instead.');
+        const next = expand.querySelector('.badge-approve, .suggest-form input');
+        if (next) next.focus();
+      });
+      bar.appendChild(form);
+    }
   }
 
   // Redrawing the list replaces every button, so keyboard focus is put back on the line just changed
@@ -735,7 +899,15 @@
       else scanProblem = 'Photo saved, but that file could not be read as a receipt.';
     }
 
-    addReceiptToHistory(await makeThumbnail(blob), items, subtotal);
+    const receipt = addReceiptToHistory(await makeThumbnail(blob), items, subtotal);
+
+    // Fill in a suggested comparison for each gluten-free item. The user still approves every one.
+    const suggested = (await makeDrafts(receipt)).made;
+    if (suggested) {
+      const parts = ROW_PARTS.get(receipt);
+      if (parts) saveLines(receipt, parts.row, parts.expand);
+      else saveReceipts();
+    }
 
     const hardToRead = items.filter((item) => item.unsure).length;
     const looksGf = items.filter((item) => item.gf).length;
@@ -743,7 +915,8 @@
     if (scanProblem) toast(scanProblem);
     else if (!items.length) toast('No items found. Try a clearer, flatter photo.');
     else if (hardToRead) toast(found + '. ' + hardToRead + (hardToRead === 1 ? ' was' : ' were') + ' hard to read. Open the receipt to check.');
-    else if (looksGf) toast(found + ', ' + looksGf + (looksGf === 1 ? ' looks' : ' look') + ' gluten-free. Open the receipt to compare prices.');
+    else if (looksGf) toast(found + ', ' + looksGf + (looksGf === 1 ? ' looks' : ' look') + ' gluten-free. Open the receipt to '
+      + (suggested ? 'approve the suggested prices.' : 'compare prices.'));
     else toast(found + '. None looked gluten-free. Open the receipt to check.');
   }
 
@@ -757,9 +930,11 @@
     // gfReason: why it guessed so. plainName: a plain-English reading of the receipt's short name.
     // regularTerm: what to search for to price the regular version.
     // unsure: true means the scanner was not confident about that line
+    // quantity: how many packages the line is for ("2 @ 3.99" is 2)
     const lines = items.map((item) => ({
       name: item.name,
       price: item.price,
+      quantity: item.quantity || 1,
       gf: typeof item.gf === 'boolean' ? item.gf : null,
       gfReason: item.gf_reason || null,
       plainName: item.plain_name || null,
@@ -785,6 +960,8 @@
     const fab = document.getElementById('fabUpload');
     fab.style.background = '#10B981';
     setTimeout(() => { fab.style.background = ''; }, 800);
+
+    return newReceipt;
   }
 
   async function confirmAndAddReceipt() {

@@ -35,8 +35,14 @@ def get_access_token():
 
     return _token_cache["access_token"]
 
+_location_cache = {}  # zip code -> locationId, so each zip is only looked up once
+
+
 def find_nearest_location(zip_code):
     """Return the locationId of the nearest Kroger-banner store to a zip code."""
+    if zip_code in _location_cache:
+        return _location_cache[zip_code]
+
     token = get_access_token()
     response = requests.get(
         f"{BASE_URL}/locations",
@@ -47,10 +53,10 @@ def find_nearest_location(zip_code):
     response.raise_for_status()
     locations = response.json()["data"]
 
-    if not locations:
-        return None
-
-    return locations[0]["locationId"]
+    # None means no Kroger-banner store is near that zip code
+    location_id = locations[0]["locationId"] if locations else None
+    _location_cache[zip_code] = location_id
+    return location_id
 
 def search_products(search_term, location_id, limit=3):
     """Search for products at a specific store, return top matches with size + price."""

@@ -342,6 +342,116 @@ def test_kroger_search_gives_three_products_and_skips_ones_with_no_price(monkeyp
     assert [product["price"] for product in results] == [2.49, 3.49, 1.99]
 
 
+# ---------- GET /suggest (pretend Kroger, nothing is sent) ----------
+
+def product(name, size, price, promo_price=0):
+    return {"name": name, "size": size, "price": price, "promo_price": promo_price}
+
+
+def use_pretend_kroger(monkeypatch, shelves):
+    """Make Kroger answer each search term with the products listed for it. Returns the terms it was asked."""
+    asked = []
+
+    def pretend_search(term, location_id, limit):
+        asked.append(term)
+        return shelves.get(term, [])
+
+    monkeypatch.setattr(server.kroger, "find_nearest_location", lambda zip_code: "01400943")
+    monkeypatch.setattr(server.kroger, "search_products", pretend_search)
+    return asked
+
+
+BREAD_LINE = {"zip": "45202", "term": "white bread", "gf_name": "Udi's gluten-free white bread", "gf_price": 6.49}
+
+
+def test_suggest_fills_in_the_whole_bread_comparison(monkeypatch):
+    use_pretend_kroger(monkeypatch, {
+        "white bread": [product("Kroger White Bread", "20 oz", 3.49), product("Fancy White Bread", "24 oz", 4.99)],
+        "Udi's gluten-free white bread": [product("Udi's GF Bagels", "14 oz", 5.99), product("Udi's GF White Bread", "14 oz", 6.49)],
+    })
+    assert client.get("/suggest", params=BREAD_LINE).json() == {
+        "regular": product("Kroger White Bread", "20 oz", 3.49), "gf_size": "14 oz",
+        "deduction": 4.05, "scaled_regular_price": 2.44, "sizes_comparable": True, "warnings": [],
+    }
+
+
+def test_suggest_does_not_guess_a_size_when_no_kroger_price_matches_the_receipt(monkeypatch):
+    use_pretend_kroger(monkeypatch, {
+        "white bread": [product("Kroger White Bread", "20 oz", 3.49)],
+        "Udi's gluten-free white bread": [product("Udi's GF White Bread", "14 oz", 7.29)],
+    })
+    result = client.get("/suggest", params=BREAD_LINE).json()
+    assert result["gf_size"] == ""
+    assert result["deduction"] == 3.00
+    assert result["sizes_comparable"] is False and len(result["warnings"]) == 1
+
+
+def test_suggest_matches_a_sale_price_and_a_line_for_two_packages(monkeypatch):
+    use_pretend_kroger(monkeypatch, {
+        "white bread": [product("Kroger White Bread", "20 oz", 3.49)],
+        "Udi's gluten-free white bread": [product("Udi's GF White Bread", "14 oz", 7.29, promo_price=6.49)],
+    })
+    result = client.get("/suggest", params={**BREAD_LINE, "gf_price": 12.98, "quantity": 2}).json()
+    assert result["gf_size"] == "14 oz"
+    assert result["deduction"] == 8.09
+
+
+def test_suggest_prefers_a_regular_product_whose_size_can_be_compared(monkeypatch):
+    use_pretend_kroger(monkeypatch, {
+        # The cheapest one is last and must not be picked just for being cheap
+        "white bread": [product("Dinner Rolls", "6 ct", 2.99), product("Kroger White Bread", "20 oz", 3.49),
+                        product("Value White Bread", "20 oz", 1.29)],
+        "Udi's gluten-free white bread": [product("Udi's GF White Bread", "14 oz", 6.49)],
+    })
+    assert client.get("/suggest", params=BREAD_LINE).json()["regular"]["name"] == "Kroger White Bread"
+
+
+def test_suggest_gives_nothing_when_kroger_finds_no_regular_version(monkeypatch):
+    use_pretend_kroger(monkeypatch, {})
+    assert client.get("/suggest", params=BREAD_LINE).json() == {"regular": None}
+
+
+def test_suggest_rejects_bad_input_without_asking_kroger(monkeypatch):
+    asked = use_pretend_kroger(monkeypatch, {})
+    for change in [{"zip": "4520"}, {"gf_price": 0}, {"quantity": 0}]:
+        assert client.get("/suggest", params={**BREAD_LINE, **change}).status_code == 422
+    assert asked == []
+
+
+def test_suggest_says_so_when_there_is_no_store_or_kroger_is_down(monkeypatch):
+    monkeypatch.setattr(server.kroger, "find_nearest_location", lambda zip_code: None)
+    assert client.get("/suggest", params=BREAD_LINE).status_code == 404
+
+    def kroger_is_down(zip_code):
+        raise requests.ConnectionError()
+
+    monkeypatch.setattr(server.kroger, "find_nearest_location", kroger_is_down)
+    assert client.get("/suggest", params=BREAD_LINE).status_code == 502
+
+
+def test_nearest_store_is_only_looked_up_once_per_zip(monkeypatch):
+    class StoreReply:
+        def raise_for_status(self):
+            pass
+
+        def json(self):
+            return {"data": [{"locationId": "01400943"}]}
+
+    asked = []
+
+    def pretend_get(url, headers, params, timeout):
+        asked.append(params["filter.zipCode.near"])
+        return StoreReply()
+
+    monkeypatch.setattr(server.kroger, "get_access_token", lambda: "pretend-token")
+    monkeypatch.setattr(server.kroger.requests, "get", pretend_get)
+    monkeypatch.setattr(server.kroger, "_location_cache", {})
+
+    assert server.kroger.find_nearest_location("45202") == "01400943"
+    assert server.kroger.find_nearest_location("45202") == "01400943"
+    assert asked == ["45202"]
+
+
 # ---------- POST /scan ----------
 
 def test_scan_reads_items_from_a_receipt_image():
@@ -354,6 +464,7 @@ def test_scan_reads_items_from_a_receipt_image():
     assert items[0] == {
         "name": "UDIS GF WHT BREAD", "price": 6.49, "upc": "0069899781101", "unsure": False,
         "plain_name": None, "gf": True, "gf_reason": "Udi's is a gluten-free brand", "regular_term": "white bread",
+        "quantity": 1,
     }
     assert [(item["name"], item["price"], item["gf"], item["regular_term"]) for item in items] == [
         ("UDIS GF WHT BREAD", 6.49, True, "white bread"),
@@ -391,9 +502,9 @@ def gemini_answer(items, subtotal=0):
     return PretendReply(200, {"candidates": [{"content": {"parts": [{"text": text}]}}]})
 
 
-def cleaned(name, price, upc=None, plain_name=None, gf=False, regular_term=None):
+def cleaned(name, price, upc=None, plain_name=None, gf=False, regular_term=None, quantity=1):
     """One item the way gemini.py hands it on."""
-    return {"name": name, "price": price, "upc": upc, "unsure": False,
+    return {"name": name, "price": price, "quantity": quantity, "upc": upc, "unsure": False,
             "plain_name": plain_name, "gf": gf, "regular_term": regular_term}
 
 
@@ -421,9 +532,10 @@ def photo_bytes(width, height):
 
 def test_gemini_answer_is_cleaned_up(monkeypatch):
     use_pretend_gemini(monkeypatch, [gemini_answer([
-        {"name": " UDIS GF WHT BREAD ", "price": 6.489, "upc": "0069899781101",
+        {"name": " UDIS GF WHT BREAD ", "price": 6.489, "upc": "0069899781101", "quantity": 2,
          "plain_name": " Udi's gluten-free white bread ", "gluten_free": True, "regular_version": "white bread"},
-        {"name": "BANANAS", "price": 1.12, "upc": "", "plain_name": "", "gluten_free": False, "regular_version": ""},
+        {"name": "BANANAS", "price": 1.12, "upc": "", "plain_name": "", "gluten_free": False, "regular_version": "",
+         "quantity": 0},  # a quantity that makes no sense counts as 1
         {"name": "EGGS", "price": 2.79, "upc": "not a barcode", "gluten_free": "yes"},  # sloppy answer
         {"name": "", "price": 2.00, "upc": None},          # no name
         {"name": "FREE SAMPLE", "price": 0, "upc": None},  # no price
@@ -432,7 +544,7 @@ def test_gemini_answer_is_cleaned_up(monkeypatch):
 
     items, subtotal = gemini.read_receipt(photo_bytes(40, 80))
     assert items == [
-        cleaned("UDIS GF WHT BREAD", 6.49, upc="0069899781101",
+        cleaned("UDIS GF WHT BREAD", 6.49, upc="0069899781101", quantity=2,
                 plain_name="Udi's gluten-free white bread", gf=True, regular_term="white bread"),
         cleaned("BANANAS", 1.12),
         cleaned("EGGS", 2.79),
@@ -514,9 +626,10 @@ def test_scan_uses_gemini_when_it_is_switched_on(monkeypatch):
     with open("test_receipt.png", "rb") as image_file:
         response = client.post("/scan", files={"file": image_file})
     assert response.json() == {"engine": "gemini", "subtotal": 7.61, "items": [
-        {"name": "UDIS WHT BRD", "price": 6.49, "upc": None, "unsure": False, "plain_name": "Udi's white bread",
+        {"name": "UDIS WHT BRD", "price": 6.49, "quantity": 1, "upc": None, "unsure": False,
+         "plain_name": "Udi's white bread",
          "gf": True, "gf_reason": "Udi's is a gluten-free brand", "regular_term": "white sandwich bread"},
-        {"name": "BANANAS", "price": 1.12, "upc": None, "unsure": False, "plain_name": "Bananas",
+        {"name": "BANANAS", "price": 1.12, "quantity": 1, "upc": None, "unsure": False, "plain_name": "Bananas",
          "gf": False, "gf_reason": None, "regular_term": None},
     ]}
 

@@ -44,13 +44,14 @@
   function open(options) {
     current = options;
     const line = options.line;
-    const saved = line.compare || {};
+    // A suggestion (line.draft) fills the popup in the same way a saved comparison does
+    const saved = line.compare || line.draft || {};
 
     el('compareItemName').textContent = line.plainName || line.name;
     el('compareItemPrice').textContent = money(line.price);
 
     gfSizeInput.value = saved.gfSize || '';
-    quantityInput.value = saved.quantity || 1;
+    quantityInput.value = saved.quantity || line.quantity || 1;
     termInput.value = saved.term || line.regularTerm || '';
     try { zipInput.value = localStorage.getItem(ZIP_STORAGE_KEY) || ''; } catch (e) { zipInput.value = ''; }
     manualName.value = saved.source === 'manual' ? saved.regularName : '';

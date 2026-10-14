@@ -356,6 +356,29 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
 .badge-tax.badge-check { background: #FEF3C7; color: #92400E; }  /* saved, but with a warning worth a look */
 .badge-tax.badge-check:hover { background: #FDE68A; }
 
+/* Suggested comparisons: the strip above the items, and the "Change" button next to "Approve" */
+.suggest-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 12px; padding: 10px 14px; font-size: 13px; line-height: 1.5; color: var(--text); background: var(--accent-light); border-radius: 10px; }
+.suggest-bar[hidden] { display: none; }  /* display: flex would otherwise beat the hidden attribute */
+.suggest-bar p { flex: 1 1 220px; }
+.suggest-form { display: flex; align-items: center; gap: 8px; }
+.suggest-form input {
+  width: 104px;
+  padding: 9px 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.suggest-form input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.1); }
+.suggest-form .btn { background: var(--card); color: var(--primary-hover); }
+.suggest-bar .btn { flex-shrink: 0; white-space: nowrap; }
+.suggest-bar .btn:disabled { opacity: 0.6; cursor: wait; }
+.badge-change { background: var(--border); color: var(--text-secondary); }
+.badge-change:hover { color: var(--text); }
+
 .items-hint { font-size: 13px; line-height: 1.5; color: var(--text-secondary); margin-bottom: 12px; }
 .receipt-total { margin-top: 12px; font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
 
@@ -486,6 +509,11 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
   /* 16px text stops iPhones from zooming in when a box is tapped */
   .add-item-form input { font-size: 16px; min-height: 44px; }
   .add-item-form .btn { flex: 1 1 100%; }
+  .suggest-form { flex: 1 1 100%; }
+  .suggest-form input { font-size: 16px; min-height: 44px; }
+  .suggest-bar .btn { min-height: 44px; }
+  .suggest-bar > .btn { flex: 1 1 100%; }
+  .suggest-form .btn { flex: 1; }
 }
 
 @media (max-width: 560px) {

@@ -10,7 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared.css">
-<link rel="stylesheet" href="./home.css?v=2">
+<link rel="stylesheet" href="./home.css?v=3">
 <link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
 </head>
 <body class="has-morph-nav">
@@ -275,8 +275,10 @@
       <img class="expand-receipt-img" src="../images/placeholder-receipt.svg" alt="Placeholder scanned receipt image">
       <div class="expand-items">
         <h4>Items</h4>
-        <p class="items-hint">The green ticks are our guess at the gluten-free products. Tap a circle to change it, then compare each gluten-free item with its regular version.</p>
+        <p class="items-hint">The green ticks are our guess at the gluten-free products. Tap a circle to change it. Each gluten-free item is compared with its regular version, and a suggested price only counts after you approve it.</p>
         <p class="items-check" role="status" hidden></p>
+        <!-- Suggested comparisons waiting for the user (filled in by home.js) -->
+        <div class="suggest-bar" hidden></div>
         <ul class="expand-item-list"></ul>
         <p class="receipt-total" role="status" hidden></p>
         <!-- For anything the scanner missed or misread -->
@@ -307,7 +309,8 @@
 
 <script src="../components/navbar.js"></script>
 <script src="../shared.js"></script>
-<script src="./compare.js?v=1"></script>
-<script src="./home.js?v=5"></script>
+<script src="./compare.js?v=2"></script>
+<script src="./suggest.js?v=1"></script>
+<script src="./home.js?v=6"></script>
 </body>
 </html>

@@ -40,19 +40,24 @@ def kroger_search(zip: str, term: str):
 
     try:
         location_id = kroger.find_nearest_location(zip)
-        # Ask for more than 3, because some products come back without a price at this store
-        products = kroger.search_products(term, location_id, limit=10) if location_id else []
+        products = priced_products(term, location_id) if location_id else []
     except requests.RequestException:
         raise HTTPException(status_code=502, detail="Kroger could not be reached right now.")
 
     if location_id is None:
         raise HTTPException(status_code=404, detail="No Kroger-banner store near that zip code.")
 
+    return {"location_id": location_id, "results": products[:3]}
+
+
+def priced_products(term, location_id):
+    """Kroger's matches for a search at one store, best match first, leaving out products with no price."""
+    # Ask for more than 3, because some products come back without a price at this store
+    products = kroger.search_products(term, location_id, limit=10)
+
     # "price" is Kroger's regular shelf price, not a sale price. A sale would make the
     # regular item look cheaper than usual and the extra cost look bigger than it is.
-    results = [product for product in products if product["price"]][:3]
-
-    return {"location_id": location_id, "results": results}
+    return [product for product in products if product["price"]]
 
 
 LOWEST_PRICE, HIGHEST_PRICE = 0.01, 999.99
@@ -94,6 +99,63 @@ def deduction(gf_price: float, gf_size: str = "", quantity: int = 1,
     return result
 
 
+@app.get("/suggest")
+def suggest(zip: str, term: str, gf_price: float, gf_name: str = "", quantity: int = 1):
+    """A first guess at the comparison for one gluten-free receipt line, so the user only has to
+    approve it or change it. The website never counts a suggestion until the user approves it.
+    term is what to search for to find the regular version, gf_name is the gluten-free item itself."""
+    if not (zip.isdigit() and len(zip) == 5):
+        raise HTTPException(status_code=422, detail="Type a 5-digit zip code.")
+    if not LOWEST_PRICE <= gf_price <= HIGHEST_PRICE:
+        raise HTTPException(status_code=422, detail="Prices must be between $0.01 and $999.99.")
+    if not 1 <= quantity <= 99:
+        raise HTTPException(status_code=422, detail="How many you bought must be between 1 and 99.")
+
+    try:
+        location_id = kroger.find_nearest_location(zip)
+        if location_id is None:
+            raise HTTPException(status_code=404, detail="No Kroger-banner store near that zip code.")
+        regular_products = priced_products(term, location_id)[:3]
+        gf_products = priced_products(gf_name, location_id) if gf_name else []
+    except requests.RequestException:
+        raise HTTPException(status_code=502, detail="Kroger could not be reached right now.")
+
+    if not regular_products:
+        return {"regular": None}  # nothing to suggest, so the user compares this one by hand
+
+    gf_size = size_of_same_priced_product(gf_products, gf_price / quantity)
+    regular = pick_regular(regular_products, gf_size)
+
+    result = deduction(gf_price, gf_size, quantity, regular["price"], regular["size"] or "")
+    result["regular"] = regular
+    result["gf_size"] = gf_size  # "" when it could not be found; the user types it in then
+    return result
+
+
+def size_of_same_priced_product(products, price_for_one):
+    """The package size Kroger lists for the gluten-free item, or "" when we can't be sure.
+    A product only counts as the same one when its Kroger price equals the price on the receipt.
+    A size taken from the wrong product would quietly give a wrong number, so no match means no guess."""
+    for product in products:
+        for kroger_price in [product["price"], product["promo_price"]]:
+            if kroger_price and product["size"] and abs(kroger_price - price_for_one) < 0.005:
+                return product["size"]
+    return ""
+
+
+def pick_regular(products, gf_size):
+    """Kroger's best match, unless only a lower match can be compared by size.
+    (A 12 oz gluten-free loaf compares with a 20 oz loaf, not with a 6 ct pack of rolls.)
+    The price is never used to choose: picking the cheapest would make the extra cost look bigger."""
+    wanted = unit_price.parse_size(gf_size)
+    if wanted:
+        for product in products:
+            size = unit_price.parse_size(product["size"])
+            if size and size[0] == wanted[0]:
+                return product
+    return products[0]
+
+
 @app.post("/scan")
 def scan(file: UploadFile):
     # The photo is read, turned into text, and thrown away. Nothing is saved on the server.
@@ -109,6 +171,10 @@ def scan(file: UploadFile):
 
     # Guess which items are gluten-free products. The website shows the guesses and the user corrects them.
     gf_detect.add_guesses(items)
+
+    # How many packages each line is for. Only Gemini reads this off the receipt so far.
+    for item in items:
+        item.setdefault("quantity", 1)
 
     # "engine" says who read it ("gemini" or "local"), which helps when an item looks wrong.
     # "subtotal" is the receipt's own subtotal (or null). The website warns when the items don't add up to it.

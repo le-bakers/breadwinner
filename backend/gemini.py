@@ -34,6 +34,8 @@ For each product give:
   Leave out barcodes, store codes, quantities and tax letters.
 - price: the amount charged for that line, as a number. If the line shows a quantity or a weight
   (like "2 @ 3.99" or "1.25 lb @ 0.59/lb"), use the line total, not the price for one.
+- quantity: how many packages of this product the line is for, like 2 for "2 @ 3.99".
+  Use 1 when no quantity is printed, and 1 for anything sold by weight.
 - upc: the 12 to 14 digit barcode number printed on that product's line or right under it,
   or "" if there is none. Never guess one.
 
@@ -66,12 +68,13 @@ ANSWER_SHAPE = {
                 "properties": {
                     "name": {"type": "string"},
                     "price": {"type": "number"},
+                    "quantity": {"type": "integer"},
                     "upc": {"type": "string"},
                     "plain_name": {"type": "string"},
                     "gluten_free": {"type": "boolean"},
                     "regular_version": {"type": "string"},
                 },
-                "required": ["name", "price", "upc", "plain_name", "gluten_free", "regular_version"],
+                "required": ["name", "price", "quantity", "upc", "plain_name", "gluten_free", "regular_version"],
             },
         },
         "subtotal": {"type": "number"},
@@ -86,7 +89,7 @@ class GeminiUnavailable(Exception):
 
 def read_receipt(image_bytes):
     """Send a receipt photo to Gemini and get back (items, subtotal).
-    Each item is {"name", "price", "upc", "unsure", "plain_name", "gf", "regular_term"}.
+    Each item is {"name", "price", "quantity", "upc", "unsure", "plain_name", "gf", "regular_term"}.
     The subtotal is None when the receipt has none to check the items against.
     Raises GeminiUnavailable when no model could do it, so the caller can use the local reader."""
     if not API_KEY:
@@ -209,9 +212,15 @@ def clean_items(raw_items):
         if not (isinstance(upc, str) and upc.isdigit() and 12 <= len(upc) <= 14):
             upc = None
 
+        # How many packages the line is for. Anything odd counts as 1, which the user can change.
+        quantity = raw.get("quantity")
+        if type(quantity) is not int or not 1 <= quantity <= 99:
+            quantity = 1
+
         items.append({
             "name": name,
             "price": round(float(price), 2),
+            "quantity": quantity,
             "upc": upc,
             "unsure": False,  # Gemini does not say how sure it is, so no line is marked "hard to read"
             "plain_name": short_text(raw.get("plain_name")),
