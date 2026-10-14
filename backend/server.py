@@ -52,6 +52,11 @@ def kroger_search(zip: str, term: str):
 
 def priced_products(term, location_id):
     """Kroger's matches for a search at one store, best match first, leaving out products with no price."""
+    # Kroger refuses a search of more than 8 words or fewer than 3 letters (error 400, seen 2026-10-13)
+    term = " ".join(term.split()[:8])
+    if len(term) < 3:
+        return []
+
     # Ask for more than 3, because some products come back without a price at this store
     products = kroger.search_products(term, location_id, limit=10)
 
@@ -116,9 +121,15 @@ def suggest(zip: str, term: str, gf_price: float, gf_name: str = "", quantity: i
         if location_id is None:
             raise HTTPException(status_code=404, detail="No Kroger-banner store near that zip code.")
         regular_products = priced_products(term, location_id)[:3]
-        gf_products = priced_products(gf_name, location_id) if gf_name else []
     except requests.RequestException:
         raise HTTPException(status_code=502, detail="Kroger could not be reached right now.")
+
+    # The gluten-free item's own listing is only used to find its package size.
+    # If that lookup fails, the suggestion is still made, just without a size.
+    try:
+        gf_products = priced_products(gf_name, location_id)
+    except requests.RequestException:
+        gf_products = []
 
     if not regular_products:
         return {"regular": None}  # nothing to suggest, so the user compares this one by hand

@@ -429,6 +429,33 @@ def test_suggest_says_so_when_there_is_no_store_or_kroger_is_down(monkeypatch):
     assert client.get("/suggest", params=BREAD_LINE).status_code == 502
 
 
+def test_suggest_still_works_when_the_size_lookup_fails(monkeypatch):
+    def pretend_search(term, location_id, limit):
+        if term == "white bread":
+            return [product("Kroger White Bread", "20 oz", 3.49)]
+        raise requests.ConnectionError()
+
+    monkeypatch.setattr(server.kroger, "find_nearest_location", lambda zip_code: "01400943")
+    monkeypatch.setattr(server.kroger, "search_products", pretend_search)
+
+    result = client.get("/suggest", params=BREAD_LINE).json()
+    assert result["regular"]["name"] == "Kroger White Bread"
+    assert result["gf_size"] == ""
+
+
+def test_kroger_is_never_sent_a_search_it_would_refuse(monkeypatch):
+    # Kroger answers "error 400" to more than 8 words, and to fewer than 3 letters
+    asked = use_pretend_kroger(monkeypatch, {"white bread": [product("Kroger White Bread", "20 oz", 3.49)]})
+
+    long_name = "Udi's gluten free soft white sandwich bread loaf family size"
+    assert client.get("/suggest", params={**BREAD_LINE, "gf_name": long_name}).status_code == 200
+    assert asked == ["white bread", "Udi's gluten free soft white sandwich bread loaf"]
+
+    asked.clear()
+    assert client.get("/suggest", params={**BREAD_LINE, "gf_name": "GF"}).status_code == 200
+    assert asked == ["white bread"]
+
+
 def test_nearest_store_is_only_looked_up_once_per_zip(monkeypatch):
     class StoreReply:
         def raise_for_status(self):
