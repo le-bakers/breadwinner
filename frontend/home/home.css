@@ -61,7 +61,12 @@
    overflow:hidden windows baseline to their bottom edge, which used to float
    the digits above $ and . */
 .odometer { font-variant-numeric: tabular-nums; line-height: 1; }
+/* .summary-value sets tight -0.055em tracking, which pulls digit ink into the
+   neighboring overflow:hidden windows and clips it — reset it on odometers
+   and use a small positive gap instead so the digits never touch. */
+.summary-value.odometer { letter-spacing: 0; }
 .summary-value.odometer, .summary-stat-value.odometer { display: block; }
+.odometer > * + * { margin-left: 0; }
 .odometer .odo-static {
   display: inline-block;
   height: 1.24em; /* match the digit windows */
