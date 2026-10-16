@@ -73,6 +73,19 @@
   line-height: 1.24em; /* glyph centers exactly like the +0.12em reel offset */
   vertical-align: top;
 }
+/* Total overcharge: currency symbol at half the digit size (others unchanged).
+   Box stays 1.24em of the digit size; flex-end + bottom padding drops the
+   small $ so its baseline sits on the digits' baseline. */
+#totalOvercharge .odo-static.odo-currency {
+  font-size: 0.5em;
+  height: 2.48em;
+  line-height: 1;
+  display: inline-flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 0.44em; /* = 0.12em of the digit size: matches the reel's centering offset */
+  box-sizing: border-box;
+}
 .odometer .odo-digit {
   display: inline-block;
   position: relative;

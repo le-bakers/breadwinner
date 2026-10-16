@@ -70,7 +70,7 @@
       const frag = document.createDocumentFragment();
       if (format === 'money') {
         const pre = document.createElement('span');
-        pre.className = 'odo-static';
+        pre.className = 'odo-static' + (id === 'totalOvercharge' ? ' odo-currency' : '');
         pre.textContent = '$';
         frag.appendChild(pre);
       }
