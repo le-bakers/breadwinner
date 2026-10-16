@@ -1,5 +1,4 @@
 // @ts-nocheck
-import './legal.styles.js';
 /* ============================================
    BreadWinner — Legal Pages JS
    Scroll-spy TOC + back-to-top

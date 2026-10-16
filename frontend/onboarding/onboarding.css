@@ -1,15 +1,4 @@
-const STYLE_ID = 'bw-style-onboarding-onboarding-css';
-function injectStyle(cssText) {
-    if (typeof document === 'undefined')
-        return;
-    if (document.getElementById(STYLE_ID))
-        return;
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = cssText;
-    document.head.appendChild(style);
-}
-injectStyle(`/* ============================================
+/* ============================================
    BreadWinner — Onboarding Styles
    ============================================ */
 
@@ -521,5 +510,3 @@ body { min-height: 100vh; }
   #backBtn { order: 1; }
   #nextBtn { order: 2; margin-left: auto; }
 }
-`);
-export { injectStyle };

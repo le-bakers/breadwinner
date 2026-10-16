@@ -31,7 +31,7 @@ jobs:
           cp -R frontend/. _site/
           cp frontend/index/index.html _site/index.html
           cp frontend/index/index.js _site/index.js
-          cp frontend/index/index.styles.js _site/index.styles.js
+          cp frontend/index/index.css _site/index.css
           sed -i 's#\.\./##g' _site/index.html _site/index.js
       - uses: actions/upload-pages-artifact@v3
         with:

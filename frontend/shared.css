@@ -1,21 +1,4 @@
-const STYLE_ID = 'bw-style-shared-css';
-
-function injectStyle(cssText: string): void {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById(STYLE_ID)) return;
-
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = cssText;
-  document.head.appendChild(style);
-}
-
-// These styles are pasted into whichever page loads them, so "./images/..." would be looked up
-// next to that page. import.meta.url is this file's own address, which gives the right folder from any page.
-const LOGO_BLACK = new URL('./images/breadwinner_logo_black.png', import.meta.url).href;
-const LOGO_WHITE = new URL('./images/breadwinner_logo_white.png', import.meta.url).href;
-
-injectStyle(`/* ============================================
+/* ============================================
    BreadWinner â€” Shared Design System
    Tokens, reset, nav, buttons, footer, utilities
    ============================================ */
@@ -195,8 +178,8 @@ input, select { font-family: inherit; }
   letter-spacing: -0.02em;
 }
 /* Theme-aware top navbar logo */
-[data-theme="dark"] .logo img { content: url("${LOGO_WHITE}"); }
-[data-theme="light"] .logo img { content: url("${LOGO_BLACK}"); }
+[data-theme="dark"] .logo img { content: url("./images/breadwinner_logo_white.png"); }
+[data-theme="light"] .logo img { content: url("./images/breadwinner_logo_black.png"); }
 
 /* Used by the injected app navbar (home/dashboard variants). */
 .dash-actions { gap: 14px; }
@@ -960,7 +943,7 @@ body.has-morph-nav .mobile-menu { top: 76px; }
 
 
 .msn-nav.msn-over-media-landing:not(.is-floating) .msn-brand img {
-  content: url("${LOGO_WHITE}");
+  content: url("./images/breadwinner_logo_white.png");
 }
 
 .msn-links {
@@ -1084,6 +1067,3 @@ body.has-morph-nav .mobile-menu { top: 76px; }
   .msn-nav .msn-avatar .avatar-circle,
   .msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; }
 }
-`);
-
-export { injectStyle };

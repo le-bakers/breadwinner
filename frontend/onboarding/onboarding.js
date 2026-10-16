@@ -1,5 +1,4 @@
 // @ts-nocheck
-import './onboarding.styles.js';
 /* ============================================
    BreadWinner — Onboarding JS
    ============================================ */

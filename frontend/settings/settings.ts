@@ -1,5 +1,4 @@
 // @ts-nocheck
-import './settings.styles.js';
 /* ============================================
    BreadWinner â€” Settings page JS
    ============================================ */

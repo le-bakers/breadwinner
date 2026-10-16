@@ -1,5 +1,4 @@
 // @ts-nocheck
-import './index.styles.js';
 /* ============================================
    BreadWinner — Landing Page JS
    ============================================ */

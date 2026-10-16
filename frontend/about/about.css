@@ -1,16 +1,4 @@
-const STYLE_ID = 'bw-style-about-about-css';
-
-function injectStyle(cssText: string): void {
-  if (typeof document === 'undefined') return;
-  if (document.getElementById(STYLE_ID)) return;
-
-  const style = document.createElement('style');
-  style.id = STYLE_ID;
-  style.textContent = cssText;
-  document.head.appendChild(style);
-}
-
-injectStyle(`/* ============================================
+/* ============================================
    BreadWinner - About Page Styles
    ============================================ */
 
@@ -62,6 +50,3 @@ injectStyle(`/* ============================================
 @media (max-width: 900px) { .about-hero-inner { grid-template-columns: 1fr 280px; gap: 28px; }.about-hero-art { transform: scale(.9); transform-origin: center right; }.story-grid { gap: 42px; }.principles-grid { grid-template-columns: 1fr; }.principle-card { min-height: 0; }.workflow-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; }.workflow-step:not(:last-child) { margin-right: 0; border-right: none; }.workflow-step:nth-child(-n+2) { border-bottom: 1px solid var(--border); padding-bottom: 24px; } }
 @media (max-width: 680px) { .about-hero { padding: 52px 0 58px; }.about-hero-inner, .story-grid { grid-template-columns: 1fr; }.about-hero-art { min-height: 270px; max-width: 360px; margin: 8px auto 0; transform: none; }.team-photo-frame { inset: 8px 8px 8px 18px; }.about-story, .principles-section, .workflow-section { padding: 64px 0; }.story-copy { padding-top: 0; }.about-cta { padding-bottom: 76px; }.about-cta-card { align-items: flex-start; flex-direction: column; padding: 28px 24px; }.about-cta-card .btn { width: 100%; } }
 @media (max-width: 480px) { .about-hero h1 { font-size: clamp(36px, 11vw, 44px); }.about-lead { font-size: 16px; line-height: 1.65; }.about-hero-actions .btn { width: 100%; }.workflow-grid { grid-template-columns: 1fr; }.workflow-step, .workflow-step:nth-child(-n+2) { border-bottom: 1px solid var(--border); padding-bottom: 22px; }.workflow-step:last-child { border-bottom: none; }.team-photo-frame { inset: 5px 4px 5px 12px; border-width: 7px; } }
-`);
-
-export { injectStyle };
