@@ -117,12 +117,6 @@
         void reel.offsetHeight; // reflow: commit the start position
         reel.classList.add('rolling');
         reel.style.transform = 'translateY(' + end + 'em)';
-        // Clear motion blur once settled so the digit lands crisp.
-        if (reel._settleTimer) clearTimeout(reel._settleTimer);
-        reel._settleTimer = setTimeout(() => {
-          reel.classList.remove('rolling');
-          reel.style.transform = 'translateY(' + end + 'em)';
-        }, 1250);
       }
       element.setAttribute('aria-label', label);
     }, reduceMotion ? 0 : delay);

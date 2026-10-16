@@ -116,10 +116,10 @@
 }
 .odometer .odo-reel.rolling {
   transition: transform 1.1s cubic-bezier(0.22, 0.9, 0.28, 1);
-  filter: blur(0.6px); /* motion blur while sliding; cleared on settle via JS */
+  /* no motion blur while sliding: digits stay crisp during the roll */
 }
 @media (prefers-reduced-motion: reduce) {
-  .odometer .odo-reel.rolling { transition: none; filter: none; }
+  .odometer .odo-reel.rolling { transition: none; }
 }
 
 @media (max-width: 700px) {
