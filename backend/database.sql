@@ -1,0 +1,92 @@
+-- BreadWinner database (Supabase)
+-- Paste this whole file into Supabase -> SQL Editor -> New query -> Run.
+-- Safe to run more than once.
+--
+-- Supabase already gives us sign-in: every account is a row in auth.users
+-- (email, hashed password, Google link). We never store passwords ourselves.
+-- This file adds the one table we need on top of that: receipts.
+
+
+-- ============ 1. The receipts table ============
+-- One row per scanned receipt. The items on it live in "lines" as a JSON list,
+-- the same shape the website already uses, so a receipt saves and loads in one step.
+create table if not exists public.receipts (
+  id           uuid primary key default gen_random_uuid(),
+  -- whose receipt this is. Deleting the account deletes their receipts too (on delete cascade).
+  user_id      uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  store_name   text not null default 'Captured Receipt',
+  receipt_date date not null,                                        -- the day of the purchase
+  subtotal     numeric(10, 2) check (subtotal >= 0),                 -- printed on the receipt, or empty
+  extra_cost   numeric(10, 2) not null default 0 check (extra_cost >= 0),  -- the gluten-free extra cost on this receipt
+  photo        text check (length(photo) < 300000),                  -- small photo of the receipt (about 50 KB)
+  lines        jsonb not null default '[]' check (jsonb_typeof(lines) = 'array'),  -- the items
+  created_at   timestamptz not null default now(),
+  updated_at   timestamptz not null default now()
+);
+
+-- Makes "show me my receipts, newest first" fast even with thousands of rows
+create index if not exists receipts_user_date on public.receipts (user_id, receipt_date desc);
+
+
+-- ============ 2. Privacy: everyone sees only their own receipts ============
+-- Row Level Security (RLS) is a rule the database itself checks on every request.
+-- auth.uid() is the id of whoever is signed in. If the row's user_id doesn't match, the row is invisible.
+-- The website's public key cannot get around this.
+alter table public.receipts enable row level security;
+
+drop policy if exists "read own receipts" on public.receipts;
+drop policy if exists "add own receipts" on public.receipts;
+drop policy if exists "change own receipts" on public.receipts;
+drop policy if exists "delete own receipts" on public.receipts;
+
+create policy "read own receipts"   on public.receipts for select to authenticated using (user_id = auth.uid());
+create policy "add own receipts"    on public.receipts for insert to authenticated with check (user_id = auth.uid());
+create policy "change own receipts" on public.receipts for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "delete own receipts" on public.receipts for delete to authenticated using (user_id = auth.uid());
+
+
+-- ============ 3. Keep updated_at correct ============
+create or replace function public.touch_updated_at()
+returns trigger
+language plpgsql
+set search_path = ''
+as $$
+begin
+  new.updated_at = now();
+  return new;
+end;
+$$;
+
+drop trigger if exists receipts_touch on public.receipts;
+create trigger receipts_touch before update on public.receipts
+  for each row execute function public.touch_updated_at();
+
+
+-- ============ 4. Totals per tax year ============
+-- The number a user brings to tax time: extra cost added up per year.
+-- security_invoker = the privacy rules above still apply, so you only ever see your own totals.
+create or replace view public.yearly_totals with (security_invoker = true) as
+  select
+    user_id,
+    extract(year from receipt_date)::int as tax_year,
+    count(*)                             as receipts,
+    sum(extra_cost)                      as extra_cost
+  from public.receipts
+  group by user_id, tax_year;
+
+
+-- ============ 5. "Delete my account" button ============
+-- The website can't delete an account by itself (on purpose), so this function does it
+-- for the signed-in person only. Their receipts go with it (on delete cascade above).
+-- security definer = runs with the database owner's permission, but only ever touches auth.uid().
+create or replace function public.delete_my_account()
+returns void
+language sql
+security definer
+set search_path = ''
+as $$
+  delete from auth.users where id = auth.uid();
+$$;
+
+revoke execute on function public.delete_my_account() from public, anon;
+grant execute on function public.delete_my_account() to authenticated;

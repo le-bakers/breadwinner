@@ -43,16 +43,22 @@
   /* ---------- Export data ---------- */
   const exportBtn = document.getElementById('exportDataBtn');
   if (exportBtn) {
-    exportBtn.addEventListener('click', () => {
+    exportBtn.addEventListener('click', async () => {
       const data = {};
       try {
         Object.keys(localStorage)
-          .filter((k) => k.startsWith('breadwinner_'))
+          .filter((k) => k.startsWith('breadwinner_') && k !== 'breadwinner_auth')  // never put the login key in a file
           .forEach((k) => {
             const raw = localStorage.getItem(k);
             try { data[k] = JSON.parse(raw); } catch (e) { data[k] = raw; }
           });
       } catch (e) { /* storage unavailable */ }
+
+      // Signed in with an account: the receipts are in the database, not on this device
+      if (BW.cloud.enabled) {
+        try { data.receipts = await BW.cloud.loadReceipts(); }
+        catch (error) { if (BW.toast) BW.toast('Could not fetch your receipts: ' + error.message); return; }
+      }
 
       const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
@@ -105,7 +111,16 @@
   document.getElementById('deleteAccountModal').addEventListener('click', (e) => {
     if (e.target.id === 'deleteAccountModal') deleteAccountModal.close();
   });
-  document.getElementById('deleteAccountConfirm').addEventListener('click', () => {
+  document.getElementById('deleteAccountConfirm').addEventListener('click', async () => {
+    // Signed in with an account: delete it and every saved receipt from the database first
+    if (BW.cloud.enabled) {
+      try { await BW.cloud.deleteAccount(); }
+      catch (error) {
+        deleteAccountModal.close();
+        if (BW.toast) BW.toast('Account not deleted: ' + error.message);
+        return;
+      }
+    }
     try {
       Object.keys(localStorage)
         .filter((k) => k.startsWith('breadwinner_'))
@@ -116,10 +131,19 @@
   });
 
   /* ---------- Sign out ---------- */
-  document.getElementById('signOutBtn').addEventListener('click', () => {
+  document.getElementById('signOutBtn').addEventListener('click', async () => {
+    if (BW.cloud.enabled) {
+      try { await BW.cloud.signOut(); } catch (e) { /* offline: still forget the login on this device below */ }
+    }
     if (BW.signOut) BW.signOut();
     window.location.href = '../signin/signin.html';
   });
+
+  // Say truthfully where the data lives
+  if (BW.cloud.enabled) {
+    const privacyNote = document.querySelector('#privacy .section-card-header p');
+    if (privacyNote) privacyNote.textContent = 'Your receipts are saved to your private account. Only you can see them.';
+  }
 
   renderFromSettings();
 })();

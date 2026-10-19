@@ -11,9 +11,7 @@
 <link rel="stylesheet" href="../shared.css">
 <link rel="stylesheet" href="./signin.css">
   <link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
-  
-  <!-- Google Identity Services Script -->
-  <script src="https://accounts.google.com/gsi/client" async defer></script>
+
 </head>
 <body>
 
@@ -68,6 +66,8 @@
           </label>
           <a href="#" class="forgot-link">Forgot password?</a>
         </div>
+
+        <p class="form-message" id="form-message" role="status" hidden></p>
 
         <button type="submit" class="btn btn-primary btn-lg btn-full">
           <span class="btn-text">Sign In</span>
@@ -138,6 +138,7 @@
 </div>
 
 <script src="../shared.js" type="module"></script>
+<script src="../cloud.js" type="module"></script>
 <script src="./signin.js" type="module"></script>
 </body>
 </html>

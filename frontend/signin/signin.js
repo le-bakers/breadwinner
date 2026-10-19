@@ -5,71 +5,34 @@
 (function () {
     'use strict';
     const BW = window.BreadWinner || {};
-    /* ---------- Google OAuth Handler ---------- */
-    const GOOGLE_CLIENT_ID = "1097872808556-r9f8e34uq40s10v3hu3aaomdqi0vq6ft.apps.googleusercontent.com";
-    let tokenClient = null;
-    function initGoogleOAuth() {
-        if (typeof google === 'undefined' || !google.accounts || !google.accounts.oauth2) {
-            // Retry if script loading is delayed
-            setTimeout(initGoogleOAuth, 100);
-            return;
-        }
-        tokenClient = google.accounts.oauth2.initTokenClient({
-            client_id: GOOGLE_CLIENT_ID,
-            scope: 'https://www.googleapis.com/auth/userinfo.profile https://www.googleapis.com/auth/userinfo.email',
-            callback: handleGoogleTokenResponse
+    const cloud = BW.cloud; // cloud.js: real accounts when Supabase keys are set, otherwise demo mode
+    const HOME = '../home/home.html';
+    // One line above the Sign In button for "wrong password", "reset email sent", and so on
+    const formMessage = document.getElementById('form-message');
+    function showMessage(text, isError) {
+        formMessage.textContent = text;
+        formMessage.classList.toggle('error', Boolean(isError));
+        formMessage.hidden = !text;
+    }
+    // Demo mode (no database connected yet): any sign-in goes straight to the dashboard
+    function demoSignIn(method, email) {
+        BW.signIn({ method, email: email || '' });
+        window.location.href = HOME;
+    }
+    /* ---------- Sign in with Google ---------- */
+    const rememberBox = document.getElementById('remember');
+    const googleBtn = document.getElementById('googleSignInBtn');
+    if (googleBtn) {
+        googleBtn.addEventListener('click', async () => {
+            if (!cloud.enabled)
+                return demoSignIn('demo');
+            try {
+                await cloud.signInWithGoogle(rememberBox.checked); // leaves for Google, comes back to the dashboard
+            }
+            catch (error) {
+                showMessage(error.message, true);
+            }
         });
-        const googleBtn = document.getElementById('googleSignInBtn');
-        if (googleBtn) {
-            googleBtn.addEventListener('click', () => {
-                if (tokenClient) {
-                    tokenClient.requestAccessToken();
-                }
-            });
-        }
-    }
-    function handleGoogleTokenResponse(response) {
-        if (response.error) {
-            console.error('Google OAuth Error:', response.error);
-            return;
-        }
-        if (response.access_token) {
-            // Fetch user details from Google OAuth endpoint
-            fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-                headers: { Authorization: `Bearer ${response.access_token}` }
-            })
-                .then((res) => res.json())
-                .then((userData) => {
-                console.log('Google User Data:', userData);
-                // Auto-fill email field if present
-                const emailInput = document.getElementById('email');
-                if (emailInput && userData.email) {
-                    emailInput.value = userData.email;
-                }
-                // Persist the session, then redirect to the dashboard
-                BW.signIn({
-                    method: 'google',
-                    email: userData.email || '',
-                    name: userData.name || ''
-                });
-                if (userData.name)
-                    BW.safeSet(BW.STORAGE.name, userData.name);
-                if (userData.email)
-                    BW.safeSet(BW.STORAGE.email, userData.email);
-                // Redirect to main page after successful authentication
-                window.location.href = '../home/home.html';
-            })
-                .catch((err) => {
-                console.error('Failed to fetch Google profile info:', err);
-            });
-        }
-    }
-    // Initialize OAuth when DOM is ready
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initGoogleOAuth);
-    }
-    else {
-        initGoogleOAuth();
     }
     /* ---------- Fact carousel ---------- */
     const slides = Array.from(document.querySelectorAll('.carousel-slide'));
@@ -131,14 +94,28 @@
             toggleBtn.classList.toggle('is-visible', !isText);
         });
     }
-    /* ---------- Form validation UI only ---------- */
+    /* ---------- Email + password form ---------- */
     const form = document.getElementById('signin-form');
     if (form) {
         const email = document.getElementById('email');
         const password = document.getElementById('password');
         const emailError = document.getElementById('email-error');
         const passwordError = document.getElementById('password-error');
+        const submitText = form.querySelector('button[type="submit"] .btn-text');
         const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        // Arrived from the link in a "reset your password" email: this page becomes "choose a new password"
+        const settingNewPassword = cloud.enabled && cloud.cameFromResetEmail;
+        if (settingNewPassword) {
+            document.querySelector('.signin-form-wrap h1').textContent = 'Choose a new password';
+            document.querySelector('.signin-sub').textContent = 'Type a new password for your account. You’ll stay signed in.';
+            [googleBtn, document.querySelector('.divider'), email.closest('.field-group'),
+                document.querySelector('.field-row'), document.querySelector('.signup-prompt')]
+                .forEach((part) => { if (part)
+                part.hidden = true; });
+            document.querySelector('label[for="password"]').textContent = 'New password';
+            password.setAttribute('autocomplete', 'new-password');
+            submitText.textContent = 'Save new password';
+        }
         function validateEmail() {
             const valid = emailPattern.test(email.value.trim());
             email.classList.toggle('invalid', !valid);
@@ -155,18 +132,48 @@
         }
         email.addEventListener('blur', validateEmail);
         password.addEventListener('blur', validatePassword);
-        form.addEventListener('submit', (e) => {
+        form.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const emailValid = validateEmail();
+            const emailValid = settingNewPassword || validateEmail();
             const passwordValid = validatePassword();
-            if (emailValid && passwordValid) {
-                const submitBtn = form.querySelector('button[type="submit"] .btn-text');
-                if (submitBtn)
-                    submitBtn.textContent = 'Signing in…';
-                setTimeout(() => {
-                    BW.signIn({ method: 'email', email: email.value.trim() });
-                    window.location.href = '../home/home.html';
-                }, 500);
+            if (!emailValid || !passwordValid)
+                return;
+            if (!cloud.enabled)
+                return demoSignIn('email', email.value.trim());
+            const buttonLabel = submitText.textContent;
+            submitText.textContent = settingNewPassword ? 'Saving…' : 'Signing in…';
+            showMessage('');
+            try {
+                if (settingNewPassword)
+                    await cloud.setNewPassword(password.value);
+                else
+                    await cloud.signIn(email.value.trim(), password.value, rememberBox.checked);
+                window.location.href = HOME;
+            }
+            catch (error) {
+                showMessage(error.message, true);
+                submitText.textContent = buttonLabel;
+            }
+        });
+        /* ---------- Forgot password: email a reset link ---------- */
+        const forgotLink = document.querySelector('.forgot-link');
+        forgotLink.addEventListener('click', async (e) => {
+            e.preventDefault();
+            if (!validateEmail()) {
+                email.focus();
+                return;
+            }
+            if (!cloud.enabled) {
+                showMessage('Password reset starts working once accounts are connected.', true);
+                return;
+            }
+            try {
+                await cloud.sendPasswordReset(email.value.trim());
+                // Same message whether or not the account exists, so strangers can't use this to test emails
+                showMessage('If ' + email.value.trim() + ' has an account, a reset link is on its way. Check your inbox.');
+            }
+            catch (error) {
+                showMessage(error.message, true);
             }
         });
     }

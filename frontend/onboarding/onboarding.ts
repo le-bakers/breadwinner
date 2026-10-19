@@ -226,7 +226,7 @@
     confirmPassword.addEventListener('blur', validateConfirmPassword);
     agreeTerms.addEventListener('change', validateTerms);
 
-    accountForm.addEventListener('submit', (e) => {
+    accountForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const validations = [
         validateFullName(),
@@ -251,10 +251,32 @@
         const submitBtn = accountForm.querySelector('button[type="submit"] .btn-text');
         if (submitBtn) submitBtn.textContent = 'Creating account…';
 
-        setTimeout(() => {
-          if (submitBtn) submitBtn.textContent = 'Create Account';
-          goToStep(1);
-        }, 500);
+        // Real account when the database is connected (cloud.js). Date of birth is only checked, never saved.
+        const cloud = window.BreadWinner.cloud;
+        if (cloud.enabled) {
+          try {
+            const signedIn = await cloud.signUp(fullNameValue, email.value.trim(), password.value);
+            if (!signedIn) {
+              // Supabase wants them to click the link in a confirmation email first
+              document.querySelector('#stepDone .step-sub').textContent =
+                'One last step: we emailed a link to ' + email.value.trim() + '. Click it to confirm your account, then sign in.';
+              const doneLink = document.querySelector('#stepDone a.btn');
+              doneLink.setAttribute('href', '../signin/signin.html');
+              doneLink.firstChild.textContent = 'Go to sign in ';
+            }
+          } catch (error) {
+            if (submitBtn) submitBtn.textContent = 'Create Account';
+            showError(email, document.getElementById('email-error'), error.message);
+            email.focus();
+            return;
+          }
+        }
+        else {
+          if (window.BreadWinner.signIn) window.BreadWinner.signIn({ method: 'demo', email: email.value.trim() });
+        }
+
+        if (submitBtn) submitBtn.textContent = 'Create Account';
+        goToStep(1);
       } else {
         // Focus the first invalid field
         const firstInvalid = accountForm.querySelector('.invalid');

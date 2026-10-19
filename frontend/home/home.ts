@@ -33,6 +33,9 @@
   }
 
   /* ---------- Receipt data ---------- */
+  // Signed in with an account (cloud.js): receipts live in the database and are loaded at the bottom of this file.
+  // Demo mode (no database connected): receipts live in this browser's localStorage.
+  const cloud = window.BreadWinner.cloud;
   const RECEIPTS_STORAGE_KEY = 'breadwinner_receipts';
   function loadReceipts() {
     try {
@@ -40,10 +43,15 @@
       return Array.isArray(stored) ? stored : [];
     } catch (e) { return []; }
   }
-  function saveReceipts() {
+  // receipt = the one that changed (the database saves just that one; demo mode saves them all)
+  function saveReceipts(receipt) {
+    if (cloud.enabled) {
+      cloud.saveReceipt(receipt).catch((error) => toast('Not saved to your account: ' + error.message));
+      return;
+    }
     try { localStorage.setItem(RECEIPTS_STORAGE_KEY, JSON.stringify(RECEIPTS)); } catch (e) { /* storage unavailable */ }
   }
-  const RECEIPTS = loadReceipts();
+  const RECEIPTS = cloud.enabled ? [] : loadReceipts();
 
   const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const money = (n) => '$' + n.toFixed(2);
@@ -508,7 +516,7 @@
 
   function saveLines(receipt, row, expand) {
     tally(receipt);
-    saveReceipts();
+    saveReceipts(receipt);
     renderLines(receipt, row, expand);
     updateMetrics(false);
   }
@@ -567,7 +575,8 @@
     const index = RECEIPTS.indexOf(receiptToDelete);
     if (index !== -1) {
       RECEIPTS.splice(index, 1);
-      saveReceipts();
+      if (cloud.enabled) cloud.deleteReceipt(receiptToDelete).catch((error) => toast('Not deleted from your account: ' + error.message));
+      else saveReceipts();
       applyFilters();
       updateMetrics(false);
       toast('Receipt deleted');
@@ -901,7 +910,7 @@
     if (suggested) {
       const parts = ROW_PARTS.get(receipt);
       if (parts) saveLines(receipt, parts.row, parts.expand);
-      else saveReceipts();
+      else saveReceipts(receipt);
     }
 
     const hardToRead = items.filter((item) => item.unsure).length;
@@ -947,7 +956,7 @@
     tally(newReceipt);  // fills in items, gfItems, overcharge and status
 
     RECEIPTS.unshift(newReceipt);
-    saveReceipts();
+    saveReceipts(newReceipt);
     showReceiptHistory();
 
     closeCamera();
@@ -1134,5 +1143,27 @@
 
     window.addEventListener('resize', initBottomNavPill);
     window.addEventListener('load', initBottomNavPill);
+  }
+
+  /* ---------- Signed in with an account: fetch this person's receipts ---------- */
+  if (cloud.enabled) {
+    (async function () {
+      const user = await cloud.getUser();
+      if (!user) { window.location.href = '../signin/signin.html'; return; }
+
+      // The name can arrive only now (first visit after Google sign-in)
+      const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || '';
+      if (name && welcomeHeading) welcomeHeading.textContent = 'Welcome back, ' + name.trim().split(/\s+/)[0] + '!';
+      if (name && avatarEl) avatarEl.textContent = getInitials(name);
+
+      try {
+        RECEIPTS.push(...await cloud.loadReceipts());
+      } catch (error) {
+        toast('Could not load your receipts: ' + error.message);
+      }
+      RECEIPTS.forEach(tally);  // fills in items, gfItems, overcharge and status
+      applyFilters();
+      updateMetrics(true);
+    })();
   }
 })();

@@ -176,6 +176,22 @@
 
 .btn-full { width: 100%; }
 
+/* Message above the Sign In button: wrong password, reset email sent, ... */
+.form-message {
+  margin: -8px 0 16px;
+  padding: 10px 14px;
+  border-radius: var(--radius-sm);
+  font-size: 13.5px;
+  line-height: 1.5;
+  background: rgba(var(--accent-rgb), 0.1);
+  color: var(--text);
+}
+.form-message.error { background: rgba(220, 38, 38, 0.08); color: #B91C1C; }
+[data-theme="dark"] .form-message.error { color: #FCA5A5; }
+
+/* Parts hidden on the "choose a new password" screen (beats display: flex above) */
+.signin-form-wrap [hidden] { display: none !important; }
+
 .signup-prompt {
   text-align: center;
   margin-top: 26px;
