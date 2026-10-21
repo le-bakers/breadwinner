@@ -80,6 +80,15 @@ window.BreadWinner = window.BreadWinner || {};
 (function (BW) {
   'use strict';
 
+  // Where the Python server (the scanner) lives: the one in your terminal on this computer, Render everywhere else
+  const onThisComputer = location.hostname === 'localhost' || location.hostname === '127.0.0.1';
+  BW.apiBase = onThisComputer ? 'http://127.0.0.1:8000' : 'https://breadwinner-wt1k.onrender.com';
+
+  // Render's free server falls asleep after 15 idle minutes and takes about a minute to wake.
+  // Knock as soon as any page opens, so it's awake by the time someone scans.
+  BW.scannerAwake = false;
+  fetch(BW.apiBase + '/').then((response) => { BW.scannerAwake = response.ok; }, () => {});
+
   /* ---------- Safe localStorage wrappers ---------- */
   BW.safeGet = function (key, fallback) {
     try { const v = localStorage.getItem(key); return v === null ? fallback : v; }

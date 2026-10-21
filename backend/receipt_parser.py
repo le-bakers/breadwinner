@@ -44,7 +44,6 @@ def to_number(price_text):
 def parse_receipt(text):
     """Turn receipt text into a list of items: [{"name": ..., "price": ..., "upc": ..., "unsure": ...}]
     "unsure" is True when the reader was not confident about that row, so the user should check it."""
-    print(text)
     items = []
     quantity_totals = {}  # item number -> what the "2 @ 0.49" line under that item multiplies out to
 

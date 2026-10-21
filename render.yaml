@@ -1,0 +1,21 @@
+# Tells Render how to run the Python server (the receipt scanner). Render reads this file from GitHub.
+services:
+  - type: web
+    name: breadwinner-api
+    runtime: python
+    plan: free
+    region: ohio
+    rootDir: backend
+    buildCommand: pip install -r requirements.txt
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.13.4
+      # Secret keys: Render asks you to paste these in. They never go in the code.
+      - key: GEMINI_API_KEY
+        sync: false
+      - key: KROGER_CLIENT_ID
+        sync: false
+      - key: KROGER_CLIENT_SECRET
+        sync: false

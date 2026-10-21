@@ -41,7 +41,8 @@ def kroger_search(zip: str, term: str):
     try:
         location_id = kroger.find_nearest_location(zip)
         products = priced_products(term, location_id) if location_id else []
-    except requests.RequestException:
+    except requests.RequestException as error:
+        print(f"Kroger search failed: {error}")  # shows in the server log (Render → Logs), never the keys
         raise HTTPException(status_code=502, detail="Kroger could not be reached right now.")
 
     if location_id is None:
@@ -121,7 +122,8 @@ def suggest(zip: str, term: str, gf_price: float, gf_name: str = "", quantity: i
         if location_id is None:
             raise HTTPException(status_code=404, detail="No Kroger-banner store near that zip code.")
         regular_products = priced_products(term, location_id)[:3]
-    except requests.RequestException:
+    except requests.RequestException as error:
+        print(f"Kroger suggest failed: {error}")
         raise HTTPException(status_code=502, detail="Kroger could not be reached right now.")
 
     # The gluten-free item's own listing is only used to find its package size.

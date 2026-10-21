@@ -860,8 +860,8 @@
         }
     }
     /* ---------- Receipt scanning ---------- */
-    // Where the Python server lives. Change this when the backend is deployed.
-    const API_BASE = 'http://127.0.0.1:8000';
+    // Where the Python server lives (set in shared.ts: this computer, or Render)
+    const API_BASE = window.BreadWinner.apiBase;
     function toast(message) {
         if (window.BreadWinner && window.BreadWinner.toast)
             window.BreadWinner.toast(message);
@@ -869,6 +869,9 @@
     async function scanReceipt(blob) {
         const form = new FormData();
         form.append('file', blob, 'receipt.jpg');
+        // The wake-up knock in shared.ts hasn't been answered yet, so this scan will wait for the server to wake
+        if (!window.BreadWinner.scannerAwake)
+            toast('Waking up the scanner. This can take up to a minute…');
         const response = await fetch(API_BASE + '/scan', { method: 'POST', body: form });
         if (!response.ok)
             throw new Error('Scan failed: ' + response.status);
