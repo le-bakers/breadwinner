@@ -159,7 +159,24 @@
     const row = frag.querySelector('.receipt-row');
     const expand = frag.querySelector('.receipt-expand');
 
-    frag.querySelector('.cell-name-text').textContent = receipt.name;
+    const nameText = frag.querySelector('.cell-name-text');
+    nameText.textContent = receipt.name;
+
+    // Renaming: the box inside the open receipt. "change" fires when the user presses Enter or clicks away.
+    const renameInput = frag.querySelector('.rename-input');
+    renameInput.value = receipt.name;
+    renameInput.addEventListener('change', () => {
+      // An empty name goes back to the default instead of leaving a blank row
+      const newName = renameInput.value.trim() || 'Captured Receipt';
+      renameInput.value = newName;
+      if (newName === receipt.name) return;
+      receipt.name = newName;
+      nameText.textContent = newName;
+      saveReceipts(receipt);
+      toast('Renamed to “' + newName + '”');
+    });
+    renameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') renameInput.blur(); });
+
     frag.querySelector('.cell-date').textContent = dateFormatter.format(new Date(receipt.date + 'T00:00'));
     if (receipt.imageUrl) {
       frag.querySelector('.expand-receipt-img').src = receipt.imageUrl;

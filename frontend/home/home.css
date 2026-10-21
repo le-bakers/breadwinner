@@ -227,6 +227,16 @@
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
 }
+.rename-field { display: flex; flex-direction: column; gap: 6px; margin-bottom: 18px; max-width: 360px; }
+.rename-field span { font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-secondary); }
+.rename-input {
+  font: inherit; color: var(--text);
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: transparent;
+}
+.rename-input:focus-visible { outline: 2px solid var(--primary); outline-offset: 1px; }
 .cell-date, .cell-items, .cell-gf { color: var(--text-secondary); }
 .cell-overcharge { font-weight: 700; color: var(--text); }
 .cell-overcharge.zero { color: var(--text-secondary); font-weight: 500; }
