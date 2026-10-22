@@ -14,6 +14,15 @@ TIMEOUT = 10  # seconds to wait for Kroger before giving up
 _token_cache = {"access_token": None, "expires_at": 0}
 
 
+def check_reply(response):
+    """Stop with an error if Kroger said no, and print Kroger's own words so the server log shows why."""
+    try:
+        response.raise_for_status()
+    except requests.HTTPError:
+        print(f"Kroger said {response.status_code}: {response.text[:300]}")  # never contains our keys
+        raise
+
+
 def get_access_token():
     """Return a cached token if still valid, otherwise fetch a new one."""
     if _token_cache["access_token"] and time.time() < _token_cache["expires_at"]:
@@ -26,7 +35,7 @@ def get_access_token():
         headers={"Content-Type": "application/x-www-form-urlencoded"},
         timeout=TIMEOUT,
     )
-    response.raise_for_status()
+    check_reply(response)
     data = response.json()
 
     _token_cache["access_token"] = data["access_token"]
@@ -50,7 +59,7 @@ def find_nearest_location(zip_code):
         params={"filter.zipCode.near": zip_code, "filter.limit": 1},
         timeout=TIMEOUT,
     )
-    response.raise_for_status()
+    check_reply(response)
     locations = response.json()["data"]
 
     # None means no Kroger-banner store is near that zip code
@@ -71,7 +80,7 @@ def search_products(search_term, location_id, limit=3):
         },
         timeout=TIMEOUT,
     )
-    response.raise_for_status()
+    check_reply(response)
     products = response.json()["data"]
 
     results = []
