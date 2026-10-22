@@ -10,6 +10,7 @@ CLIENT_SECRET = os.getenv("KROGER_CLIENT_SECRET")
 TOKEN_URL = "https://api.kroger.com/v1/connect/oauth2/token"
 BASE_URL = "https://api.kroger.com/v1"
 TIMEOUT = 10  # seconds to wait for Kroger before giving up
+USER_AGENT = "BreadWinner/1.0 (celiac receipt tracker)"  # firewalls often block the default "python-requests" name
 
 _token_cache = {"access_token": None, "expires_at": 0}
 
@@ -32,7 +33,7 @@ def get_access_token():
         TOKEN_URL,
         data={"grant_type": "client_credentials", "scope": "product.compact"},
         auth=(CLIENT_ID, CLIENT_SECRET),
-        headers={"Content-Type": "application/x-www-form-urlencoded"},
+        headers={"Content-Type": "application/x-www-form-urlencoded", "User-Agent": USER_AGENT},
         timeout=TIMEOUT,
     )
     check_reply(response)
@@ -55,7 +56,7 @@ def find_nearest_location(zip_code):
     token = get_access_token()
     response = requests.get(
         f"{BASE_URL}/locations",
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {token}", "User-Agent": USER_AGENT},
         params={"filter.zipCode.near": zip_code, "filter.limit": 1},
         timeout=TIMEOUT,
     )
@@ -72,7 +73,7 @@ def search_products(search_term, location_id, limit=3):
     token = get_access_token()
     response = requests.get(
         f"{BASE_URL}/products",
-        headers={"Authorization": f"Bearer {token}"},
+        headers={"Authorization": f"Bearer {token}", "User-Agent": USER_AGENT},
         params={
             "filter.term": search_term,
             "filter.locationId": location_id,
