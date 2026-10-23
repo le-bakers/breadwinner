@@ -152,8 +152,6 @@
     const template = document.getElementById('rowTemplate');
     const searchInput = document.getElementById('receiptSearch');
     const sortSelect = document.getElementById('sortSelect');
-    const receiptReadingStatus = document.getElementById('receiptReadingStatus');
-    let pendingReceiptRow = null;
     const suggest = window.BreadWinner.suggest; // suggest.js: fills in comparisons for the user to approve
     // receipt -> its row on screen, so a suggestion that arrives late can redraw the right row
     const ROW_PARTS = new WeakMap();
@@ -886,27 +884,6 @@
             bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => item.classList.remove('active'));
             receiptItem.classList.add('active');
         }
-        function startReceiptReading() {
-            if (pendingReceiptRow)
-                pendingReceiptRow.remove();
-            if (receiptReadingStatus)
-                receiptReadingStatus.hidden = false;
-            showReceiptHistory();
-            pendingReceiptRow = document.createElement('div');
-            pendingReceiptRow.className = 'receipt-row receipt-row-skeleton';
-            pendingReceiptRow.setAttribute('role', 'status');
-            pendingReceiptRow.setAttribute('aria-label', 'Reading receipt');
-            pendingReceiptRow.innerHTML = '<span class="skeleton-name"></span><span></span><span></span><span></span><span></span><span></span><span></span>';
-            table.insertBefore(pendingReceiptRow, table.querySelector('.receipt-row-head').nextSibling);
-        }
-        function finishReceiptReading() {
-            if (pendingReceiptRow) {
-                pendingReceiptRow.remove();
-                pendingReceiptRow = null;
-            }
-            if (receiptReadingStatus)
-                receiptReadingStatus.hidden = true;
-        }
     }
     /* ---------- Receipt scanning ---------- */
     // Where the Python server lives (set in shared.ts: this computer, or Render)
@@ -942,7 +919,6 @@
         }
     }
     async function processReceipt(blob) {
-        startReceiptReading();
         let items = [];
         let subtotal = null;
         let scanProblem = '';
@@ -959,7 +935,6 @@
                 scanProblem = 'Photo saved, but that file could not be read as a receipt.';
         }
         const receipt = addReceiptToHistory(await makeThumbnail(blob), items, subtotal);
-        finishReceiptReading();
         // Fill in a suggested comparison for each gluten-free item. The user still approves every one.
         const suggested = (await makeDrafts(receipt)).made;
         if (suggested) {
