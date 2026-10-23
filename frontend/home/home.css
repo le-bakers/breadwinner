@@ -154,6 +154,41 @@
 .select-chevron { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); pointer-events: none; }
 
 /* ---------- Receipt table ---------- */
+.receipt-reading-status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 14px 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 600;
+}
+.reading-spinner {
+  width: 13px;
+  height: 13px;
+  border: 2px solid var(--border);
+  border-top-color: var(--primary);
+  border-radius: 50%;
+  animation: receipt-reading-spin 0.8s linear infinite;
+}
+@keyframes receipt-reading-spin { to { transform: rotate(360deg); } }
+.receipt-row-skeleton { pointer-events: none; }
+.receipt-row-skeleton > span {
+  display: block;
+  height: 14px;
+  border-radius: 6px;
+  background: linear-gradient(90deg, var(--border) 25%, var(--card) 50%, var(--border) 75%);
+  background-size: 220% 100%;
+  animation: receipt-skeleton-shimmer 1.4s ease-in-out infinite;
+}
+.receipt-row-skeleton > .skeleton-name { height: 30px; width: 78%; border-radius: 9px; }
+@keyframes receipt-skeleton-shimmer {
+  from { background-position: 100% 0; }
+  to { background-position: -100% 0; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .reading-spinner, .receipt-row-skeleton > span { animation: none; }
+}
 .receipt-table {
   background: var(--card);
   border: 1px solid var(--border);
