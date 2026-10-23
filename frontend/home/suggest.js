@@ -1,4 +1,3 @@
-"use strict";
 // @ts-nocheck
 /* ============================================
    BreadWinner — suggested comparisons
@@ -66,7 +65,7 @@
         });
         let response;
         try {
-            response = await fetch(apiBase + '/suggest?' + params.toString());
+            response = await window.BreadWinner.apiFetch(apiBase + '/suggest?' + params.toString());
         }
         catch (error) {
             // fetch throws when nothing answers at apiBase (the Python server is off)

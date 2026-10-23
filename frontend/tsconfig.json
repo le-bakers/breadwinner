@@ -10,5 +10,5 @@
     "resolveJsonModule": true
   },
   "include": ["./**/*.ts"],
-  "exclude": ["./images/**"]
+  "exclude": ["./images/**", "./node_modules/**", "./_site/**"]
 }

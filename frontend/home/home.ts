@@ -36,6 +36,7 @@
   // Signed in with an account (cloud.js): receipts live in the database and are loaded at the bottom of this file.
   // Demo mode (no database connected): receipts live in this browser's localStorage.
   const cloud = window.BreadWinner.cloud;
+  if (!cloud.enabled) document.querySelector('main').hidden = false;
   const RECEIPTS_STORAGE_KEY = 'breadwinner_receipts';
   function loadReceipts() {
     try {
@@ -178,8 +179,8 @@
     renameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') renameInput.blur(); });
 
     frag.querySelector('.cell-date').textContent = dateFormatter.format(new Date(receipt.date + 'T00:00'));
-    if (receipt.imageUrl) {
-      frag.querySelector('.expand-receipt-img').src = receipt.imageUrl;
+    if (window.BreadWinner.safeImage(receipt.imageUrl)) {
+      frag.querySelector('.expand-receipt-img').src = window.BreadWinner.safeImage(receipt.imageUrl);
     }
 
     ROW_PARTS.set(receipt, { row, expand });
@@ -267,7 +268,7 @@
           approveBtn.type = 'button';
           approveBtn.className = 'badge badge-compare badge-approve';
           approveBtn.textContent = 'Approve +' + money(draft.deduction);
-          approveBtn.setAttribute('aria-label', 'Approve ' + money(draft.deduction) + ' overcharge for ' + line.name);
+          approveBtn.setAttribute('aria-label', 'Approve ' + money(draft.deduction) + ' extra cost for ' + line.name);
           approveBtn.title = draft.warnings.concat('Press to count this suggestion.').join(' ');
           approveBtn.addEventListener('click', () => {
             approve(line);
@@ -282,7 +283,7 @@
         b.type = 'button';
         if (line.compare) {
           b.className = 'badge badge-tax' + (line.compare.warnings.length ? ' badge-check' : '');
-          b.textContent = '+' + money(line.compare.deduction) + ' overcharge';
+          b.textContent = '+' + money(line.compare.deduction) + ' extra cost';
           b.title = line.compare.warnings.concat('Press to change the comparison.').join(' ');
         } else if (draft) {
           b.className = 'badge badge-change';
@@ -512,7 +513,7 @@
 
     const total = expand.querySelector('.receipt-total');
     total.hidden = !receipt.gfItems;
-    total.textContent = 'Overcharge counted on this receipt: ' + money(receipt.overcharge || 0)
+    total.textContent = 'Extra cost counted on this receipt: ' + money(receipt.overcharge || 0)
       + '. An organized estimate, not tax advice. Confirm with a tax professional.';
   }
 
@@ -883,12 +884,17 @@
   }
 
   async function scanReceipt(blob) {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(blob.type)) throw new Error('Use a JPEG, PNG, or WebP receipt photo.');
+    if (blob.size > 6 * 1024 * 1024) throw new Error('Choose a photo of 6 MB or smaller.');
     const form = new FormData();
     form.append('file', blob, 'receipt.jpg');
     // The wake-up knock in shared.ts hasn't been answered yet, so this scan will wait for the server to wake
     if (!window.BreadWinner.scannerAwake) toast('Waking up the scanner. This can take up to a minute…');
-    const response = await fetch(API_BASE + '/scan', { method: 'POST', body: form });
-    if (!response.ok) throw new Error('Scan failed: ' + response.status);
+    const response = await window.BreadWinner.apiFetch(API_BASE + '/scan', { method: 'POST', body: form });
+    if (!response.ok) {
+      const failure = await response.json().catch(() => ({}));
+      throw new Error(typeof failure.detail === 'string' ? failure.detail : 'The receipt could not be processed. Try again shortly.');
+    }
     return response.json();  // { engine, items, subtotal }
   }
 
@@ -901,13 +907,23 @@
       canvas.width = Math.round(bitmap.width * scale);
       canvas.height = Math.round(bitmap.height * scale);
       canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+      bitmap.close();
       return canvas.toDataURL('image/jpeg', 0.7);
     } catch (error) {
-      return blobToDataUrl(blob);
+      return null; // Never retain an unnormalized original as a metadata-bearing fallback.
     }
   }
 
   async function processReceipt(blob) {
+    if (!['image/jpeg', 'image/png', 'image/webp'].includes(blob.type) || blob.size > 6 * 1024 * 1024) {
+      toast('Choose a JPEG, PNG, or WebP receipt photo of 6 MB or smaller.'); return;
+    }
+    try {
+      const bitmap = await createImageBitmap(blob);
+      const tooLarge = bitmap.width * bitmap.height > 16000000 || Math.max(bitmap.width, bitmap.height) > 10000;
+      bitmap.close();
+      if (tooLarge) { toast('Choose a photo of at most 16 megapixels.'); return; }
+    } catch (_) { toast('Could not read that photo. Choose another image.'); return; }
     let items = [];
     let subtotal = null;
     let scanProblem = '';
@@ -919,7 +935,7 @@
     catch (error) {
       // fetch throws a TypeError when nothing answers at API_BASE (the Python server is off)
       if (error instanceof TypeError) scanProblem = 'Photo saved, but the scanner server is not running, so no items were read.';
-      else scanProblem = 'Photo saved, but that file could not be read as a receipt.';
+      else scanProblem = 'Photo saved without extracted items. ' + (error.message || 'Try scanning again.');
     }
 
     const receipt = addReceiptToHistory(await makeThumbnail(blob), items, subtotal);
@@ -1169,6 +1185,8 @@
     (async function () {
       const user = await cloud.getUser();
       if (!user) { window.location.href = '../signin/signin.html'; return; }
+      await cloud.ensureConsent();
+      document.querySelector('main').hidden = false;
 
       // The name can arrive only now (first visit after Google sign-in)
       const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || '';
@@ -1183,6 +1201,6 @@
       RECEIPTS.forEach(tally);  // fills in items, gfItems, overcharge and status
       applyFilters();
       updateMetrics(true);
-    })();
+    })().catch((error) => toast(error.message || 'Could not load your account.'));
   }
 })();

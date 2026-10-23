@@ -2,181 +2,104 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Privacy Policy for the BreadWinner student prototype.">
 <title>Privacy Policy | BreadWinner</title>
-<meta name="description" content="How BreadWinner collects, uses, and protects your data, including receipts and gluten-free purchase history.">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="icon" href="../images/breadwinner_icon.png">
 <link rel="stylesheet" href="../shared.css">
-<link rel="stylesheet" href="./legal.css">
-<link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
+<link rel="stylesheet" href="legal.css">
 </head>
-<body class="has-morph-nav">
-
-<a class="sr-only" href="#main-content">Skip to main content</a>
-
-<div data-navbar="other"></div>
-
-<main id="main-content">
-
-  <!-- ============ HERO ============ -->
-  <section class="legal-hero">
-    <div class="container">
-      <p class="eyebrow">Legal</p>
-      <h1>Privacy Policy</h1>
-      <p class="updated">Last updated: October 7, 2026 · Applies to all BreadWinner users</p>
-    </div>
-  </section>
-
-  <!-- ============ LAYOUT ============ -->
-  <div class="container legal-layout">
-
-    <!-- ---------- TOC ---------- -->
-    <aside class="legal-toc" aria-label="Table of contents">
-      <h2>On this page</h2>
-      <ol>
-        <li><a href="#overview">Overview</a></li>
-        <li><a href="#data-we-collect">Data We Collect</a></li>
-        <li><a href="#receipt-data">Receipt &amp; Health-Adjacent Data</a></li>
-        <li><a href="#how-we-use">How We Use Your Data</a></li>
-        <li><a href="#ai-processing">AI Processing</a></li>
-        <li><a href="#sharing">Sharing &amp; Disclosure</a></li>
-        <li><a href="#storage-security">Storage &amp; Security</a></li>
-        <li><a href="#your-rights">Your Rights &amp; Choices</a></li>
-        <li><a href="#retention">Data Retention</a></li>
-        <li><a href="#children">Children's Privacy</a></li>
-        <li><a href="#changes">Changes to This Policy</a></li>
-        <li><a href="#contact">Contact Us</a></li>
-      </ol>
-      <div class="legal-toc-footer">
-Looking for our usage terms? See the <a href="./terms.html">Terms of Service</a>.
-      </div>
-    </aside>
-
-    <!-- ---------- DOCUMENT ---------- -->
-    <article class="legal-doc">
-
-      <section id="overview">
-        <h2><span class="section-index">01</span>Overview</h2>
-        <p>This Privacy Policy explains how BreadWinner ("we," "us," or "our") collects, uses, and protects information when you use our website and Service. Because BreadWinner deals with grocery receipts tied to a medical condition, celiac disease and gluten sensitivity, we treat this data with particular care, even where it does not meet the legal definition of health information in your jurisdiction.</p>
-      </section>
-
-      <section id="data-we-collect">
-        <h2><span class="section-index">02</span>Data We Collect</h2>
-        <p>We collect the following categories of information:</p>
-        <ul>
-          <li><strong>Account information</strong>: name, email address, and password (stored as a salted hash, never in plain text)</li>
-          <li><strong>Receipt content</strong>: photos or uploads of grocery receipts, and the line-item data extracted from them</li>
-          <li><strong>Usage data</strong>: pages visited, features used, and general interaction patterns within the Service</li>
-          <li><strong>Device information</strong>: browser type, operating system, and IP address, collected automatically for security and performance</li>
-        </ul>
-        <p>We do not collect precise geolocation, and we do not require payment information to use the free tier of the Service.</p>
-      </section>
-
-      <section id="receipt-data">
-        <h2><span class="section-index">03</span>Receipt &amp; Health-Adjacent Data</h2>
-        <div class="legal-callout">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke="#15803D" stroke-width="2" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#15803D" stroke-width="1.8"/></svg>
-          <p>Your grocery purchase history can reveal information about a celiac or gluten-sensitive diagnosis. We treat this data as sensitive and restrict internal access accordingly.</p>
-        </div>
-        <p>Receipt images and the gluten-free classifications derived from them are stored in your account and are visible only to you, unless you explicitly choose to share a report (for example, exporting a summary for a tax preparer). We do not use your receipt or purchase data to make inferences about your health for advertising purposes, and we do not sell this data to data brokers.</p>
-      </section>
-
-      <section id="how-we-use">
-        <h2><span class="section-index">04</span>How We Use Your Data</h2>
-        <p>We use the information we collect to:</p>
-        <ul>
-          <li>Provide, operate, and maintain the Service, including organizing your receipts and generating statistics</li>
-          <li>Identify gluten-free items, potential tax-deductible purchases, and possible overcharges within your uploaded receipts</li>
-          <li>Communicate with you about your account, security notices, or product updates</li>
-          <li>Improve the reliability and accuracy of our receipt-processing features</li>
-          <li>Detect, investigate, and prevent fraudulent or unauthorized activity</li>
-        </ul>
-      </section>
-
-      <section id="ai-processing">
-        <h2><span class="section-index">05</span>AI Processing</h2>
-        <p>BreadWinner is designed to use automated, AI-assisted processing to read receipt images and classify line items. When you scan a receipt, the photo is sent to Google's Gemini API to be read. Location and device details stored inside the photo file are removed before it is sent, and BreadWinner's server does not keep the photo. BreadWinner currently uses Google's free service tier. Under Google's terms for that tier, Google may use submitted content to improve its products, and human reviewers at Google may read it. Please do not scan a receipt showing information you are not comfortable sharing on those terms.</p>
-        <p>You can review and correct any automated classification within the app. Automated results are not independently verified against store or medical records and should be treated as organizational assistance, not medical or tax determinations.</p>
-      </section>
-
-      <section id="sharing">
-        <h2><span class="section-index">06</span>Sharing &amp; Disclosure</h2>
-        <p>We do not sell your personal data. We may share information with:</p>
-        <table class="legal-table">
-          <thead>
-            <tr><th>Recipient</th><th>Purpose</th></tr>
-          </thead>
-          <tbody>
-            <tr><td>Cloud hosting providers</td><td>Storing account data and receipt images securely</td></tr>
-            <tr><td>AI processing providers</td><td>Reading and classifying uploaded receipt content</td></tr>
-            <tr><td>Analytics providers</td><td>Understanding aggregate, de-identified usage trends</td></tr>
-            <tr><td>Legal &amp; regulatory bodies</td><td>Only when required by law, subpoena, or valid legal process</td></tr>
-          </tbody>
-        </table>
-        <p>Any service provider we work with is bound by confidentiality and data-protection obligations consistent with this Policy.</p>
-      </section>
-
-      <section id="storage-security">
-        <h2><span class="section-index">07</span>Storage &amp; Security</h2>
-        <p>Data is encrypted in transit using TLS and at rest using industry-standard encryption. Access to receipt content and account data within our systems is limited to personnel who need it to operate or support the Service, and is logged for auditing.</p>
-        <p>No method of transmission or storage is 100% secure. If we become aware of a security incident affecting your data, we will notify you in accordance with applicable law.</p>
-      </section>
-
-      <section id="your-rights">
-        <h2><span class="section-index">08</span>Your Rights &amp; Choices</h2>
-        <p>Depending on where you live, you may have the right to:</p>
-        <ul>
-          <li>Access a copy of the personal data we hold about you</li>
-          <li>Correct inaccurate information in your account</li>
-          <li>Delete your account and associated receipt data</li>
-          <li>Export your receipt history and statistics in a portable format</li>
-          <li>Object to or restrict certain processing of your data</li>
-        </ul>
-        <p>You can exercise most of these rights directly from your account settings. For anything else, contact us using the details below.</p>
-      </section>
-
-      <section id="retention">
-        <h2><span class="section-index">09</span>Data Retention</h2>
-        <p>We retain your account and receipt data for as long as your account remains active. If you delete your account, we permanently remove your receipt images and personal data from our production systems within 30 days, except where retention is required for legal, tax, or fraud-prevention purposes.</p>
-      </section>
-
-      <section id="children">
-        <h2><span class="section-index">10</span>Children's Privacy</h2>
-        <p>BreadWinner is not directed to individuals under 18 years of age, or the age of majority in their jurisdiction, and we do not knowingly collect personal information from said individuals. If we learn that we have collected such information, we will delete it promptly.</p>
-      </section>
-
-      <section id="changes">
-        <h2><span class="section-index">11</span>Changes to This Policy</h2>
-        <p>We may update this Privacy Policy periodically to reflect changes in our practices or applicable law. Material changes will be communicated by email or an in-app notice before they take effect. The "Last updated" date at the top of this page reflects the most recent revision.</p>
-      </section>
-
-      <section id="contact">
-        <h2><span class="section-index">12</span>Contact Us</h2>
-        <div class="legal-contact-card">
-          <div>
-            <h3>Questions about your data?</h3>
-            <p>Our privacy team responds to all requests within two business days.</p>
-          </div>
-          <a href="mailto:support.breadwinner@gmail.com" class="btn btn-primary">Email support.breadwinner@gmail.com</a>
-        </div>
-      </section>
-
-    </article>
-  </div>
+<body><a class="skip-link" href="#main">Skip to content</a>
+<div data-navbar="other">
+</div>
+<main id="main">
+<header class="legal-hero">
+<div class="container">
+<p class="eyebrow">BreadWinner · Student prototype</p>
+<h1>Privacy Policy</h1>
+<p class="updated">Effective October 22, 2026 · United States</p>
+</div>
+</header>
+<div class="container legal-layout">
+<aside class="legal-toc" aria-label="On this page">
+<h2>On this page</h2><ol>
+<li><a href="#overview">Who operates this project</a></li>
+<li><a href="#data">Information collected and purposes</a></li>
+<li><a href="#processing">Receipt processing and automated results</a></li>
+<li><a href="#providers">Recipients and service providers</a></li>
+<li><a href="#choices">Your privacy choices and requests</a></li>
+<li><a href="#retention">Retention and deletion</a></li>
+<li><a href="#security">Security and children</a></li>
+<li><a href="#updates">Changes and contact</a></li></ol>
+<div class="legal-toc-footer"><a href="privacy.html">Privacy</a> · <a href="terms.html">Terms</a> · <a href="cookies.html">Cookies &amp; Storage</a> · <a href="health-data.html">Consumer Health Data</a>
+</div>
+</aside>
+<article class="legal-doc">
+<section id="overview">
+<h2>Who operates this project</h2>
+<p>BreadWinner is a student-built prototype for the Congressional App Challenge, intended for adults in the United States. It is not an incorporated organization, medical provider, tax preparer, or government service. This notice describes the software in this release. Contact the student developers at <a href="mailto:support.breadwinner@gmail.com">support.breadwinner@gmail.com</a>.</p>
+<p>Before tracking receipts, you must separately accept our Terms and consent to the receipt processing described in the <a href="health-data.html">Consumer Health Data Privacy Policy</a>. You can browse public pages without creating an account.</p>
+</section>
+<section id="data">
+<h2>Information collected and purposes</h2>
+<ul>
+<li><strong>Account:</strong> your name, email, authentication identifiers, and provider information, to create and secure your account. Supabase handles email/password authentication; Google handles Google sign-in if you select it. We do not store plaintext passwords. We record adult confirmation and versions and timestamps of accepted notices, rather than your birth date.</li>
+<li><strong>Receipts:</strong> photos, store, date, items, prices, quantities, comparisons, and gluten-free classifications you submit or confirm, to organize receipts and calculate extra-cost estimates. Purchases and classifications may reveal health information.</li>
+<li><strong>Location:</strong> the ZIP code you enter for nearby store prices. We do not request GPS location.</li>
+<li><strong>Browser storage:</strong> authentication, account display details, optional profile photo, ZIP code, preferences, and, in demo mode, receipts. See <a href="cookies.html">Cookies &amp; Storage</a>.</li>
+<li><strong>Technical information:</strong> our hosting and authentication services may process IP addresses, request metadata, browser information, and security logs to deliver and protect the site. We keep bounded request counters in server memory for abuse prevention.</li>
+<li><strong>Support:</strong> messages you choose to email us, used to answer your request. The contact form opens an email draft; it does not silently send a message.</li>
+</ul>
+</section>
+<section id="processing">
+<h2>Receipt processing and automated results</h2>
+<p>Receipt OCR in this release runs on the BreadWinner backend using local OCR software. The backend decodes approved image formats and removes embedded metadata before OCR. It does not intentionally save uploaded original photos to its filesystem or send them to a cloud AI provider in the default configuration. It returns extracted items to your browser; the browser saves a reduced receipt image and the reviewed records to your account.</p>
+<p>Automated readings and gluten-free guesses can be wrong. Review and correct results. They are not a diagnosis, food-safety decision, verified overcharge, or tax eligibility determination. Crop or cover loyalty numbers, payment details, addresses, and other unnecessary information before uploading.</p>
+</section>
+<section id="providers">
+<h2>Recipients and service providers</h2>
+<table class="legal-table">
+<thead>
+<tr><th>Recipient</th><th>Information and purpose</th></tr>
+</thead>
+<tbody>
+<tr><td>Supabase</td><td>Account authentication, consent records, receipt records and reduced photos; account and database hosting.</td></tr>
+<tr><td>Render</td><td>Backend hosting; receipt uploads in processing memory, requests and infrastructure logs.</td></tr>
+<tr><td>Vercel or GitHub Pages</td><td>Static website delivery and associated request metadata, depending on the deployment you visit.</td></tr>
+<tr><td>Kroger</td><td>Entered ZIP code and product search terms for comparison prices; we do not send receipt images or account credentials to Kroger.</td></tr>
+<tr><td>Google</td><td>Authentication only if you select Google sign-in. Receipt cloud AI is disabled by default in this release.</td></tr>
+<tr><td>Email provider</td><td>Support emails you choose to send.</td></tr>
+</tbody>
+</table>
+<p>Authorized project maintainers and providers may access information as necessary to operate, secure, or support the project. Account access rules separate users; they do not prevent authorized administrative access. Providers may process information outside your state or the United States under their own infrastructure arrangements. We may disclose information when required by applicable law or to protect people and the service.</p>
+</section>
+<section id="choices">
+<h2>Your privacy choices and requests</h2>
+<p>In Settings you can export account receipts and local profile/preferences as JSON, clear local data, withdraw receipt-processing consent, or delete your account and its linked receipts. Clearing local data does not delete cloud records. Withdrawal stops subsequent account receipt access and processing until you consent again; it does not automatically delete saved receipts. Export first, or email us for assistance if you no longer wish to consent.</p>
+<p>Email <a href="mailto:support.breadwinner@gmail.com?subject=Privacy%20request">support.breadwinner@gmail.com</a> to request access, correction, deletion, a copy, withdrawal, or an appeal of a denied request. State your request and the account email; do not send passwords, identity documents, diagnoses, or full receipts. We may verify account control and ask only for information needed to fulfill the request. Authorized agents may contact us with authorization. Where applicable law grants these rights, we will respond within its required time and explain any permitted refusal or extension. You may also complain to your state Attorney General or privacy regulator. We do not penalize you for exercising applicable privacy rights.</p>
+<p>We do not sell personal or consumer health data, share it for cross-context behavioral advertising, run targeted advertising, or use it for marketing health profiles. No sale or advertising-sharing workflow is enabled, including when a browser sends Global Privacy Control or Do Not Track. This release contains no product analytics, ad pixels, or session replay.</p>
+</section>
+<section id="retention">
+<h2>Retention and deletion</h2>
+<p>Account records, receipt records and reduced photos remain in the active database until you delete them or your account. The account deletion function removes the account and cascades to its receipt and consent rows. Authentication sessions and related provider records follow the provider lifecycle; exported files, copies on other devices, messages, infrastructure logs and backups are not erased by clearing browser data. Provider backups and logs may remain for their configured retention periods; contact us for help with a provider-specific deletion request. We have not independently verified a fixed backup-erasure deadline.</p>
+<p>Original uploads are used during a scan and are not intentionally retained by the backend after processing. Necessary security counters are held in bounded process memory. Local storage lasts until you clear it; session storage normally ends when the tab closes. Keep your own backups of needed records because this prototype may change or be discontinued.</p>
+</section>
+<section id="security">
+<h2>Security and children</h2>
+<p>The production deployment uses HTTPS. The code includes authenticated API access, upload and rate limits, image validation, restrictive browser policies, and database rules intended to limit each account to its own records. These controls require the documented deployment and database configuration. No service or shared browser is completely secure, and we do not claim audited, certified, or HIPAA-compliant operation. We will assess and address security incidents and provide legally required notifications.</p>
+<p>This service is not intended for people under 18 or below their local age of majority. We do not knowingly solicit their personal information. Contact us if a child has submitted personal information so we can investigate and arrange deletion. Do not upload someone else’s receipts without appropriate authority.</p>
+</section>
+<section id="updates">
+<h2>Changes and contact</h2>
+<p>This version is effective October 22, 2026. Material changes to receipt-processing purposes or recipients require an updated notice and renewed choices before the new processing begins. Current version acceptance is checked by the application and database. Contact <a href="mailto:support.breadwinner@gmail.com">support.breadwinner@gmail.com</a> for privacy, accessibility, or security questions.</p>
+</section>
+</article>
+</div>
 </main>
-
-<button class="back-to-top" id="backToTop" aria-label="Back to top">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M12 19V5M5 12l7-7 7 7" stroke="#374151" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-</button>
-
-<!-- ============ FOOTER ============ -->
-<div data-footer></div>
-
+<div data-footer>
+</div>
 <script src="../components/navbar.js" type="module"></script>
 <script src="../components/footer.js" type="module"></script>
 <script src="../shared.js" type="module"></script>
-<script src="./legal.js" type="module"></script>
-</body>
-</html>
+<script src="legal.js" type="module"></script>
+</body></html>

@@ -33,6 +33,10 @@ create index if not exists receipts_user_date on public.receipts (user_id, recei
 -- auth.uid() is the id of whoever is signed in. If the row's user_id doesn't match, the row is invisible.
 -- The website's public key cannot get around this.
 alter table public.receipts enable row level security;
+alter table public.receipts force row level security;
+revoke all on public.receipts from public, anon;
+revoke all on public.receipts from authenticated;
+grant select, insert, update, delete on public.receipts to authenticated;
 
 drop policy if exists "read own receipts" on public.receipts;
 drop policy if exists "add own receipts" on public.receipts;
@@ -90,3 +94,63 @@ $$;
 
 revoke execute on function public.delete_my_account() from public, anon;
 grant execute on function public.delete_my_account() to authenticated;
+
+-- ============ 6. Versioned consent, including existing Google accounts ============
+-- Kept separately from editable user metadata. Rows are append-only (no UPDATE).
+create table if not exists public.account_consents (
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  terms_version text not null check (terms_version = '2026-10-22'),
+  health_version text not null check (health_version = '2026-10-22'),
+  adult_confirmed boolean not null check (adult_confirmed is true),
+  health_processing boolean not null check (health_processing is true),
+  accepted_at timestamptz not null default now(),
+  primary key (user_id, terms_version, health_version)
+);
+alter table public.account_consents enable row level security;
+alter table public.account_consents force row level security;
+revoke all on public.account_consents from public, anon, authenticated;
+grant select, delete on public.account_consents to authenticated;
+-- Server supplies identity and timestamp; clients cannot backdate acceptance.
+grant insert (terms_version, health_version, adult_confirmed, health_processing)
+  on public.account_consents to authenticated;
+drop policy if exists "read own consent" on public.account_consents;
+drop policy if exists "record own consent" on public.account_consents;
+drop policy if exists "withdraw own consent" on public.account_consents;
+create policy "read own consent" on public.account_consents for select to authenticated
+  using (user_id = (select auth.uid()));
+create policy "record own consent" on public.account_consents for insert to authenticated
+  with check (user_id = (select auth.uid()));
+create policy "withdraw own consent" on public.account_consents for delete to authenticated
+  using (user_id = (select auth.uid()));
+
+-- Bound data accepted through the public REST API, even when clients bypass the UI.
+-- NOT VALID avoids breaking existing accounts; constraints still protect new/changed rows.
+do $$
+begin
+  if not exists (select 1 from pg_constraint where conname = 'receipts_payload_bounds'
+                 and conrelid = 'public.receipts'::regclass) then
+    alter table public.receipts add constraint receipts_payload_bounds check (
+      length(store_name) <= 200 and jsonb_array_length(lines) <= 300
+      and octet_length(lines::text) <= 500000
+      and subtotal between 0 and 999999.99 and extra_cost between 0 and 999999.99
+      and (photo is null or photo ~ '^data:image/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$')
+    ) not valid;
+  end if;
+end $$;
+
+-- Receipt access also requires the current sensitive-data notice to be accepted.
+-- RESTRICTIVE policies compose with existing owner policies (which remain mandatory).
+drop policy if exists "current consent required" on public.receipts;
+create policy "current consent required" on public.receipts as restrictive
+  for all to authenticated
+  using (exists (select 1 from public.account_consents c
+                where c.user_id = (select auth.uid()) and c.terms_version = '2026-10-22'
+                  and c.health_version = '2026-10-22'))
+  with check (exists (select 1 from public.account_consents c
+                     where c.user_id = (select auth.uid()) and c.terms_version = '2026-10-22'
+                       and c.health_version = '2026-10-22'));
+
+revoke all on public.yearly_totals from public, anon;
+grant select on public.yearly_totals to authenticated;
+revoke execute on function public.touch_updated_at() from public, anon, authenticated;
+revoke create on schema public from public, anon, authenticated;

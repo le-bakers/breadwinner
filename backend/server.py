@@ -1,8 +1,12 @@
 import os
+import threading
+from typing import Annotated
 
 import requests
-from fastapi import FastAPI, HTTPException, UploadFile
+from fastapi import Depends, FastAPI, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
+import security
 
 import gemini
 import gf_detect
@@ -11,21 +15,26 @@ import ocr
 import receipt_parser
 import unit_price
 
-app = FastAPI()
+app = FastAPI(docs_url=None, redoc_url=None, openapi_url=None)
 
-# Who reads the receipt photo. Set OCR_ENGINE in .env:
-#   "gemini" (the default) = Google's Gemini reads the photo. Most accurate, free allowance per day.
-#   "local"                = RapidOCR reads it on this computer. Free and unlimited, less accurate.
-# Gemini always falls back to local when it can't be used, so a scan never fails just because of Gemini.
-OCR_ENGINE = os.getenv("OCR_ENGINE", "gemini")
+# Local OCR keeps receipt content out of cloud AI services by default.
+# Cloud OCR also requires operator approval and revised disclosures; see SECURITY.md.
+OCR_ENGINE = os.getenv("OCR_ENGINE", "local")
+# Cloud OCR is deliberately disabled until the operator has reviewed paid-service
+# terms, a data processing agreement, and the public disclosure for this deployment.
+CLOUD_OCR_APPROVED = os.getenv("CLOUD_OCR_APPROVED", "false").lower() == "true"
+scan_slot = threading.BoundedSemaphore(1)
 
 # Lets the website (a different address than this server) ask this server for data
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=security.ALLOWED_ORIGINS,
     allow_methods=["GET", "POST"],
-    allow_headers=["*"],
+    allow_headers=["Authorization", "Content-Type"],
+    expose_headers=["Retry-After"],
 )
+app.add_middleware(security.SecurityMiddleware)
+app.add_middleware(TrustedHostMiddleware, allowed_hosts=security.ALLOWED_HOSTS)
 
 
 @app.get("/")
@@ -33,8 +42,9 @@ def health_check():
     return {"status": "ok"}
 
 
-@app.get("/kroger/search")
-def kroger_search(zip: str, term: str):
+@app.get("/kroger/search", dependencies=[Depends(security.require_user)])
+def kroger_search(zip: Annotated[str, Query(pattern=r"^[0-9]{5}$")],
+                  term: Annotated[str, Query(min_length=3, max_length=100)]):
     if not (zip.isdigit() and len(zip) == 5):
         raise HTTPException(status_code=422, detail="Type a 5-digit zip code.")
 
@@ -42,7 +52,7 @@ def kroger_search(zip: str, term: str):
         location_id = kroger.find_nearest_location(zip)
         products = priced_products(term, location_id) if location_id else []
     except requests.RequestException as error:
-        print(f"Kroger search failed: {error}")  # shows in the server log (Render → Logs), never the keys
+        print("Kroger search unavailable")
         raise HTTPException(status_code=502, detail="Kroger could not be reached right now.")
 
     if location_id is None:
@@ -70,8 +80,8 @@ LOWEST_PRICE, HIGHEST_PRICE = 0.01, 999.99
 
 
 @app.get("/deduction")
-def deduction(gf_price: float, gf_size: str = "", quantity: int = 1,
-              regular_price: float = None, regular_size: str = ""):
+def deduction(gf_price: float, gf_size: Annotated[str, Query(max_length=60)] = "", quantity: int = 1,
+              regular_price: float = None, regular_size: Annotated[str, Query(max_length=60)] = ""):
     """The extra cost of one gluten-free receipt line, compared with the regular version.
     Leave regular_price out when no regular version exists. An organized estimate, not tax advice."""
     prices = [gf_price] if regular_price is None else [gf_price, regular_price]
@@ -105,8 +115,10 @@ def deduction(gf_price: float, gf_size: str = "", quantity: int = 1,
     return result
 
 
-@app.get("/suggest")
-def suggest(zip: str, term: str, gf_price: float, gf_name: str = "", quantity: int = 1):
+@app.get("/suggest", dependencies=[Depends(security.require_user)])
+def suggest(zip: Annotated[str, Query(pattern=r"^[0-9]{5}$")],
+            term: Annotated[str, Query(min_length=3, max_length=100)], gf_price: float,
+            gf_name: Annotated[str, Query(max_length=100)] = "", quantity: int = 1):
     """A first guess at the comparison for one gluten-free receipt line, so the user only has to
     approve it or change it. The website never counts a suggestion until the user approves it.
     term is what to search for to find the regular version, gf_name is the gluten-free item itself."""
@@ -123,7 +135,7 @@ def suggest(zip: str, term: str, gf_price: float, gf_name: str = "", quantity: i
             raise HTTPException(status_code=404, detail="No Kroger-banner store near that zip code.")
         regular_products = priced_products(term, location_id)[:3]
     except requests.RequestException as error:
-        print(f"Kroger suggest failed: {error}")
+        print("Kroger suggestion unavailable")
         raise HTTPException(status_code=502, detail="Kroger could not be reached right now.")
 
     # The gluten-free item's own listing is only used to find its package size.
@@ -169,18 +181,28 @@ def pick_regular(products, gf_size):
     return products[0]
 
 
-@app.post("/scan")
+@app.post("/scan", dependencies=[Depends(security.require_user)])
 def scan(file: UploadFile):
     # The photo is read, turned into text, and thrown away. Nothing is saved on the server.
-    image_bytes = file.file.read()
+    image_bytes = file.file.read(security.MAX_FILE_BYTES + 1)
 
     if not image_bytes:
         raise HTTPException(status_code=400, detail="The uploaded file was empty.")
+    if len(image_bytes) > security.MAX_FILE_BYTES:
+        raise HTTPException(413, "Photo uploads must be 6 MB or smaller.")
+    if file.content_type not in {"image/jpeg", "image/png", "image/webp"}:
+        raise HTTPException(415, "Use a JPEG, PNG, or WebP photo.")
+    image_bytes = security.normalize_photo(image_bytes)
 
+    if not scan_slot.acquire(blocking=False):
+        raise HTTPException(503, "The scanner is busy. Try again shortly.", headers={"Retry-After": "10"})
     try:
-        engine, items, subtotal = read_items(image_bytes)
-    except Exception:
-        raise HTTPException(status_code=422, detail="Could not read that file as a receipt photo.")
+        try:
+            engine, items, subtotal = read_items(image_bytes)
+        except Exception:
+            raise HTTPException(status_code=422, detail="Could not read that file as a receipt photo.") from None
+    finally:
+        scan_slot.release()
 
     # Guess which items are gluten-free products. The website shows the guesses and the user corrects them.
     gf_detect.add_guesses(items)
@@ -196,7 +218,7 @@ def scan(file: UploadFile):
 
 def read_items(image_bytes):
     """Returns who read the photo, the list of items they found, and the receipt's subtotal."""
-    if OCR_ENGINE == "gemini":
+    if OCR_ENGINE == "gemini" and CLOUD_OCR_APPROVED:
         try:
             items, subtotal = gemini.read_receipt(image_bytes)
             return "gemini", items, subtotal

@@ -36,10 +36,10 @@
         status.classList.remove('visible');
         if (!fields.every(validateField))
             return;
-        const name = fields[0].input.value.trim();
-        form.reset();
-        fields.forEach((field) => field.input.closest('.contact-field').classList.remove('invalid'));
-        status.textContent = 'Thanks, ' + name + '. Your message is ready for our team, and we will get back to you within two business days.';
+        const subject = 'BreadWinner: ' + fields[2].input.value;
+        const body = 'Name: ' + fields[0].input.value.trim() + '\nReply to: ' + fields[1].input.value.trim() + '\n\n' + fields[3].input.value.trim();
+        window.location.href = 'mailto:support.breadwinner@gmail.com?subject=' + encodeURIComponent(subject) + '&body=' + encodeURIComponent(body);
+        status.textContent = 'Your email app should open with a draft. Review it and press Send there. If no email app opens, email support.breadwinner@gmail.com directly. This form has not sent your message.';
         status.classList.add('visible');
     });
 })();

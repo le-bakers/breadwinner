@@ -159,20 +159,7 @@
             return showError(fullName, errorEl, '');
         }
         function validateDob() {
-            const errorEl = document.getElementById('dob-error');
-            if (!dob.value)
-                return showError(dob, errorEl, 'Enter your date of birth.');
-            const dobDate = new Date(dob.value);
-            const today = new Date();
-            let age = today.getFullYear() - dobDate.getFullYear();
-            const monthDiff = today.getMonth() - dobDate.getMonth();
-            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < dobDate.getDate()))
-                age--;
-            if (age < 18)
-                return showError(dob, errorEl, 'You must be at least 18 years old.');
-            if (dobDate > today)
-                return showError(dob, errorEl, 'Date of birth cannot be in the future.');
-            return showError(dob, errorEl, '');
+            return showError(dob, document.getElementById('dob-error'), dob.checked ? '' : 'Confirm that you meet the age requirement.');
         }
         function validateEmail() {
             const errorEl = document.getElementById('email-error');
@@ -181,8 +168,8 @@
         }
         function validatePassword() {
             const errorEl = document.getElementById('password-error');
-            if (password.value.length < 8)
-                return showError(password, errorEl, 'Password must be at least 8 characters.');
+            if (password.value.length < 12 || password.value.length > 128)
+                return showError(password, errorEl, 'Use a password of 12 to 128 characters.');
             return showError(password, errorEl, '');
         }
         function validateConfirmPassword() {
@@ -229,7 +216,7 @@
                 const submitBtn = accountForm.querySelector('button[type="submit"] .btn-text');
                 if (submitBtn)
                     submitBtn.textContent = 'Creating account…';
-                // Real account when the database is connected (cloud.js). Date of birth is only checked, never saved.
+                // Real account when the database is connected (cloud.js). Adult confirmation is recorded with consent; no date of birth is collected.
                 const cloud = window.BreadWinner.cloud;
                 if (cloud.enabled) {
                     try {

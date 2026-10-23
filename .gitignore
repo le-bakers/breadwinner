@@ -1,0 +1,26 @@
+# Local credentials, data, and generated output
+.env
+.env.*
+!.env.example
+!backend/.env.example
+*.pem
+*.key
+*.p12
+.venv/
+venv/
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.coverage
+htmlcov/
+node_modules/
+.idea/
+.vscode/
+_site/
+frontend/vendor/
+test-results/
+playwright-report/
+# Receipt dataset already tracked: see SECURITY.md before public release.
+Receipts/
+*.zip
+*.log
