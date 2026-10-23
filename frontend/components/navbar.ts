@@ -25,7 +25,7 @@
     : '<div class="nav-actions"><a href="../signin/signin.html" class="btn btn-secondary">Sign In</a><a href="../onboarding/onboarding.html" class="btn btn-primary">Start Free</a></div>';
 
   const landing =
-    '<nav class="msn-nav msn-over-media-landing" data-morph-nav aria-label="Primary navigation">' +
+    '<nav class="msn-nav" aria-label="Primary navigation">' +
       '<div class="msn-shell">' +
         '<a class="msn-brand logo" href="../index/index.html#top" aria-label="BreadWinner, back to top">' + logo + '</a>' +
         landingLinks +
@@ -43,7 +43,7 @@
 
 
     const other =
-    '<nav class="msn-nav" data-morph-nav aria-label="Primary navigation">' +
+    '<nav class="msn-nav" aria-label="Primary navigation">' +
       '<div class="msn-shell">' +
         '<a class="msn-brand logo" href="../index/index.html#top" aria-label="BreadWinner, back to top">' + logo + '</a>' +
         landingLinks +
@@ -65,7 +65,7 @@
     '</div>';
 
   const app =
-    '<nav class="msn-nav" data-morph-nav aria-label="Primary navigation">' +
+    '<nav class="msn-nav" aria-label="Primary navigation">' +
       '<div class="msn-shell">' +
         '<a class="msn-brand logo" href="../index/index.html" aria-label="BreadWinner home">' + logo + '</a>' +
         appLinks +
@@ -91,16 +91,4 @@
     placeholder.replaceWith(template.content);
   });
 
-  function initNewNavs() {
-    if (!window.BreadWinner || !window.BreadWinner.initMorphNav) return;
-    document.querySelectorAll('[data-morph-nav]').forEach(function (nav) {
-      window.BreadWinner.initMorphNav(nav);
-    });
-  }
-
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', initNewNavs);
-  } else {
-    initNewNavs();
-  }
 })();

@@ -157,7 +157,7 @@ input, select { font-family: inherit; }
   to { transform: scale(3); opacity: 0; }
 }
 
-/* ---------- Navbar (legacy fixed elements shared with morph nav) ---------- */
+/* ---------- Shared navbar elements ---------- */
 .nav-inner {
   max-width: 1200px;
   margin: 0 auto;
@@ -261,6 +261,114 @@ input, select { font-family: inherit; }
 @media (max-width: 860px) {
   .nav-toggle { display: flex; }
   .mobile-menu { display: block; }
+}
+
+/* ---------- Site navbar ---------- */
+.msn-nav {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  padding: 14px 24px;
+  background: color-mix(in srgb, var(--bg) 92%, transparent);
+  border-bottom: 1px solid transparent;
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+.msn-shell {
+  width: min(1200px, 100%);
+  min-height: 46px;
+  margin: 0 auto;
+  display: flex;
+  align-items: center;
+  gap: 28px;
+}
+.msn-brand {
+  flex: 0 0 auto;
+}
+.msn-brand img {
+  width: auto;
+  height: 36px;
+}
+.msn-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 30px;
+  margin: 0 auto;
+}
+.msn-links a {
+  position: relative;
+  padding: 8px 2px;
+  color: var(--text-secondary);
+  font-size: 14px;
+  font-weight: 600;
+  transition: color 0.2s var(--ease-out);
+}
+.msn-links a::after {
+  content: "";
+  position: absolute;
+  right: 2px;
+  bottom: 1px;
+  left: 2px;
+  height: 2px;
+  border-radius: var(--radius-full);
+  background: var(--primary);
+  transform: scaleX(0);
+  transform-origin: center;
+  transition: transform 0.2s var(--ease-out);
+}
+.msn-links a:hover,
+.msn-links a[aria-current="location"] { color: var(--primary-hover); }
+.msn-links a:hover::after,
+.msn-links a[aria-current="location"]::after { transform: scaleX(1); }
+.msn-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-left: auto;
+}
+.msn-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 40px;
+  padding: 9px 17px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-full);
+  font-size: 13.5px;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.2s var(--ease-out), border-color 0.2s var(--ease-out),
+    color 0.2s var(--ease-out), transform 0.2s var(--ease-out);
+}
+.msn-button:hover { transform: translateY(-1px); }
+.msn-button-primary {
+  background: var(--primary);
+  color: #fff;
+  box-shadow: var(--shadow-glow);
+}
+.msn-button-primary:hover { background: var(--primary-hover); }
+.msn-button-ghost {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--card);
+}
+.msn-button-ghost:hover {
+  color: var(--primary-hover);
+  border-color: var(--primary);
+}
+@media (max-width: 860px) {
+  .msn-nav {
+    padding: 10px 16px;
+  }
+  .msn-shell { min-height: 42px; }
+  .msn-brand img { height: 30px; }
+  .msn-links { display: none; }
+  .msn-actions { gap: 8px; }
+  .msn-actions .msn-button { display: none; }
+  .msn-actions .nav-toggle { display: flex; }
+  .msn-actions.dash-actions { margin-left: auto; }
 }
 
 /* ---------- Footer ---------- */
@@ -369,7 +477,6 @@ input, select { font-family: inherit; }
   --shadow-glow: 0 0 0 1px rgba(var(--accent-rgb), 0.16), 0 12px 32px -8px rgba(var(--accent-rgb), 0.32);
 }
 :root[data-theme="dark"] .mobile-menu { background: rgba(16, 22, 15, 0.98); }
-:root[data-theme="dark"] .mobile-bottom-nav { background: rgba(20, 27, 19, 0.9); }
 :root[data-theme="dark"] .toast-wrap { background: #EDF3EC; color: #10160F; }
 :root[data-theme="dark"] .toast-wrap svg { color: var(--primary-hover); }
 
@@ -660,410 +767,74 @@ input, select { font-family: inherit; }
 .toast-wrap.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 .toast-wrap svg { width: 16px; height: 16px; flex-shrink: 0; color: var(--primary-hover); }
 @media (max-width: 860px) { .toast-wrap { bottom: 96px; } }
-
 /* ============================================
-   Mobile bottom navbar (shared â€” Home, Profile, Settings)
+   Mobile bottom navigation
    ============================================ */
 .mobile-bottom-nav {
   display: none;
-  position: fixed;
-  bottom: 0; left: 0; right: 0;
-  z-index: 95;
-  background: rgba(255, 255, 255, 0.92);
-  backdrop-filter: blur(14px) saturate(160%);
-  -webkit-backdrop-filter: blur(14px) saturate(160%);
-  border-top: 1px solid var(--border);
-  padding: 8px 12px calc(8px + env(safe-area-inset-bottom));
-  box-shadow: 0 -8px 24px rgba(31, 41, 55, 0.06);
 }
-.bottom-nav-pill {
-  position: absolute;
-  left: 0;
-  top: 8px;
-  bottom: calc(8px + env(safe-area-inset-bottom));
-  width: 48px;
-  border-radius: var(--radius-full);
-  background: var(--accent-light);
-  border: 1px solid rgba(var(--accent-rgb), 0.18);
-  opacity: 0;
-  transition: opacity 0.3s var(--ease-out);
-  pointer-events: none;
-}
-.bottom-nav-pill.visible { opacity: 1; }
+
 .bottom-nav-item {
-  position: relative;
-  z-index: 1;
-  flex: 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px;
+  width: 58px;
+  height: 54px;
   border-radius: var(--radius-full);
   color: var(--text-secondary);
-  transition: color 0.3s var(--ease-out);
+  transition: color 0.2s var(--ease-out), background 0.2s var(--ease-out),
+    transform 0.2s var(--ease-out);
   -webkit-tap-highlight-color: transparent;
 }
-.bottom-nav-item svg { width: 24px; height: 24px; transition: transform 0.35s var(--ease-out); }
-.bottom-nav-item.active { color: var(--primary-hover); }
-.bottom-nav-item.active svg { transform: translateY(-1px) scale(1.08); }
-.bottom-nav-item:active svg { transform: scale(0.9); }
-@media (max-width: 860px) { .mobile-bottom-nav { display: flex; } }
 
-/* ---------- Profile picture upload ---------- */
-.avatar-wrap {
-  position: relative;
-  display: inline-flex;
-  flex-shrink: 0;
-}
-.avatar-upload-btn {
-  position: absolute;
-  right: -4px;
-  bottom: -4px;
-  width: 30px;
-  height: 30px;
-  border-radius: var(--radius-full);
-  background: var(--card);
-  border: 1px solid var(--border);
-  color: var(--text-secondary);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: var(--shadow-sm);
-  transition: color 0.2s var(--ease-out), border-color 0.2s var(--ease-out), transform 0.2s var(--ease-out);
-}
-.avatar-upload-btn:hover { color: var(--primary-hover); border-color: rgba(var(--accent-rgb), 0.5); transform: scale(1.08); }
-.avatar-upload-btn:focus-visible { outline: none; box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.2); }
-.avatar-photo { color: transparent; }
-:root[data-theme="dark"] .avatar-upload-btn { background: #223026; }
-
-.remove-photo-btn {
-  margin-top: 10px;
-  background: none;
-  border: none;
-  padding: 0;
-  color: var(--text-secondary);
-  font-family: var(--font-body);
-  font-size: 13px;
-  cursor: pointer;
-  text-decoration: underline;
-  transition: color 0.2s var(--ease-out);
-}
-.remove-photo-btn:hover { color: #DC2626; }
-.remove-photo-btn:focus-visible { outline: none; color: var(--primary-hover); }
-
-/* ============================================
-   Extra polish: entrances + micro-interactions
-   (all disabled by both Reduce Motion settings)
-   ============================================ */
-
-/* ---------- Page entrance: main content fades up ---------- */
-.account-main {
-  animation: contentFadeUp 0.6s var(--ease-out) 0.08s backwards;
-}
-@keyframes contentFadeUp {
-  from { transform: translateY(14px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
+.bottom-nav-item svg {
+  width: 24px;
+  height: 24px;
+  transition: transform 0.2s var(--ease-out);
 }
 
-/* ---------- Cards: staggered entrance ---------- */
-.section-card, .danger-card {
-  animation: cardIn 0.55s var(--ease-out) backwards;
-}
-.section-card:nth-of-type(1) { animation-delay: 0.05s; }
-.section-card:nth-of-type(2) { animation-delay: 0.12s; }
-.section-card:nth-of-type(3) { animation-delay: 0.19s; }
-.section-card:nth-of-type(4) { animation-delay: 0.26s; }
-.section-card:nth-of-type(5) { animation-delay: 0.33s; }
-.section-card:nth-of-type(6) { animation-delay: 0.40s; }
-.section-card:nth-of-type(n+7) { animation-delay: 0.47s; }
-@keyframes cardIn {
-  from { transform: translateY(18px); opacity: 0; }
-  to   { transform: translateY(0); opacity: 1; }
+.bottom-nav-item.active {
+  color: var(--primary);
+  background: var(--accent-light);
+  box-shadow: inset 0 0 0 1px rgba(var(--accent-rgb), 0.08);
 }
 
-/* ---------- Form rows ---------- */
-.form-row { border-radius: 10px; }
+.bottom-nav-item.active svg { transform: scale(1.06); }
+.bottom-nav-item:active { transform: scale(0.94); }
+.bottom-nav-item:hover { color: var(--primary); }
 
-/* ---------- Buttons: springy press + arrow nudge for primary CTAs ---------- */
-.btn { transition: transform 0.18s var(--ease-out), box-shadow 0.2s var(--ease-out), background 0.2s var(--ease-out), color 0.2s var(--ease-out); }
-.btn:active { transform: scale(0.97); }
-.btn:focus-visible { transition-duration: 0.1s; }
-
-/* ---------- Floating-label inputs: smoother focus ring ---------- */
-.field-group input, .field-group input[type="text"], .field-group input[type="email"] {
-  transition: border-color 0.2s var(--ease-out), box-shadow 0.2s var(--ease-out), background 0.2s var(--ease-out);
-}
-
-/* ---------- Segmented control: springy selection ---------- */
-.segmented button {
-  transition: color 0.2s var(--ease-out), background 0.2s var(--ease-out),
-              transform 0.18s var(--ease-out), box-shadow 0.2s var(--ease-out);
-}
-.segmented button:active { transform: scale(0.94); }
-
-/* ---------- Toggle switch: subtle hover glow ---------- */
-.switch:hover .switch-track { box-shadow: 0 0 0 5px rgba(var(--accent-rgb), 0.08); }
-.switch-track { transition: background 0.25s var(--ease-out), box-shadow 0.2s var(--ease-out); }
-
-/* ---------- Avatar pill: gentle hover lift ---------- */
-.profile-pill { transition: transform 0.2s var(--ease-out); }
-.profile-pill:hover { transform: translateY(-1px) scale(1.05); }
-.profile-pill:active { transform: scale(0.95); }
-
-/* ---------- Bottom nav: hover feedback on items ---------- */
-@media (hover: hover) {
-  .bottom-nav-item { transition: color 0.2s var(--ease-out); }
-  .bottom-nav-item:hover { color: var(--primary-hover); }
-  .bottom-nav-item:hover svg { transform: translateY(-2px); }
-}
-
-/* ---------- Modal: backdrop fade to match the card pop ---------- */
-.modal-overlay { animation: overlayFade 0.25s var(--ease-out); }
-@keyframes overlayFade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-/* ---------- Toast: slight overshoot on entry ---------- */
-.toast-wrap.show { transition: opacity 0.3s var(--ease-out), transform 0.35s cubic-bezier(0.34, 1.4, 0.64, 1); }
-
-/* ---------- Static overview fields: value pop when updated ---------- */
-.field-static .value { transition: color 0.2s var(--ease-out); }
-
-/* ============================================
-   Morphing Scroll Navbar (msn-*)
-   Ported from the React MorphingScrollNavbar component into the plain
-   HTML/CSS/JS stack (the scroll behaviour lives in shared.js). Opt in per
-   page with:
-     <nav class="msn-nav" data-morph-nav aria-label="Primary navigation">
-       <div class="msn-shell">
-         <a class="msn-brand logo" href="#top">logo</a>
-         <div class="msn-links"><a href="#section">Label</a></div>
-         <div class="msn-actions">
-           <a class="msn-button msn-button-ghost" href="...">Sign In</a>
-           <a class="msn-button msn-button-primary" href="...">Start Free</a>
-         </div>
-       </div>
-     </nav>
-   Add class="has-morph-nav" on <body> so <main> clears the fixed bar and
-   anchor targets clear the shell. Hero pages should set --msn-clearance: 0
-   and add .msn-over-media-landing to the nav when the resting bar sits on a dark
-   background (it then uses light ink and the white logo).
-
-    
-   ============================================ */
-
-.msn-nav {
-  /* Local names mapped onto the shared design tokens, so the navbar
-     follows the user's accent colour and the [data-theme] dark palette. */
-  --paper: var(--bg);
-  --surface: var(--card);
-  --ink: var(--text);
-  --muted: var(--text-secondary);
-  --line: var(--border);
-  --accent: var(--primary);
-
-  position: fixed;
-  z-index: 100;
-  top: 0; right: 0; left: 0;
-  display: flex;
-  justify-content: center;
-  padding: 0 20px;
-  pointer-events: none;
-  font-family: var(--font-body);
-  color: var(--ink);
-}
-.msn-nav *, .msn-nav *::before, .msn-nav *::after { box-sizing: border-box; }
-.msn-nav a { color: inherit; text-decoration: none; }
-
-/* The bar floats above the page, so the first block needs clearance and
-   in-page anchors must not land underneath the shell. */
-body.has-morph-nav > main { padding-top: var(--msn-clearance, 0px); }
-body.has-morph-nav section[id],
-body.has-morph-nav .mobile-view[id] { scroll-margin-top: 100px; }
-body.has-morph-nav .mobile-menu { top: 76px; }
-
-.msn-shell {
-  pointer-events: auto;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 22px;
-  width: 100%;
-  max-width: 1180px;
-  height: 68px;
-  padding: 0 12px 0 22px;
-  border: 1px solid transparent;
-  border-radius: var(--radius-lg);
-  background: transparent;
-  transition: max-width 0.5s cubic-bezier(0.34, 1.32, 0.5, 1),
-              height 0.38s cubic-bezier(0.34, 1.2, 0.5, 1),
-              margin-top 0.38s ease,
-              padding 0.38s ease,
-              background-color 0.3s ease,
-              border-color 0.3s ease,
-              box-shadow 0.4s ease;
-}
-.msn-nav.is-floating .msn-shell {
-  max-width: 960px;
-  height: 58px;
-  margin-top: 12px;
-  padding: 0 10px 0 20px;
-  border-color: color-mix(in srgb, var(--ink) 10%, transparent);
-  background: color-mix(in srgb, var(--paper) 74%, transparent);
-  -webkit-backdrop-filter: saturate(170%) blur(16px);
-  backdrop-filter: saturate(170%) blur(16px);
-  box-shadow: inset 0 1px 0 color-mix(in srgb, #ffffff00 0%, transparent),
-              0 14px 40px -20px color-mix(in srgb, var(--ink) 45%, transparent);
-}
-.msn-nav.is-compact .msn-shell { max-width: 560px; height: 52px; }
-
-.msn-brand {
-  flex: none;
-  display: flex;
-  align-items: center;
-  font-size: 25px;
-  font-weight: 800;
-  line-height: 1;
-  letter-spacing: -0.045em;
-  transition: font-size 0.38s cubic-bezier(0.34, 1.2, 0.5, 1);
-}
-.msn-brand img { height: 32px; width: auto; }
-.msn-nav.is-compact .msn-brand { font-size: 22px; }
-
-/* Landing variant: the hero is a dark photo, so the resting (transparent)
-   bar uses light ink and the white logo, then returns to the themed ink
-   once it floats onto its own surface. */
-.msn-nav.msn-over-media-landing:not(.is-floating) {
-  --ink: #EFF5F0;
-  --muted: rgba(226, 236, 228, 0.76);
-  --line: rgba(255, 255, 255, 0.3);
-}
-
-
-.msn-nav.msn-over-media-landing:not(.is-floating) .msn-brand img {
-  content: url("./images/breadwinner_logo_white.png");
-}
-
-.msn-links {
-  display: flex;
-  justify-content: center;
-  margin: 0 auto;
-  gap: 28px;
-  max-width: 640px;
-  overflow: hidden;
-  opacity: 1;
-  transition: max-width 0.45s cubic-bezier(0.34, 1.2, 0.5, 1),
-              opacity 0.28s ease,
-              transform 0.3s ease,
-              gap 0.35s ease;
-}
-.msn-nav.is-compact .msn-links {
-  max-width: 0;
-  gap: 0;
-  opacity: 0;
-  transform: translateY(-8px);
-  pointer-events: none;
-}
-.msn-links a {
-  position: relative;
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 500;
-  white-space: nowrap;
-  transition: color 0.15s ease;
-}
-.msn-links a::after {
-  content: "";
-  position: absolute;
-  right: 0; bottom: -5px; left: 0;
-  height: 2px;
-  border-radius: 2px;
-  background: var(--accent);
-  transform: scaleX(0);
-  transform-origin: 0 50%;
-  transition: transform 0.28s cubic-bezier(0.2, 0.7, 0.2, 1);
-}
-.msn-links a:hover,
-.msn-links a[aria-current="location"] { color: var(--ink); }
-.msn-links a:hover::after,
-.msn-links a[aria-current="location"]::after { transform: scaleX(1); }
-
-.msn-actions { display: flex; flex: none; align-items: center; gap: 10px; }
-.msn-button {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  height: 42px;
-  padding: 0 18px;
-  border: 1px solid var(--line);
-  border-radius: var(--radius-sm);
-  background: var(--surface);
-  color: var(--ink);
-  font-family: var(--font-body);
-  font-size: 13.5px;
-  font-weight: 600;
-  white-space: nowrap;
-  transition: height 0.38s ease, font-size 0.38s ease, padding 0.38s ease,
-              background-color 0.18s ease, transform 0.18s ease, box-shadow 0.22s ease;
-}
-.msn-button:hover {
-  background: color-mix(in srgb, var(--surface) 80%, var(--paper));
-  box-shadow: 0 10px 22px -17px color-mix(in srgb, var(--ink) 45%, transparent);
-}
-.msn-button:active { transform: scale(0.97); }
-.msn-nav.is-compact .msn-button { height: 36px; padding: 0 14px; font-size: 12.5px; }
-
-/* Variants mirror the site's .btn-primary / .btn-secondary pairing. */
-.msn-button-primary {
-  border-color: transparent;
-  background: var(--primary);
-  color: #fff;
-  box-shadow: var(--shadow-glow);
-}
-.msn-button-primary:hover { background: var(--primary-hover); color: #fff; }
-.msn-button-ghost { border-color: transparent; background: transparent; color: var(--muted); }
-.msn-button-ghost:hover { background: color-mix(in srgb, var(--ink) 6%, transparent); color: var(--ink); }
-.msn-button-ghost:active { transform: scale(0.97); }
-
-/* Avatar action (dashboard variant) — keeps the shared avatar styling. */
-.msn-avatar { flex: none; }
-/* The navbar avatar stays still on hover too (shared .profile-pill lifts). */
-.msn-nav .msn-avatar:hover { transform: none; }
-.msn-nav .msn-avatar .avatar-circle {
-  width: 42px; height: 42px;
-  transition: width 0.38s ease, height 0.38s ease, font-size 0.38s ease;
-}
-.msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; font-size: 12.5px; }
-
-@media (max-width: 900px) {
-  .msn-nav.is-floating .msn-shell { max-width: 680px; }
-  .msn-nav.is-compact .msn-shell { max-width: 520px; }
-}
 @media (max-width: 860px) {
-  .msn-links { display: none; }
-  /* Hide the top-bar CTAs on mobile — Sign In / Start Free / Continue to
-     Dashboard already live in the hamburger (mobile) menu. The nav-toggle
-     button is not a .msn-button, so it stays visible. */
-  .msn-button { display: none; }
+  .mobile-bottom-nav {
+    position: fixed;
+    left: 50%;
+    bottom: calc(16px + env(safe-area-inset-bottom));
+    z-index: 95;
+    display: flex;
+    align-items: center;
+    gap: 0;
+    width: min(310px, calc(100vw - 32px));
+    max-width: calc(100vw - 32px);
+    padding: 7px;
+    transform: translateX(-50%);
+    background: rgba(255, 255, 255, 0.78);
+    border: 1px solid rgba(255, 255, 255, 0.72);
+    border-radius: var(--radius-full);
+    box-shadow: 0 12px 34px rgba(31, 41, 55, 0.14),
+      0 2px 8px rgba(31, 41, 55, 0.06);
+    backdrop-filter: blur(22px) saturate(175%);
+    -webkit-backdrop-filter: blur(22px) saturate(175%);
+  }
+
+  .bottom-nav-item { flex: 1 1 0; width: auto; }
+
+  :root[data-theme="dark"] .mobile-bottom-nav {
+    background: rgba(22, 30, 23, 0.78);
+    border-color: rgba(134, 239, 172, 0.14);
+    box-shadow: 0 14px 36px rgba(0, 0, 0, 0.3);
+  }
 }
-@media (max-width: 560px) {
-  .msn-nav { padding: 0 12px; }
-  .msn-shell,
-  .msn-nav.is-floating .msn-shell,
-  .msn-nav.is-compact .msn-shell { gap: 12px; height: 60px; padding: 0 4px 0 10px; }
-  .msn-nav.is-floating .msn-shell,
-  .msn-nav.is-compact .msn-shell { height: 52px; }
-  .msn-brand,
-  .msn-nav.is-compact .msn-brand { font-size: 23px; }
-  .msn-brand img { height: 28px; }
-  .msn-actions { gap: 7px; }
-  .msn-button,
-  .msn-nav.is-compact .msn-button { height: 40px; padding: 0 13px; font-size: 13px; }
-  .msn-nav.is-floating .msn-button,
-  .msn-nav.is-compact .msn-button { height: 36px; }
-  .msn-nav .msn-avatar .avatar-circle,
-  .msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; }
+
+@media (prefers-reduced-motion: reduce) {
+  .bottom-nav-item,
+  .bottom-nav-item svg { transition: none; }
 }

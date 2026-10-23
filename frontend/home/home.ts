@@ -873,7 +873,6 @@
     if (receiptItem) {
       bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => item.classList.remove('active'));
       receiptItem.classList.add('active');
-      positionBottomNavPill(receiptItem);
     }
   }
 
@@ -1084,35 +1083,20 @@
     });
   }
 
-  /* ---------- Mobile bottom navbar sliding pill ---------- */
+  /* ---------- Mobile bottom navbar ---------- */
   const bottomNav = document.getElementById('mobileBottomNav');
-  const bottomNavPill = document.getElementById('bottomNavPill');
-
-  function positionBottomNavPill(item) {
-    if (!bottomNavPill || !item) return;
-    const navRect = bottomNav.getBoundingClientRect();
-    const itemRect = item.getBoundingClientRect();
-    const pillWidth = bottomNavPill.offsetWidth;
-    const itemCenter = itemRect.left + itemRect.width / 2;
-    const offset = itemCenter - navRect.left - pillWidth / 2;
-    bottomNavPill.style.transform = 'translateX(' + offset + 'px)';
-  }
-
-  function initBottomNavPill() {
-    if (!bottomNav || !bottomNavPill) return;
+  function initBottomNav() {
+    if (!bottomNav) return;
     // If we landed with #receipts (e.g. from the mobile bottom nav on
-    // profile/settings), the pill should sit on Receipts, not Dashboard.
-    let activeItem = bottomNav.querySelector('.bottom-nav-item.active');
+    // profile/settings), the active item should be Receipts, not Dashboard.
     const hash = window.location.hash || '';
     if (hash === '#receipts') {
-      activeItem = bottomNav.querySelector('.bottom-nav-item[data-nav="receipt"]');
+      const activeItem = bottomNav.querySelector('.bottom-nav-item[data-nav="receipt"]');
       if (activeItem) {
         bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
         activeItem.classList.add('active');
       }
     }
-    positionBottomNavPill(activeItem || bottomNav.querySelector('.bottom-nav-item'));
-    bottomNavPill.classList.add('visible');
   }
 
   // Show the correct mobile view when landing on the page with a #receipts hash.
@@ -1152,48 +1136,19 @@
           if (window.matchMedia('(max-width: 860px)').matches) e.preventDefault();
           bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
           item.classList.add('active');
-          positionBottomNavPill(item);
           switchMobileView(nav);
           return;
         }
         // Other pages (e.g. settings) keep default anchor/navigation.
         bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
         item.classList.add('active');
-        positionBottomNavPill(item);
       });
     });
 
-    // On first load, honor a #receipts hash (view + active pill) so the
+    // On first load, honor a #receipts hash (view + active item) so the
     // bottom nav reflects where we landed.
     applyInitialRoute();
-
-    // Only position the pill when the mobile breakpoint is active,
-    // since the nav is display:none at desktop width (zero-size rects)
-    const mobileQuery = window.matchMedia('(max-width: 860px)');
-
-    function handleMobileChange(e) {
-      if (e.matches) {
-        requestAnimationFrame(initBottomNavPill);
-        setTimeout(initBottomNavPill, 100);
-      } else {
-        bottomNavPill.classList.remove('visible');
-      }
-    }
-
-    if (mobileQuery.matches) {
-      requestAnimationFrame(initBottomNavPill);
-      setTimeout(initBottomNavPill, 100);
-      setTimeout(initBottomNavPill, 300);
-    }
-
-    if (mobileQuery.addEventListener) {
-      mobileQuery.addEventListener('change', handleMobileChange);
-    } else if (mobileQuery.addListener) {
-      mobileQuery.addListener(handleMobileChange);
-    }
-
-    window.addEventListener('resize', initBottomNavPill);
-    window.addEventListener('load', initBottomNavPill);
+    initBottomNav();
   }
 
   /* ---------- Signed in with an account: fetch this person's receipts ---------- */

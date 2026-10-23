@@ -19,7 +19,7 @@
     const landingMobileActions = isSignedIn
         ? '<div class="nav-actions"><a href="../home/home.html" class="btn btn-primary">Continue to Dashboard</a></div>'
         : '<div class="nav-actions"><a href="../signin/signin.html" class="btn btn-secondary">Sign In</a><a href="../onboarding/onboarding.html" class="btn btn-primary">Start Free</a></div>';
-    const landing = '<nav class="msn-nav msn-over-media-landing" data-morph-nav aria-label="Primary navigation">' +
+    const landing = '<nav class="msn-nav" aria-label="Primary navigation">' +
         '<div class="msn-shell">' +
         '<a class="msn-brand logo" href="../index/index.html#top" aria-label="BreadWinner, back to top">' + logo + '</a>' +
         landingLinks +
@@ -32,7 +32,7 @@
         '<a href="../about/about.html">About us</a>' +
         landingMobileActions +
         '</div>';
-    const other = '<nav class="msn-nav" data-morph-nav aria-label="Primary navigation">' +
+    const other = '<nav class="msn-nav" aria-label="Primary navigation">' +
         '<div class="msn-shell">' +
         '<a class="msn-brand logo" href="../index/index.html#top" aria-label="BreadWinner, back to top">' + logo + '</a>' +
         landingLinks +
@@ -50,7 +50,7 @@
         '<a href="../home/home.html#receipts">Receipts</a>' +
         '<a href="../settings/settings.html">Settings</a>' +
         '</div>';
-    const app = '<nav class="msn-nav" data-morph-nav aria-label="Primary navigation">' +
+    const app = '<nav class="msn-nav" aria-label="Primary navigation">' +
         '<div class="msn-shell">' +
         '<a class="msn-brand logo" href="../index/index.html" aria-label="BreadWinner home">' + logo + '</a>' +
         appLinks +
@@ -73,17 +73,4 @@
         template.innerHTML = variant.trim();
         placeholder.replaceWith(template.content);
     });
-    function initNewNavs() {
-        if (!window.BreadWinner || !window.BreadWinner.initMorphNav)
-            return;
-        document.querySelectorAll('[data-morph-nav]').forEach(function (nav) {
-            window.BreadWinner.initMorphNav(nav);
-        });
-    }
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', initNewNavs);
-    }
-    else {
-        initNewNavs();
-    }
 })();
