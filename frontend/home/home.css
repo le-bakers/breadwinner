@@ -184,6 +184,34 @@
 .receipt-row:not(.receipt-row-head):focus-visible { background: var(--accent-light); }
 /* Highlight the clicked (open) row so it reads as expanded in both themes */
 .receipt-row:not(.receipt-row-head).open { background: #F2FAF4; }
+.receipt-row-processing { cursor: default !important; }
+.receipt-row-processing:hover { background: var(--card) !important; }
+.receipt-row-processing .cell-name { color: var(--text-secondary); }
+.skeleton-line {
+  display: inline-block;
+  height: 0.9em;
+  border-radius: 5px;
+  background: linear-gradient(90deg, var(--border) 25%, var(--accent-light) 50%, var(--border) 75%);
+  background-size: 200% 100%;
+  animation: receipt-skeleton 1.25s ease-in-out infinite;
+}
+.skeleton-date { width: 76px; }
+.skeleton-short { width: 24px; }
+.skeleton-money { width: 52px; }
+.status-reading { background: var(--accent-light); color: var(--primary-hover); }
+.status-spinner {
+  width: 10px;
+  height: 10px;
+  border: 1.5px solid currentColor;
+  border-right-color: transparent;
+  border-radius: 50%;
+  animation: receipt-spin 0.75s linear infinite;
+}
+@keyframes receipt-skeleton { to { background-position: -200% 0; } }
+@keyframes receipt-spin { to { transform: rotate(360deg); } }
+@media (prefers-reduced-motion: reduce) {
+  .skeleton-line, .status-spinner { animation: none; }
+}
 
 .cell-name { display: flex; align-items: center; gap: 10px; font-weight: 600; }
 .receipt-thumb {

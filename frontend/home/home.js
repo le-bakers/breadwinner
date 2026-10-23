@@ -159,6 +159,20 @@
         const frag = template.content.cloneNode(true);
         const row = frag.querySelector('.receipt-row');
         const expand = frag.querySelector('.receipt-expand');
+        if (receipt.processing) {
+            row.classList.add('receipt-row-processing');
+            row.setAttribute('aria-label', 'Reading receipt');
+            row.querySelector('.row-expand-btn').hidden = true;
+            row.querySelector('.row-delete-btn').hidden = true;
+            expand.hidden = true;
+            frag.querySelector('.cell-name-text').textContent = receipt.name;
+            frag.querySelector('.cell-date').innerHTML = '<span class="skeleton-line skeleton-date"></span>';
+            frag.querySelector('.cell-items').innerHTML = '<span class="skeleton-line skeleton-short"></span>';
+            frag.querySelector('.cell-gf').innerHTML = '<span class="skeleton-line skeleton-short"></span>';
+            frag.querySelector('.cell-overcharge').innerHTML = '<span class="skeleton-line skeleton-money"></span>';
+            frag.querySelector('.cell-status').innerHTML = '<span class="status-pill status-reading"><span class="status-spinner" aria-hidden="true"></span>Reading</span>';
+            return frag;
+        }
         const nameText = frag.querySelector('.cell-name-text');
         nameText.textContent = receipt.name;
         // Renaming: the box inside the open receipt. "change" fires when the user presses Enter or clicks away.
@@ -919,6 +933,7 @@
         }
     }
     async function processReceipt(blob) {
+        const receipt = addReceiptToHistory('', [], null, true);
         let items = [];
         let subtotal = null;
         let scanProblem = '';
@@ -934,7 +949,23 @@
             else
                 scanProblem = 'Photo saved, but that file could not be read as a receipt.';
         }
-        const receipt = addReceiptToHistory(await makeThumbnail(blob), items, subtotal);
+        receipt.imageUrl = await makeThumbnail(blob);
+        receipt.processing = false;
+        receipt.lines = items.map((item) => ({
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity || 1,
+            gf: typeof item.gf === 'boolean' ? item.gf : null,
+            gfReason: item.gf_reason || null,
+            plainName: item.plain_name || null,
+            regularTerm: item.regular_term || null,
+            unsure: item.unsure === true
+        }));
+        receipt.subtotal = subtotal;
+        tally(receipt);
+        saveReceipts(receipt);
+        applyFilters();
+        updateMetrics(false);
         // Fill in a suggested comparison for each gluten-free item. The user still approves every one.
         const suggested = (await makeDrafts(receipt)).made;
         if (suggested) {
@@ -947,6 +978,8 @@
         const hardToRead = items.filter((item) => item.unsure).length;
         const looksGf = items.filter((item) => item.gf).length;
         const found = 'Found ' + items.length + (items.length === 1 ? ' item' : ' items');
+        if (window.BreadWinner.dismissToast)
+            window.BreadWinner.dismissToast();
         if (scanProblem)
             toast(scanProblem);
         else if (!items.length)
@@ -959,7 +992,7 @@
         else
             toast(found + '. None looked gluten-free. Open the receipt to check.');
     }
-    function addReceiptToHistory(imageUrl, items, subtotal) {
+    function addReceiptToHistory(imageUrl, items, subtotal, processing = false) {
         const now = new Date();
         // Today's date where the user is (toISOString would give the date in London)
         const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
@@ -984,11 +1017,13 @@
             date: dateStr,
             subtotal, // the subtotal printed on the receipt, or null when the scanner found none
             lines,
-            imageUrl
+            imageUrl,
+            processing
         };
         tally(newReceipt); // fills in items, gfItems, overcharge and status
         RECEIPTS.unshift(newReceipt);
-        saveReceipts(newReceipt);
+        if (!processing)
+            saveReceipts(newReceipt);
         showReceiptHistory();
         closeCamera();
         const fab = document.getElementById('fabUpload');
@@ -1000,6 +1035,7 @@
         if (!capturedBlob)
             return;
         cameraConfirmBtn.disabled = true;
+        toast('Reading receipt...', 0);
         if (cameraStatus)
             cameraStatus.textContent = 'Reading receipt…';
         try {
@@ -1008,6 +1044,8 @@
         catch (error) {
             if (cameraStatus)
                 cameraStatus.textContent = 'Could not save photo';
+            if (window.BreadWinner.dismissToast)
+                window.BreadWinner.dismissToast();
         }
         cameraConfirmBtn.disabled = false;
     }
@@ -1081,12 +1119,14 @@
             if (!file)
                 return;
             closeCamera();
-            toast('Reading receipt…');
+            toast('Reading receipt…', 0);
             try {
                 await processReceipt(file);
             }
             catch (error) {
                 console.error('Could not save uploaded receipt:', error);
+                if (window.BreadWinner.dismissToast)
+                    window.BreadWinner.dismissToast();
             }
         });
     }

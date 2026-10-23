@@ -243,7 +243,7 @@ window.BreadWinner = window.BreadWinner || {};
     };
     BW.applySitewideSettings = applySettings; // back-compat alias
     /* ---------- Toast ---------- */
-    BW.toast = function (message) {
+    BW.toast = function (message, duration = 2600) {
         let wrap = document.querySelector('.toast-wrap');
         if (!wrap) {
             wrap = document.createElement('div');
@@ -255,7 +255,13 @@ window.BreadWinner = window.BreadWinner || {};
         wrap.querySelector('.toast-text').textContent = message;
         wrap.classList.add('show');
         clearTimeout(wrap._hideTimer);
-        wrap._hideTimer = setTimeout(() => wrap.classList.remove('show'), 2600);
+        if (duration > 0)
+            wrap._hideTimer = setTimeout(() => wrap.classList.remove('show'), duration);
+    };
+    BW.dismissToast = function () {
+        const wrap = document.querySelector('.toast-wrap');
+        if (wrap)
+            wrap.classList.remove('show');
     };
     /* ---------- Confirm dialog helper ---------- */
     BW.confirmModal = function (overlayEl) {
