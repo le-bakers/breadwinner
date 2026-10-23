@@ -57,9 +57,7 @@
   const money = (n) => '$' + n.toFixed(2);
 
   function animateMetric(id, target, format, delay) {
-    // From-scratch odometer (no libraries): each digit is a 1em-tall window
-    // over a vertical 0-9 reel. Rolling = translateY the reel; edges are
-    // softened with a mask fade + frosted blur strips (see home.css).
+    // Each digit keeps its reel between updates, so only changed digits roll.
     const element = document.getElementById(id);
     if (!element) return;
     const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -74,6 +72,7 @@
     const key = (format === 'money' ? '$' : '') + '|' + digits.length + '|' + decimals;
     if (element.getAttribute('data-layout') !== key) {
       element.setAttribute('data-layout', key);
+      element.setAttribute('data-current', '0'.repeat(digits.length));
       element.innerHTML = '';
       const frag = document.createDocumentFragment();
       if (format === 'money') {
@@ -95,12 +94,12 @@
         win.setAttribute('aria-hidden', 'true');
         const reel = document.createElement('span');
         reel.className = 'odo-reel';
-        for (let d = 0; d <= 9; d++) {
+        for (let d = 0; d <= 19; d++) {
           const cell = document.createElement('span');
-          cell.textContent = String(d);
+          cell.textContent = String(d % 10);
           reel.appendChild(cell);
         }
-        reel.style.transform = 'translateY(0.12em)'; // pinned at 0 before the roll (0.12em centers in the 1.24em window)
+        reel.style.transform = 'translateY(0.06em)';
         win.appendChild(reel);
         frag.appendChild(win);
       }
@@ -108,24 +107,32 @@
     }
 
     const reels = element.querySelectorAll('.odo-reel');
+    const current = (element.getAttribute('data-current') || '').padStart(digits.length, '0');
     setTimeout(() => {
       for (let i = 0; i < reels.length; i++) {
         const reel = reels[i];
-        // Reel strip is 10 digits tall (10em), so % would resolve against the
-        // whole strip — offset in em instead: digit N sits N em down, plus
-        // 0.12em to center it in the taller 1.24em window.
-        const end = 0.12 - Number(digits[i]);
+        const from = Number(current[i] || 0);
+        const to = Number(digits[i]);
+        const steps = to >= from ? to - from : to + 10 - from;
+        const end = 0.06 - from - steps;
+        reel.style.transitionDelay = (i * 35) + 'ms';
+        if (steps === 0) {
+          reel.classList.remove('rolling');
+          reel.style.transform = 'translateY(' + (0.06 - from) + 'em)';
+          continue;
+        }
         if (reduceMotion) {
           reel.classList.remove('rolling');
           reel.style.transform = 'translateY(' + end + 'em)';
           continue;
         }
         reel.classList.remove('rolling');
-        reel.style.transform = 'translateY(0.12em)'; // start from 0 every time
-        void reel.offsetHeight; // reflow: commit the start position
+        reel.style.transform = 'translateY(' + (0.06 - from) + 'em)';
+        void reel.offsetHeight;
         reel.classList.add('rolling');
         reel.style.transform = 'translateY(' + end + 'em)';
       }
+      element.setAttribute('data-current', digits);
       element.setAttribute('aria-label', label);
     }, reduceMotion ? 0 : delay);
   }

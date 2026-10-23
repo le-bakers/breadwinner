@@ -56,76 +56,44 @@
 .summary-stat-value { font-family: var(--font-display); font-size: 25px; font-weight: 800; line-height: 1.15; }
 .summary-stat-label { color: var(--text-secondary); font-size: 13px; margin-top: 3px; }
 
-/* ---------- From-scratch odometer: 1em digit windows over 0-9 reels ---------- */
-/* All parts share vertical-align:top + 1.24em boxes, so no baseline gamble:
-   overflow:hidden windows baseline to their bottom edge, which used to float
-   the digits above $ and . */
-.odometer { font-variant-numeric: tabular-nums; line-height: 1; }
-/* .summary-value sets tight -0.055em tracking, which pulls digit ink into the
-   neighboring overflow:hidden windows and clips it — reset it on odometers
-   and use a small positive gap instead so the digits never touch. */
+/* ---------- Compact odometer: one reusable reel per digit ---------- */
+.odometer { font-variant-numeric: tabular-nums; line-height: 1; white-space: nowrap; }
 .summary-value.odometer { letter-spacing: 0; }
 .summary-value.odometer, .summary-stat-value.odometer { display: block; }
-.odometer > * + * { margin-left: 0; }
+.odometer > * + * { margin-left: 0.035em; }
 .odometer .odo-static {
   display: inline-block;
-  height: 1.24em; /* match the digit windows */
-  line-height: 1.24em; /* glyph centers exactly like the +0.12em reel offset */
+  height: 1.12em;
+  line-height: 1.12em;
   vertical-align: top;
 }
-/* Total overcharge: currency symbol at half the digit size (others unchanged).
-   Box stays 1.24em of the digit size; flex-end + bottom padding drops the
-   small $ so its baseline sits on the digits' baseline. */
+/* Keep the currency mark aligned with the digit baseline without enlarging the
+   rest of the odometer. */
 #totalOvercharge .odo-static.odo-currency {
   font-size: 0.5em;
-  height: 2.48em;
+  height: 2.24em;
   line-height: 1;
   display: inline-flex;
   align-items: flex-end;
   justify-content: center;
-  padding-bottom: 0.44em; /* = 0.12em of the digit size: matches the reel's centering offset */
+  padding-bottom: 0.4em;
   box-sizing: border-box;
 }
 .odometer .odo-digit {
   display: inline-block;
   position: relative;
-  height: 1.24em; /* taller than the glyph so the fade/blur zone clears the digit */
+  width: 0.62em;
+  height: 1.12em;
   overflow: hidden;
-  vertical-align: top; /* same top edge as the statics: no baseline gamble */
-  /* fade only the outer bands — the middle 60% stays fully opaque */
-  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-  mask-image: linear-gradient(to bottom, transparent 0%, black 20%, black 80%, transparent 100%);
-}
-/* true blur at the window edges: frosted strips above/below the settled digit */
-.odometer .odo-digit::before,
-.odometer .odo-digit::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 20%; /* matches the 20% mask fade bands — never touches the digit */
-  z-index: 1;
-  pointer-events: none;
-}
-.odometer .odo-digit::before {
-  top: 0;
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-  -webkit-mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
-  mask-image: linear-gradient(to bottom, black 0%, transparent 100%);
-}
-.odometer .odo-digit::after {
-  bottom: 0;
-  -webkit-backdrop-filter: blur(2px);
-  backdrop-filter: blur(2px);
-  -webkit-mask-image: linear-gradient(to top, black 0%, transparent 100%);
-  mask-image: linear-gradient(to top, black 0%, transparent 100%);
+  vertical-align: top;
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 16%, black 84%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 16%, black 84%, transparent);
 }
 .odometer .odo-reel {
   display: inline-flex;
   flex-direction: column;
   line-height: 1;
-  will-change: transform;
+  transform: translateY(0.06em);
 }
 .odometer .odo-reel > span {
   display: block;
@@ -133,8 +101,7 @@
   line-height: 1;
 }
 .odometer .odo-reel.rolling {
-  transition: transform 1.1s cubic-bezier(0.22, 0.9, 0.28, 1);
-  /* no motion blur while sliding: digits stay crisp during the roll */
+  transition: transform 0.72s cubic-bezier(0.2, 0.78, 0.25, 1);
 }
 @media (prefers-reduced-motion: reduce) {
   .odometer .odo-reel.rolling { transition: none; }
