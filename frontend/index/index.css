@@ -6,14 +6,6 @@
 #cardShadowGrad stop { stop-color: var(--primary); }
 
 
-.eyebrow {
-  font-size: clamp(12px, 0.8vw, 17px);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--primary-hover);
-  margin-bottom: clamp(10px, 0.9vw, 18px);
-}
 
 /* ---------- Hero ---------- */
 .hero {

@@ -638,6 +638,9 @@
     }
     /* ---------- Camera workspace ---------- */
     const photoBtn = document.getElementById('fabUpload');
+    const fabWrapper = document.getElementById('fabWrapper');
+    const fabOptionCamera = document.getElementById('fabOptionCamera');
+    const fabOptionUpload = document.getElementById('fabOptionUpload');
     const fileInput = document.getElementById('fileInput');
     const cameraOverlay = document.getElementById('cameraOverlay');
     const cameraVideo = document.getElementById('cameraVideo');
@@ -1007,12 +1010,41 @@
         cameraOverlay.hidden = true;
         document.body.style.overflow = '';
     }
-    if (photoBtn && cameraOverlay) {
+    function setFabOptionsOpen(open) {
+        if (!fabWrapper || !photoBtn || !fabOptionCamera || !fabOptionUpload)
+            return;
+        fabWrapper.classList.toggle('is-options-open', open);
+        photoBtn.setAttribute('aria-expanded', String(open));
+        fabOptionCamera.setAttribute('aria-hidden', String(!open));
+        fabOptionUpload.setAttribute('aria-hidden', String(!open));
+        fabOptionCamera.tabIndex = open ? 0 : -1;
+        fabOptionUpload.tabIndex = open ? 0 : -1;
+    }
+    if (photoBtn && fabWrapper && fabOptionCamera && fabOptionUpload && cameraOverlay) {
+        fabOptionCamera.hidden = false;
+        fabOptionUpload.hidden = false;
+        setFabOptionsOpen(false);
         photoBtn.addEventListener('click', (e) => {
             e.stopPropagation();
+            setFabOptionsOpen(!fabWrapper.classList.contains('is-options-open'));
+        });
+
+        // Handle "Take a picture" option click
+        fabOptionCamera.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setFabOptionsOpen(false);
+            closeCamera();
             cameraOverlay.hidden = false;
-            document.body.style.overflow = 'hidden';
             startCamera();
+        });
+
+        // Handle "Upload a photo" option click
+        fabOptionUpload.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setFabOptionsOpen(false);
+            closeCamera();
+            if (fileInput)
+                fileInput.click();
         });
         cameraClose.addEventListener('click', () => {
             closeCamera();
