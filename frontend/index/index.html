@@ -4,12 +4,16 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Track Your Gluten-Free Expenses | BreadWinner</title>
-<meta name="description" content="BreadWinner organizes your grocery receipts, flags gluten-free items, and tracks gluten-free extra-cost estimates for your review.">
+<meta name="description" content="BreadWinner organizes your grocery receipts, flags gluten-free items, and tracks tax-deductible purchases automatically.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared.css">
 <link rel="stylesheet" href="./index.css">
 <link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
 </head>
 <body class="has-morph-nav">
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 <a class="sr-only" href="#main-content">Skip to main content</a>
 
 <div data-navbar="landing"></div>
@@ -30,8 +34,8 @@
         <p class="hero-subtitle">Conveniently Track Gluten-Free Costs</p>
         <p class="hero-desc">
           Snap a photo of any grocery receipt and BreadWinner sorts every item:
-          gluten-free finds, everyday staples, and extra-cost estimates for
-          your review, so your grocery records stay organized
+          gluten-free finds, everyday staples, and the specialty products that
+          qualify as tax deductions, so your celiac expenses stay organized
           all year long.
         </p>
         <div class="hero-actions">
@@ -84,7 +88,7 @@
 
           <!-- overcharge counter chip -->
           <div class="floating-chip chip-overcharge float-fast">
-            <span class="chip-label">Extra-cost estimate</span>
+            <span class="chip-label">Overcharge caught</span>
             <span class="chip-value" data-counter data-target="67">$0.00</span>
           </div>
 
@@ -104,7 +108,7 @@
       <div class="section-heading reveal">
         <p class="eyebrow">The process</p>
         <h2>How It Works</h2>
-        <p class="section-sub">From receipt to organized extra-cost estimate in four simple steps.</p>
+        <p class="section-sub">From receipt to reportable deduction in four simple steps.</p>
       </div>
 
       <div class="timeline">
@@ -127,11 +131,11 @@
         </div>
 
         <div class="timeline-row reveal">
-          <div class="timeline-media"><img src="../images/placeholder-tax.svg" alt="Gluten-free extra-cost records grouped into a folder" loading="lazy"></div>
+          <div class="timeline-media"><img src="../images/placeholder-tax.svg" alt="Tax deductible gluten-free items grouped into a folder" loading="lazy"></div>
           <div class="timeline-copy">
             <span class="step-num">CRUNCH IT</span>
-            <h3>Extra-cost estimates are grouped</h3>
-            <p>Specialty gluten-free extra costs you approve are grouped for review with a qualified tax professional.</p>
+            <h3>Eligible tax deductions are grouped</h3>
+            <p>Specialty gluten-free products that qualify get grouped and totaled automatically, ready for tax season.</p>
           </div>
         </div>
 
@@ -140,7 +144,7 @@
           <div class="timeline-copy">
             <span class="step-num">SEE IT</span>
             <h3>View organized reports and statistics</h3>
-            <p>See spending trends and approved extra-cost estimates at a glance — no spreadsheets required.</p>
+            <p>See spending trends, total overcharges, and deductible totals at a glance — no spreadsheets required.</p>
           </div>
         </div>
       </div>
@@ -174,15 +178,15 @@
           <div class="feature-icon">
             <svg viewBox="0 0 24 24" fill="none"><path d="M12 3V21M7 7H15.5C17 7 18 8 18 9.5C18 11 17 12 15.5 12H8.5C7 12 6 13 6 14.5C6 16 7 17 8.5 17H17" stroke="#22C55E" stroke-width="1.8" stroke-linecap="round"/></svg>
           </div>
-          <h3>Extra-Cost Tracking</h3>
-          <p>Specialty GF extra costs you approve are grouped and totaled for professional review.</p>
+          <h3>Tax Deduction Tracking</h3>
+          <p>Specialty GF products that qualify for deduction are grouped and totaled.</p>
         </div>
         <div class="feature-card reveal">
           <div class="feature-icon">
             <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M12 20V4M20 20V14" stroke="#22C55E" stroke-width="1.8" stroke-linecap="round"/></svg>
           </div>
           <h3>Expense Analytics</h3>
-          <p>Review your receipt history and extra-cost estimates over time.</p>
+          <p>Clear reports on spending, savings, and overcharges over time.</p>
         </div>
       </div>
     </div>
@@ -207,6 +211,27 @@
 <script src="../components/footer.js" type="module"></script>
 <script src="../shared.js" type="module"></script>
 <script src="./index.js" type="module"></script>
+<script>
+  function handleCredentialResponse(response) {
+    console.log("Encoded JWT ID token: " + response.credential);
+    // Add your login success handling here (e.g., redirecting to a dashboard)
+  }
 
+  window.onload = function () {
+    google.accounts.id.initialize({
+      client_id: "1097872808556-r9f8e34uq40s10v3hu3aaomdqi0vq6ft.apps.googleusercontent.com",
+      callback: handleCredentialResponse
+    });
+
+    // If you have a button container element with id="buttonDiv" on your page:
+    const buttonElement = document.getElementById("buttonDiv");
+    if (buttonElement) {
+      google.accounts.id.renderButton(
+        buttonElement,
+        { theme: "outline", size: "large" }
+      );
+    }
+  }
+</script>
 </body>
 </html>

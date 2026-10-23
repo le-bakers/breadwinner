@@ -124,9 +124,9 @@
             return valid;
         }
         function validatePassword() {
-            const valid = settingNewPassword ? password.value.length >= 12 && password.value.length <= 128 : password.value.length > 0;
+            const valid = password.value.length >= 8;
             password.classList.toggle('invalid', !valid);
-            passwordError.textContent = valid ? '' : settingNewPassword ? 'Use a password of 12 to 128 characters.' : 'Enter your password.';
+            passwordError.textContent = valid ? '' : 'Password must be at least 8 characters.';
             passwordError.classList.toggle('show', !valid);
             return valid;
         }

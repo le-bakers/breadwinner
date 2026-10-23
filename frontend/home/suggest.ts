@@ -63,7 +63,7 @@
     });
 
     let response;
-    try { response = await window.BreadWinner.apiFetch(apiBase + '/suggest?' + params.toString()); }
+    try { response = await fetch(apiBase + '/suggest?' + params.toString()); }
     catch (error) {
       // fetch throws when nothing answers at apiBase (the Python server is off)
       return { draft: null, problem: 'The price server is not running, so no prices could be suggested.' };

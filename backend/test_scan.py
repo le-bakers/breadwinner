@@ -18,7 +18,7 @@ from receipt_parser import find_subtotal, parse_receipt
 from server import app
 from unit_price import calculate_deduction, parse_size
 
-client = TestClient(app, headers={"Authorization": "Bearer test-session-not-a-real-token"})
+client = TestClient(app)
 
 
 # ---------- receipt_parser ----------
@@ -472,7 +472,7 @@ def test_nearest_store_is_only_looked_up_once_per_zip(monkeypatch):
 
     monkeypatch.setattr(server.kroger, "get_access_token", lambda: "pretend-token")
     monkeypatch.setattr(server.kroger.requests, "get", pretend_get)
-    server.kroger.find_nearest_location.cache_clear()
+    monkeypatch.setattr(server.kroger, "_location_cache", {})
 
     assert server.kroger.find_nearest_location("45202") == "01400943"
     assert server.kroger.find_nearest_location("45202") == "01400943"
@@ -504,7 +504,7 @@ def test_scan_reads_items_from_a_receipt_image():
 
 def test_scan_rejects_a_file_that_is_not_an_image():
     response = client.post("/scan", files={"file": ("notes.txt", b"this is not a picture")})
-    assert response.status_code == 415
+    assert response.status_code == 422
 
 
 def test_scan_rejects_an_empty_file():
@@ -642,7 +642,6 @@ def test_big_photo_is_shrunk_before_sending():
 
 
 def test_scan_uses_gemini_when_it_is_switched_on(monkeypatch):
-    monkeypatch.setattr(server, "CLOUD_OCR_APPROVED", True)
     use_pretend_gemini(monkeypatch, [gemini_answer([
         {"name": "UDIS WHT BRD", "price": 6.49, "upc": "", "plain_name": "Udi's white bread",
          "gluten_free": True, "regular_version": "white sandwich bread"},
@@ -663,7 +662,6 @@ def test_scan_uses_gemini_when_it_is_switched_on(monkeypatch):
 
 
 def test_scan_falls_back_to_the_local_reader_when_gemini_is_out_of_requests(monkeypatch):
-    monkeypatch.setattr(server, "CLOUD_OCR_APPROVED", True)
     asked = use_pretend_gemini(monkeypatch, [OUT_OF_REQUESTS, OUT_OF_REQUESTS])
     monkeypatch.setattr(server, "OCR_ENGINE", "gemini")
 
@@ -679,5 +677,5 @@ def test_scan_does_not_spend_a_gemini_request_on_a_file_that_is_not_an_image(mon
     monkeypatch.setattr(server, "OCR_ENGINE", "gemini")
 
     response = client.post("/scan", files={"file": ("notes.txt", b"this is not a picture")})
-    assert response.status_code == 415
+    assert response.status_code == 422
     assert asked == []

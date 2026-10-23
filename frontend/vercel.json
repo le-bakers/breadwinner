@@ -1,16 +1,8 @@
 {
-  "buildCommand": "npm run build",
-  "outputDirectory": "_site",
-  "headers": [{
-    "source": "/(.*)",
-    "headers": [
-      {"key":"Content-Security-Policy","value":"default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob:; font-src 'self'; connect-src 'self' https://ddnncfschrbihtftzhve.supabase.co https://breadwinner-wt1k.onrender.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; upgrade-insecure-requests"},
-      {"key":"Strict-Transport-Security","value":"max-age=31536000"},
-      {"key":"X-Content-Type-Options","value":"nosniff"},
-      {"key":"X-Frame-Options","value":"DENY"},
-      {"key":"Referrer-Policy","value":"no-referrer"},
-      {"key":"Permissions-Policy","value":"camera=(self), microphone=(), geolocation=(), payment=(), usb=()"},
-      {"key":"Cache-Control","value":"no-store"}
-    ]
-  }]
+  "rewrites": [
+    {
+      "source": "/",
+      "destination": "/index/index.html"
+    }
+  ]
 }

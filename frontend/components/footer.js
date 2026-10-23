@@ -1,3 +1,4 @@
+"use strict";
 // @ts-nocheck
 (function () {
     'use strict';
@@ -26,9 +27,6 @@
         '<h4>Legal</h4>' +
         '<a href="../legal/privacy.html">Privacy</a>' +
         '<a href="../legal/terms.html">Terms</a>' +
-        '<a href="../legal/cookies.html">Cookies &amp; Storage</a>' +
-        '<a href="../legal/health-data.html">Consumer Health Data</a>' +
-        '<a href="../legal/accessibility.html">Accessibility</a>' +
         '</div>' +
         '</div>' +
         '</div>' +
@@ -47,16 +45,6 @@
         '</div>' +
         '</footer>';
     document.querySelectorAll('[data-footer]').forEach(function (placeholder) {
-        const template = document.createElement('template');
-        template.innerHTML = footer;
-        template.content.querySelectorAll('[href], [src]').forEach((element) => {
-            for (const attribute of ['href', 'src']) {
-                const value = element.getAttribute(attribute);
-                if (value && value.startsWith('../'))
-                    element.setAttribute(attribute, new URL(value, import.meta.url).href);
-            }
-        });
-        placeholder.replaceWith(template.content);
+        placeholder.outerHTML = footer;
     });
 })();
-export {};

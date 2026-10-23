@@ -1,10 +1,9 @@
 import os
 import time
-from functools import lru_cache
 import requests
 from dotenv import load_dotenv
 
-load_dotenv(os.path.join(os.path.dirname(__file__), '.env'))
+load_dotenv()
 
 CLIENT_ID = os.getenv("KROGER_CLIENT_ID")
 CLIENT_SECRET = os.getenv("KROGER_CLIENT_SECRET")
@@ -21,7 +20,7 @@ def check_reply(response):
     try:
         response.raise_for_status()
     except requests.HTTPError:
-        print(f"Kroger request refused ({response.status_code})")
+        print(f"Kroger said {response.status_code}: {response.text[:300]}")  # never contains our keys
         raise
 
 
@@ -46,9 +45,14 @@ def get_access_token():
 
     return _token_cache["access_token"]
 
-@lru_cache(maxsize=1024)
+_location_cache = {}  # zip code -> locationId, so each zip is only looked up once
+
+
 def find_nearest_location(zip_code):
     """Return the locationId of the nearest Kroger-banner store to a zip code."""
+    if zip_code in _location_cache:
+        return _location_cache[zip_code]
+
     token = get_access_token()
     response = requests.get(
         f"{BASE_URL}/locations",
@@ -61,6 +65,7 @@ def find_nearest_location(zip_code):
 
     # None means no Kroger-banner store is near that zip code
     location_id = locations[0]["locationId"] if locations else None
+    _location_cache[zip_code] = location_id
     return location_id
 
 def search_products(search_term, location_id, limit=3):

@@ -1067,15 +1067,3 @@ body.has-morph-nav .mobile-menu { top: 76px; }
   .msn-nav .msn-avatar .avatar-circle,
   .msn-nav.is-compact .msn-avatar .avatar-circle { width: 36px; height: 36px; }
 }
-/* Privacy choices use native modal focus management and work at narrow widths. */
-.privacy-dialog { width: min(620px, calc(100% - 32px)); max-height: 90vh; overflow: auto; margin: auto; padding: 28px; border: 1px solid var(--border, #ddd); border-radius: 18px; background: var(--card, #fff); color: var(--text, #111); }
-.privacy-dialog::backdrop { background: rgb(0 0 0 / 60%); }
-.privacy-dialog p, .privacy-dialog label { display: block; margin: 16px 0; line-height: 1.6; }
-.privacy-dialog input { margin-right: 8px; }
-.privacy-dialog a, .privacy-notice a { text-decoration: underline; }
-.privacy-actions { display: flex; flex-wrap: wrap; gap: 12px; }
-.privacy-notice { padding: 12px 20px; text-align: center; font-size: 13px; line-height: 1.5; background: var(--accent-light, #f0fdf4); color: var(--text, #111); }
-.skip-link { position: fixed; left: 12px; top: -100px; z-index: 10000; padding: 12px 18px; background: var(--card, white); color: var(--text, black); border: 2px solid var(--primary); border-radius: 8px; }
-.skip-link:focus { top: 12px; }
-:focus-visible { outline: 2px solid var(--primary-hover, #15803d); outline-offset: 3px; }
-[hidden] { display: none !important; }

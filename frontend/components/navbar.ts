@@ -88,12 +88,6 @@
     const variant = variants[placeholder.dataset.navbar] || landing;
     const template = document.createElement('template');
     template.innerHTML = variant.trim();
-    template.content.querySelectorAll('[href], [src]').forEach((element) => {
-      for (const attribute of ['href', 'src']) {
-        const value = element.getAttribute(attribute);
-        if (value && value.startsWith('../')) element.setAttribute(attribute, new URL(value, import.meta.url).href);
-      }
-    });
     placeholder.replaceWith(template.content);
   });
 

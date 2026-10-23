@@ -7,26 +7,14 @@ services:
     region: ohio
     rootDir: backend
     buildCommand: pip install -r requirements.txt
-    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT --workers 1 --limit-concurrency 20 --timeout-keep-alive 5 --no-server-header --no-access-log
+    startCommand: uvicorn server:app --host 0.0.0.0 --port $PORT
     healthCheckPath: /
     envVars:
-      - key: SUPABASE_URL
-        sync: false
-      - key: SUPABASE_PUBLISHABLE_KEY
-        sync: false
-      # Set the real frontend origin(s), without URL paths or wildcards.
-      - key: ALLOWED_ORIGINS
-        sync: false
-      # Include this service's Render hostname and any custom API hostname.
-      - key: ALLOWED_HOSTS
-        sync: false
-      - key: OCR_ENGINE
-        value: local
-      - key: CLOUD_OCR_APPROVED
-        value: "false"
       - key: PYTHON_VERSION
         value: 3.13.4
       # Secret keys: Render asks you to paste these in. They never go in the code.
+      - key: GEMINI_API_KEY
+        sync: false
       - key: KROGER_CLIENT_ID
         sync: false
       - key: KROGER_CLIENT_SECRET

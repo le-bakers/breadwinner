@@ -87,27 +87,7 @@ window.BreadWinner = window.BreadWinner || {};
   // Render's free server falls asleep after 15 idle minutes and takes about a minute to wake.
   // Knock as soon as any page opens, so it's awake by the time someone scans.
   BW.scannerAwake = false;
-  if (/\/(home|settings)\//.test(location.pathname)) {
-    fetch(BW.apiBase + '/', { cache: 'no-store', referrerPolicy: 'no-referrer' }).then((response) => { BW.scannerAwake = response.ok; }, () => {});
-  }
-  BW.apiFetch = async function (address, options = {}) {
-    const url = new URL(address);
-    if (url.origin !== new URL(BW.apiBase).origin) throw new Error('Unexpected API address.');
-    const headers = new Headers(options.headers || {});
-    if (BW.cloud && BW.cloud.enabled) headers.set('Authorization', 'Bearer ' + await BW.cloud.accessToken());
-    return fetch(url.href, { ...options, headers, credentials: 'omit', cache: 'no-store', referrerPolicy: 'no-referrer', signal: options.signal || AbortSignal.timeout(90000) });
-  };
-  BW.safeImage = (value) => typeof value === 'string' && value.length < 300000 && /^data:image\/(jpeg|png|webp);base64,[A-Za-z0-9+/=]+$/.test(value) ? value : '';
-  BW.clearPrivateLocalData = function () {
-    for (const storageName of ['localStorage', 'sessionStorage']) {
-      try {
-        const storage = window[storageName];
-        Object.keys(storage).filter((key) => key.startsWith('breadwinner_') &&
-          !['breadwinner_auth', 'breadwinner_auth-code-verifier', 'breadwinner_remember', 'breadwinner_settings'].includes(key))
-          .forEach((key) => storage.removeItem(key));
-      } catch (e) { /* storage unavailable */ }
-    }
-  };
+  fetch(BW.apiBase + '/').then((response) => { BW.scannerAwake = response.ok; }, () => {});
 
   /* ---------- Safe localStorage wrappers ---------- */
   BW.safeGet = function (key, fallback) {
@@ -139,7 +119,6 @@ window.BreadWinner = window.BreadWinner || {};
     return BW.safeSet(BW.STORAGE.session, JSON.stringify(Object.assign({ at: Date.now() }, details || {})));
   };
   BW.signOut = function () {
-    BW.clearPrivateLocalData();
     return BW.safeRemove(BW.STORAGE.session);
   };
   // When signed in, every "Sign In" / "Start Free" link points to the dashboard
@@ -171,7 +150,6 @@ window.BreadWinner = window.BreadWinner || {};
     const out = Array.isArray(base) ? base.slice() : Object.assign({}, base);
     if (!patch || typeof patch !== 'object') return out;
     Object.keys(patch).forEach((k) => {
-      if (!Object.prototype.hasOwnProperty.call(base, k) || ['__proto__', 'constructor', 'prototype'].includes(k)) return;
       const v = patch[k];
       if (v && typeof v === 'object' && !Array.isArray(v) && base && typeof base[k] === 'object' && !Array.isArray(base[k])) {
         out[k] = deepMerge(base[k], v);
@@ -313,7 +291,7 @@ window.BreadWinner = window.BreadWinner || {};
   // profile pill on home/profile/settings and the large profile preview.
   (function applyAvatarIdentity() {
     const bg = AVATAR_BG;
-    const photo = BW.safeImage(BW.safeGet(BW.STORAGE.photo, ''));
+    const photo = BW.safeGet(BW.STORAGE.photo, '');
     document.querySelectorAll('.avatar-circle, .avatar-xl').forEach((el) => {
       if (photo) {
         el.classList.add('avatar-photo');

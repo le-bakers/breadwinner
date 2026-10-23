@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Create Your Account | BreadWinner</title>
 <meta name="description" content="Create your BreadWinner account and learn how to track your gluten-free grocery spending.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../shared.css">
 <link rel="stylesheet" href="./onboarding.css">
 <link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
@@ -45,8 +48,9 @@
             <p class="field-error" id="fullName-error" role="alert"></p>
           </div>
 
-          <div class="adult-confirmation">
-            <label class="checkbox"><input type="checkbox" id="dob" name="adultConfirmed" required><span class="checkbox-box" aria-hidden="true"></span><span>I am at least 18 and the age of majority where I live</span></label>
+          <div class="field-group">
+            <input type="date" id="dob" name="dob" required placeholder=" " autocomplete="bday">
+            <label for="dob" class="static-label">Date of birth</label>
             <p class="field-error" id="dob-error" role="alert"></p>
           </div>
         </div>
@@ -58,7 +62,7 @@
         </div>
 
         <div class="field-group">
-          <input type="password" id="password" name="password" required placeholder=" " autocomplete="new-password" minlength="12" maxlength="128">
+          <input type="password" id="password" name="password" required placeholder=" " autocomplete="new-password" minlength="8">
           <label for="password">Password</label>
           <button type="button" class="toggle-password" data-target="password" aria-label="Show password">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7-10-7-10-7z" stroke="#6B7280" stroke-width="1.7"/><circle cx="12" cy="12" r="3" stroke="#6B7280" stroke-width="1.7"/></svg>
@@ -86,7 +90,7 @@
         <label class="checkbox terms-checkbox">
           <input type="checkbox" id="agreeTerms" name="agreeTerms" required>
           <span class="checkbox-box" aria-hidden="true"></span>
-          <span>I agree to the <a href="../legal/terms.html" target="_blank" rel="noopener noreferrer">Terms of Service</a> and acknowledge the <a href="../legal/privacy.html" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.</span>
+          I agree to the <a href="../legal/terms.html" target="_blank" rel="noopener">Terms of Service</a> and <a href="../legal/privacy.html" target="_blank" rel="noopener">Privacy Policy</a>
         </label>
         <p class="field-error" id="agreeTerms-error" role="alert"></p>
 
@@ -134,10 +138,10 @@
         <div class="tour-copy">
           <span class="tour-badge">Quick tour · 2 of 4</span>
           <h2 id="tour2Heading">See your stats at a glance</h2>
-          <p>Your dashboard header shows exactly how your gluten-free spending is trending — receipts scanned, gluten-free items found, and the extra costs you approve.</p>
+          <p>Your dashboard header shows exactly how your gluten-free spending is trending — receipts scanned, gluten-free items found, and any overcharges caught.</p>
           <ul class="tour-points">
             <li>Track receipts and gluten-free items over time</li>
-            <li>Review gluten-free price differences</li>
+            <li>Spot overcharges before they add up</li>
             <li>Numbers update automatically as you add receipts</li>
           </ul>
         </div>
@@ -156,7 +160,7 @@
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M12 8v5M12 16h.01" stroke="#DC2626" stroke-width="1.9" stroke-linecap="round"/><circle cx="12" cy="12" r="9" stroke="#DC2626" stroke-width="1.8"/></svg>
                 </span>
                 <span class="mock-stat-value" data-tour-counter data-target="184" data-prefix="$">$0</span>
-                <span class="mock-stat-label">Total Extra Cost</span>
+                <span class="mock-stat-label">Total Overcharge</span>
               </div>
             </div>
           </div>
@@ -169,10 +173,10 @@
         <div class="tour-copy">
           <span class="tour-badge">Quick tour · 3 of 4</span>
           <h2 id="tour3Heading">Browse your organized receipt history</h2>
-          <p>Every receipt lands in one searchable table. Tap any row to see the full breakdown — which items are gluten-free, their approved extra-cost comparisons, and what you paid.</p>
+          <p>Every receipt lands in one searchable table. Tap any row to see the full breakdown — which items are gluten-free, which qualify as tax deductible, and what you paid.</p>
           <ul class="tour-points">
             <li>Expand a receipt to see item-by-item detail</li>
-            <li>Review and correct gluten-free guesses and comparisons</li>
+            <li>Gluten-free and tax-deductible items are badged clearly</li>
             <li>Status shows what's processed and what needs review</li>
           </ul>
         </div>
@@ -219,10 +223,10 @@
         <div class="tour-copy">
           <span class="tour-badge">Quick tour · 4 of 4</span>
           <h2 id="tour4Heading">Search and sort anytime</h2>
-          <p>Looking for one specific trip to the store? Search by name or sort by newest, oldest, highest extra cost, or most items — no spreadsheets required.</p>
+          <p>Looking for one specific trip to the store? Search by name or sort by newest, oldest, highest savings, or most items — no spreadsheets required.</p>
           <ul class="tour-points">
             <li>Instant search across every receipt</li>
-            <li>Sort by date, extra cost, or item count</li>
+            <li>Sort by date, savings, or item count</li>
             <li>Perfect for pulling records together at tax time</li>
           </ul>
         </div>
@@ -234,7 +238,7 @@
                 <span>Trader Joe's</span>
               </div>
               <div class="mock-select">
-                Highest Extra Cost
+                Highest Savings
                 <svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
               </div>
             </div>
@@ -272,7 +276,6 @@
 
   </div>
 </main>
-<p class="privacy-notice">Receipt data may reveal health information. <a href="../legal/health-data.html">Health Data notice</a> · <a href="../legal/cookies.html">Cookies &amp; storage</a> · <a href="../legal/terms.html">Terms</a></p>
 
 <script src="../components/navbar.js" type="module"></script>
 <script src="../shared.js" type="module"></script>

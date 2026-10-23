@@ -1,12 +1,11 @@
 # Run with:  cd backend  then  python -m pytest
-# Offline contract tests. No real provider calls or credentials are needed.
+# These call the real Kroger API, so you need internet and the keys in .env.
 
 from fastapi.testclient import TestClient
 
 from server import app
-import kroger
 
-client = TestClient(app, headers={"Authorization": "Bearer test-session-not-a-real-token"})
+client = TestClient(app)
 
 
 def test_health_check():
@@ -15,11 +14,7 @@ def test_health_check():
     assert response.json() == {"status": "ok"}
 
 
-def test_search_returns_products_with_size_and_price(monkeypatch):
-    monkeypatch.setattr(kroger, "find_nearest_location", lambda zip: "store-1")
-    monkeypatch.setattr(kroger, "search_products", lambda *args, **kwargs: [
-        {"name": "White bread", "size": "20 oz", "price": 2.50, "promo_price": None}
-    ])
+def test_real_search_returns_products_with_size_and_price():
     response = client.get("/kroger/search", params={"zip": "45202", "term": "white bread"})
     assert response.status_code == 200
 
@@ -33,9 +28,8 @@ def test_search_returns_products_with_size_and_price(monkeypatch):
         assert product["price"] > 0
 
 
-def test_zip_with_no_kroger_store_returns_404(monkeypatch):
+def test_zip_with_no_kroger_store_returns_404():
     # Honolulu has no Kroger-banner stores
-    monkeypatch.setattr(kroger, "find_nearest_location", lambda zip: None)
     response = client.get("/kroger/search", params={"zip": "96813", "term": "bread"})
     assert response.status_code == 404
 

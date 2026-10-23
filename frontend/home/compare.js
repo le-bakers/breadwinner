@@ -1,3 +1,4 @@
+"use strict";
 // @ts-nocheck
 /* ============================================
    BreadWinner — "Compare with the regular version" popup
@@ -120,7 +121,7 @@
         setSearchNote('Searching…');
         searchBtn.disabled = true;
         try {
-            const response = await window.BreadWinner.apiFetch(current.apiBase + '/kroger/search?zip=' + zip + '&term=' + encodeURIComponent(term));
+            const response = await fetch(current.apiBase + '/kroger/search?zip=' + zip + '&term=' + encodeURIComponent(term));
             if (response.status === 404)
                 setSearchNote('No Kroger-family store is near that zip code. Use "Type it in" instead.');
             else if (!response.ok)
@@ -196,7 +197,7 @@
         let answer = null;
         let refused = '';
         try {
-            const response = await window.BreadWinner.apiFetch(apiBase + '/deduction?' + params.toString());
+            const response = await fetch(apiBase + '/deduction?' + params.toString());
             if (response.ok)
                 answer = await response.json();
             else
@@ -225,7 +226,7 @@
         };
         // With no regular version there is no math to show; the server's note already says why
         const lines = source === 'none' ? answer.warnings : [explain(outcome, line.price)].concat(answer.warnings);
-        showOutcome(answer.warnings.length ? 'warn' : 'ok', money(answer.deduction) + ' extra cost', lines);
+        showOutcome(answer.warnings.length ? 'warn' : 'ok', money(answer.deduction) + ' overcharge', lines);
         saveBtn.disabled = false;
     }
     // One plain sentence showing where the number came from

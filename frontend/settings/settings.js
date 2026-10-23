@@ -42,7 +42,7 @@
             const data = {};
             try {
                 Object.keys(localStorage)
-                    .filter((k) => ['breadwinner_user_name', 'breadwinner_user_email', 'breadwinner_user_photo', 'breadwinner_member_since', 'breadwinner_settings', 'breadwinner_zip', 'breadwinner_receipts'].includes(k))
+                    .filter((k) => k.startsWith('breadwinner_') && k !== 'breadwinner_auth') // never put the login key in a file
                     .forEach((k) => {
                     const raw = localStorage.getItem(k);
                     try {
@@ -57,7 +57,7 @@
             // Signed in with an account: the receipts are in the database, not on this device
             if (BW.cloud.enabled) {
                 try {
-                    Object.assign(data, await BW.cloud.exportAccountData());
+                    data.receipts = await BW.cloud.loadReceipts();
                 }
                 catch (error) {
                     if (BW.toast)
@@ -102,13 +102,6 @@
             clearModal.close();
     });
     document.getElementById('clearDataConfirm').addEventListener('click', () => {
-        for (const storageName of ['sessionStorage', 'localStorage']) {
-            try {
-                const storage = window[storageName];
-                Object.keys(storage).filter((key) => key.startsWith('breadwinner_')).forEach((key) => storage.removeItem(key));
-            }
-            catch (_) { }
-        }
         try {
             Object.keys(localStorage)
                 .filter((k) => k.startsWith('breadwinner_'))
@@ -149,26 +142,6 @@
             BW.signOut();
         window.location.href = '../signin/signin.html';
     });
-    document.getElementById('withdrawConsentBtn')?.addEventListener('click', async () => {
-        if (!confirm('Withdraw receipt processing consent? Tracking will stop until you consent again. Saved receipts remain until you delete them or your account. You can export first.'))
-            return;
-        try {
-            await BW.cloud.withdrawConsent();
-            location.href = '../signin/signin.html';
-        }
-        catch (error) {
-            BW.toast(error.message);
-        }
-    });
-    if (BW.cloud.enabled)
-        BW.cloud.getUser().then((user) => {
-            if (!user)
-                location.href = '../signin/signin.html';
-            else
-                document.querySelector('main').hidden = false;
-        }).catch(() => BW.toast('Account verification is unavailable. Please try again.'));
-    else
-        document.querySelector('main').hidden = false;
     /* ---------- Sign out ---------- */
     document.getElementById('signOutBtn').addEventListener('click', async () => {
         if (BW.cloud.enabled) {
@@ -185,7 +158,7 @@
     if (BW.cloud.enabled) {
         const privacyNote = document.querySelector('#privacy .section-card-header p');
         if (privacyNote)
-            privacyNote.textContent = 'Your account stores receipts with access rules that separate users. Review data controls and notices below.';
+            privacyNote.textContent = 'Your receipts are saved to your private account. Only you can see them.';
     }
     renderFromSettings();
 })();
@@ -287,7 +260,6 @@
     function applyPhotoToAvatar(el, photo) {
         if (!el)
             return;
-        photo = BW.safeImage(photo);
         el.classList.toggle('avatar-photo', !!photo);
         if (photo) {
             el.style.background = 'url("' + photo + '") center / cover no-repeat';
@@ -308,9 +280,9 @@
     async function handleAvatarFile(file) {
         if (!file)
             return;
-        if (!['image/jpeg', 'image/png', 'image/webp'].includes(file.type) || file.size > 6 * 1024 * 1024) {
+        if (!file.type.startsWith('image/')) {
             if (BW.toast)
-                BW.toast('Choose a JPEG, PNG, or WebP of 6 MB or smaller.');
+                BW.toast('Please choose an image file');
             return;
         }
         try {
@@ -431,29 +403,16 @@
         });
     }
     if (profileForm) {
-        profileForm.addEventListener('submit', async (e) => {
+        profileForm.addEventListener('submit', (e) => {
             e.preventDefault();
             if (!validate())
                 return;
-            let confirmEmail = false;
-            if (BW.cloud.enabled) {
-                try {
-                    confirmEmail = await BW.cloud.updateProfile(fullNameInput.value.trim(), emailInput.value.trim());
-                }
-                catch (error) {
-                    if (BW.toast)
-                        BW.toast(error.message);
-                    return;
-                }
-            }
-            else {
-                set(STORAGE.name, fullNameInput.value.trim());
-                set(STORAGE.email, emailInput.value.trim());
-            }
+            set(STORAGE.name, fullNameInput.value.trim());
+            set(STORAGE.email, emailInput.value.trim());
             renderSummary();
             exitEditMode();
             if (BW.toast)
-                BW.toast(confirmEmail ? 'Profile saved. Check your email to confirm the address change.' : 'Profile saved');
+                BW.toast('Profile saved');
         });
     }
     /* ---------- Keep the top-nav avatar in sync with the stored name ---------- */
@@ -466,10 +425,5 @@
         if (avatarPreview)
             avatarPreview.style.background = AVATAR_BG;
         refreshAvatarPhoto();
-        window.addEventListener('breadwinner:identity-changed', () => {
-            loadFieldsFromStorage();
-            renderSummary();
-            refreshAvatarPhoto();
-        });
     }
 })();

@@ -119,7 +119,7 @@
     searchBtn.disabled = true;
 
     try {
-      const response = await window.BreadWinner.apiFetch(current.apiBase + '/kroger/search?zip=' + zip + '&term=' + encodeURIComponent(term));
+      const response = await fetch(current.apiBase + '/kroger/search?zip=' + zip + '&term=' + encodeURIComponent(term));
       if (response.status === 404) setSearchNote('No Kroger-family store is near that zip code. Use "Type it in" instead.');
       else if (!response.ok) setSearchNote('Kroger could not be reached right now. Try again, or use "Type it in".');
       else {
@@ -193,7 +193,7 @@
     let answer = null;
     let refused = '';
     try {
-      const response = await window.BreadWinner.apiFetch(apiBase + '/deduction?' + params.toString());
+      const response = await fetch(apiBase + '/deduction?' + params.toString());
       if (response.ok) answer = await response.json();
       else refused = (await response.json()).detail;
     } catch (error) { /* the server is off; handled just below */ }
@@ -220,7 +220,7 @@
     };
     // With no regular version there is no math to show; the server's note already says why
     const lines = source === 'none' ? answer.warnings : [explain(outcome, line.price)].concat(answer.warnings);
-    showOutcome(answer.warnings.length ? 'warn' : 'ok', money(answer.deduction) + ' extra cost', lines);
+    showOutcome(answer.warnings.length ? 'warn' : 'ok', money(answer.deduction) + ' overcharge', lines);
     saveBtn.disabled = false;
   }
 

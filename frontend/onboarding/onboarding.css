@@ -510,6 +510,3 @@ body { min-height: 100vh; }
   #backBtn { order: 1; }
   #nextBtn { order: 2; margin-left: auto; }
 }
-.adult-confirmation { margin: 4px 0 24px; font-size: 14px; line-height: 1.5; }
-.adult-confirmation .checkbox { align-items: flex-start; }
-.adult-confirmation .checkbox-box { margin-top: 2px; }
