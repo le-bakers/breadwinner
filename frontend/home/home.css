@@ -932,7 +932,7 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
   .mobile-view[hidden] { display: block; }
 }
 @media (max-width: 860px) {
-  .dashboard { padding-bottom: 200px; }
+  .dashboard { padding-bottom: calc(220px + env(safe-area-inset-bottom)); }
   .fab-wrapper { bottom: 88px; }
   .dash-navbar .mobile-menu { display: none; }
 
