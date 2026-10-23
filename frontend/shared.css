@@ -342,7 +342,7 @@ input, select { font-family: inherit; }
   transition: background 0.2s var(--ease-out), border-color 0.2s var(--ease-out),
     color 0.2s var(--ease-out), transform 0.2s var(--ease-out);
 }
-.msn-button:hover { transform: translateY(-1px); }
+
 .msn-button-primary {
   background: var(--primary);
   color: #fff;
@@ -771,7 +771,7 @@ input, select { font-family: inherit; }
    Mobile bottom navigation
    ============================================ */
 .mobile-bottom-nav {
-  display: none;
+  display: flex;
 }
 
 .bottom-nav-item {
@@ -805,9 +805,9 @@ input, select { font-family: inherit; }
 
 @media (max-width: 860px) {
   .mobile-bottom-nav {
-    position: fixed;
+    position: sticky;
     left: 50%;
-    bottom: calc(16px + env(safe-area-inset-bottom));
+    bottom: 0;
     z-index: 95;
     display: flex;
     align-items: center;
@@ -819,10 +819,9 @@ input, select { font-family: inherit; }
     background: rgba(255, 255, 255, 0.78);
     border: 1px solid rgba(255, 255, 255, 0.72);
     border-radius: var(--radius-full);
-    box-shadow: 0 12px 34px rgba(31, 41, 55, 0.14),
-      0 2px 8px rgba(31, 41, 55, 0.06);
-    backdrop-filter: blur(22px) saturate(175%);
-    -webkit-backdrop-filter: blur(22px) saturate(175%);
+    box-shadow: 0 -4px 16px rgba(31, 41, 55, 0.08);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
   }
 
   .bottom-nav-item { flex: 1 1 0; width: auto; }
