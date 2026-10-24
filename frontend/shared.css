@@ -843,4 +843,30 @@ body:has(.msn-nav) { padding-top: 74px; }
     border-radius: var(--radius-full);
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
   }
+
+  @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+    .mobile-bottom-nav {
+      background: color-mix(in srgb, var(--card) 72%, transparent);
+      border-color: color-mix(in srgb, var(--card) 65%, var(--border));
+      -webkit-backdrop-filter: blur(20px) saturate(130%);
+      backdrop-filter: blur(20px) saturate(130%);
+      box-shadow: 0 8px 24px rgba(15, 23, 18, 0.12), inset 0 1px 0 rgba(255, 255, 255, 0.55);
+    }
+
+    :root[data-theme="dark"] .mobile-bottom-nav {
+      background: color-mix(in srgb, var(--card) 78%, transparent);
+      border-color: color-mix(in srgb, var(--border) 75%, transparent);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.07);
+    }
+  }
+
+  @media (prefers-reduced-transparency: reduce) {
+    .mobile-bottom-nav,
+    :root[data-theme="dark"] .mobile-bottom-nav {
+      background: var(--card);
+      border-color: var(--border);
+      -webkit-backdrop-filter: none;
+      backdrop-filter: none;
+    }
+  }
 }
