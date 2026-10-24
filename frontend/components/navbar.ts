@@ -11,51 +11,43 @@
       '<a href="../about/about.html">About us</a>' +
     '</div>';
 
-  let isSignedIn = false;
-  try {
-    isSignedIn = !!localStorage.getItem('breadwinner_session');
-  } catch (e) {}
+  function getSignedInState() {
+    try {
+      return !!localStorage.getItem('breadwinner_session');
+    } catch (e) {
+      return false;
+    }
+  }
 
-  const landingActions = isSignedIn
-    ? '<div class="msn-actions"><a class="msn-button msn-button-primary" href="../home/home.html">Continue to Dashboard</a><button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button></div>'
-    : '<div class="msn-actions"><a class="msn-button msn-button-ghost" href="../signin/signin.html">Sign In</a><a class="msn-button msn-button-primary" href="../onboarding/onboarding.html">Start Free</a><button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button></div>';
+  function getLandingActions() {
+    const actions = getSignedInState()
+      ? '<a class="msn-button msn-button-primary" href="../home/home.html">Continue to Dashboard</a>'
+      : '<a class="msn-button msn-button-ghost" href="../signin/signin.html">Sign In</a><a class="msn-button msn-button-primary" href="../onboarding/onboarding.html">Start Free</a>';
+    return '<div class="msn-actions">' + actions
+      + '<button class="nav-toggle" aria-label="Toggle menu" aria-expanded="false"><span></span><span></span><span></span></button></div>';
+  }
 
-  const landingMobileActions = isSignedIn
-    ? '<div class="nav-actions"><a href="../home/home.html" class="btn btn-primary">Continue to Dashboard</a></div>'
-    : '<div class="nav-actions"><a href="../signin/signin.html" class="btn btn-secondary">Sign In</a><a href="../onboarding/onboarding.html" class="btn btn-primary">Start Free</a></div>';
+  function getLandingMobileActions() {
+    return getSignedInState()
+      ? '<div class="nav-actions"><a href="../home/home.html" class="btn btn-primary">Continue to Dashboard</a></div>'
+      : '<div class="nav-actions"><a href="../signin/signin.html" class="btn btn-secondary">Sign In</a><a href="../onboarding/onboarding.html" class="btn btn-primary">Start Free</a></div>';
+  }
 
-  const landing =
-    '<nav class="msn-nav" aria-label="Primary navigation">' +
+  function buildLandingNavbar() {
+    return '<nav class="msn-nav" aria-label="Primary navigation">' +
       '<div class="msn-shell">' +
         '<a class="msn-brand logo" href="../index/index.html#top" aria-label="BreadWinner, back to top">' + logo + '</a>' +
         landingLinks +
-        landingActions +
+        getLandingActions() +
       '</div>' +
     '</nav>' +
     '<div class="mobile-menu" id="mobileMenu">' +
       '<a href="../index/index.html#how-it-works">How it works</a>' +
       '<a href="../index/index.html#features">Features</a>' +
       '<a href="../about/about.html">About us</a>' +
-      landingMobileActions +
+      getLandingMobileActions() +
     '</div>';
-
-
-
-
-    const other =
-    '<nav class="msn-nav" aria-label="Primary navigation">' +
-      '<div class="msn-shell">' +
-        '<a class="msn-brand logo" href="../index/index.html#top" aria-label="BreadWinner, back to top">' + logo + '</a>' +
-        landingLinks +
-        landingActions +
-      '</div>' +
-    '</nav>' +
-    '<div class="mobile-menu" id="mobileMenu">' +
-      '<a href="../index/index.html#how-it-works">How it works</a>' +
-      '<a href="../index/index.html#features">Features</a>' +
-      '<a href="../about/about.html">About us</a>' +
-      landingMobileActions +
-    '</div>';
+  }
 
   const appLinks =
     '<div class="msn-links">' +
@@ -78,16 +70,17 @@
     '</nav>';
 
   const variants = {
-    landing: landing,
+    landing: buildLandingNavbar,
     home: app,
     dashboard: app,
-    other: other
+    other: buildLandingNavbar
   };
 
   document.querySelectorAll('[data-navbar]').forEach(function (placeholder) {
-    const variant = variants[placeholder.dataset.navbar] || landing;
+    const variant = variants[placeholder.dataset.navbar] || buildLandingNavbar;
+    const markup = typeof variant === 'function' ? variant() : variant;
     const template = document.createElement('template');
-    template.innerHTML = variant.trim();
+    template.innerHTML = markup.trim();
     placeholder.replaceWith(template.content);
   });
 
