@@ -290,7 +290,7 @@
           approveBtn.type = 'button';
           approveBtn.className = 'badge badge-compare badge-approve';
           approveBtn.textContent = 'Approve +' + money(draft.deduction);
-          approveBtn.setAttribute('aria-label', 'Approve ' + money(draft.deduction) + ' overcharge for ' + line.name);
+          approveBtn.setAttribute('aria-label', 'Approve ' + money(draft.deduction) + ' extra cost for ' + line.name);
           approveBtn.title = draft.warnings.concat('Press to count this suggestion.').join(' ');
           approveBtn.addEventListener('click', () => {
             approve(line);
@@ -305,7 +305,7 @@
         b.type = 'button';
         if (line.compare) {
           b.className = 'badge badge-tax' + (line.compare.warnings.length ? ' badge-check' : '');
-          b.textContent = '+' + money(line.compare.deduction) + ' overcharge';
+          b.textContent = '+' + money(line.compare.deduction) + ' extra cost';
           b.title = line.compare.warnings.concat('Press to change the comparison.').join(' ');
         } else if (draft) {
           b.className = 'badge badge-change';
@@ -535,7 +535,7 @@
 
     const total = expand.querySelector('.receipt-total');
     total.hidden = !receipt.gfItems;
-    total.textContent = 'Overcharge counted on this receipt: ' + money(receipt.overcharge || 0)
+    total.textContent = 'Extra cost counted on this receipt: ' + money(receipt.overcharge || 0)
       + '. An organized estimate, not tax advice. Confirm with a tax professional.';
   }
 
@@ -669,7 +669,7 @@
     const receipts = RECEIPTS.filter((receipt) => !receipt.processing);
     const headers = [
       'Receipt name', 'Receipt date', 'Item', 'Item price', 'Quantity',
-      'Gluten-free', 'Deduction estimate', 'Receipt overcharge',
+      'Gluten-free', 'Deduction estimate', 'Receipt extra cost',
       'Receipt subtotal', 'Review status', 'Notes'
     ];
     const rows = [headers];
