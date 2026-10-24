@@ -19,3 +19,8 @@ services:
         sync: false
       - key: KROGER_CLIENT_SECRET
         sync: false
+      # Kroger's firewall blocks Render, so store/product lookups go through Vercel (frontend/api/kroger.py)
+      - key: KROGER_PROXY_URL
+        value: https://bread-winner-fawn.vercel.app/api/kroger
+      - key: KROGER_PROXY_KEY
+        sync: false

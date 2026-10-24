@@ -1,6 +1,4 @@
 import os
-import ssl
-import sys
 
 import requests
 from fastapi import FastAPI, HTTPException, UploadFile
@@ -33,47 +31,6 @@ app.add_middleware(
 @app.get("/")
 def health_check():
     return {"status": "ok"}
-
-
-@app.get("/kroger/check")
-def kroger_check():
-    """TEMPORARY test page: tries each Kroger step on its own, to learn exactly what Kroger refuses on this server.
-    Shows no keys and no user data. Delete once the Kroger problem is solved."""
-    report = {"python": sys.version.split()[0], "openssl": ssl.OPENSSL_VERSION, "requests": requests.__version__}
-    try:
-        report["server_address"] = requests.get("https://api.ipify.org", timeout=10).text
-    except requests.RequestException:
-        report["server_address"] = "unknown"
-
-    try:
-        token = kroger.get_access_token()
-        report["1_login"] = "worked"
-    except requests.RequestException as error:
-        report["1_login"] = str(error)
-        return report
-
-    # Store 09700409 is the Harris Teeter nearest zip 20871 (looked up from Charlie's laptop, 2026-10-23)
-    steps = {
-        "2_store_lookup_by_zip": ("/locations", {"filter.zipCode.near": "20871", "filter.limit": 1}),
-        "3_store_lookup_by_id": ("/locations/09700409", {}),
-        "4_product_search_at_store": ("/products", {"filter.term": "carrots", "filter.locationId": "09700409", "filter.limit": 1}),
-        "5_product_search_no_store": ("/products", {"filter.term": "carrots", "filter.limit": 1}),
-    }
-    for name, (path, params) in steps.items():
-        try:
-            response = requests.get(
-                kroger.BASE_URL + path,
-                headers={"Authorization": f"Bearer {token}", "User-Agent": kroger.USER_AGENT},
-                params=params,
-                timeout=10,
-            )
-            result = str(response.status_code)
-            if "Access Denied" in response.text:
-                result += " (firewall page)"
-            report[name] = result
-        except requests.RequestException as error:
-            report[name] = str(error)
-    return report
 
 
 @app.get("/kroger/search")

@@ -10,7 +10,13 @@ CLIENT_SECRET = os.getenv("KROGER_CLIENT_SECRET")
 TOKEN_URL = "https://api.kroger.com/v1/connect/oauth2/token"
 BASE_URL = "https://api.kroger.com/v1"
 TIMEOUT = 10  # seconds to wait for Kroger before giving up
-USER_AGENT = "BreadWinner/1.0 (celiac receipt tracker)"  # firewalls often block the default "python-requests" name
+USER_AGENT = "BreadWinner/1.0 (celiac receipt tracker)"
+
+# Kroger's firewall refuses store and product requests from Render's address (but not the login), and accepts
+# Vercel's (tested 2026-10-23). So on Render these requests go through our forwarder on Vercel
+# (frontend/api/kroger.py). Unset on the laptop = ask Kroger directly.
+PROXY_URL = os.getenv("KROGER_PROXY_URL")
+PROXY_KEY = os.getenv("KROGER_PROXY_KEY")  # shared secret, so only our server can use the forwarder
 
 _token_cache = {"access_token": None, "expires_at": 0}
 
@@ -22,6 +28,18 @@ def check_reply(response):
     except requests.HTTPError:
         print(f"Kroger said {response.status_code}: {response.text[:300]}")  # never contains our keys
         raise
+
+
+def ask_kroger(path, params):
+    """Ask Kroger for store or product data (path like "/locations"), through the Vercel forwarder when one is set."""
+    headers = {"Authorization": f"Bearer {get_access_token()}", "User-Agent": USER_AGENT}
+    if PROXY_URL:
+        headers["X-Proxy-Key"] = PROXY_KEY
+        response = requests.get(PROXY_URL, headers=headers, params={**params, "path": path}, timeout=TIMEOUT)
+    else:
+        response = requests.get(BASE_URL + path, headers=headers, params=params, timeout=TIMEOUT)
+    check_reply(response)
+    return response.json()["data"]
 
 
 def get_access_token():
@@ -53,15 +71,7 @@ def find_nearest_location(zip_code):
     if zip_code in _location_cache:
         return _location_cache[zip_code]
 
-    token = get_access_token()
-    response = requests.get(
-        f"{BASE_URL}/locations",
-        headers={"Authorization": f"Bearer {token}", "User-Agent": USER_AGENT},
-        params={"filter.zipCode.near": zip_code, "filter.limit": 1},
-        timeout=TIMEOUT,
-    )
-    check_reply(response)
-    locations = response.json()["data"]
+    locations = ask_kroger("/locations", {"filter.zipCode.near": zip_code, "filter.limit": 1})
 
     # None means no Kroger-banner store is near that zip code
     location_id = locations[0]["locationId"] if locations else None
@@ -70,19 +80,11 @@ def find_nearest_location(zip_code):
 
 def search_products(search_term, location_id, limit=3):
     """Search for products at a specific store, return top matches with size + price."""
-    token = get_access_token()
-    response = requests.get(
-        f"{BASE_URL}/products",
-        headers={"Authorization": f"Bearer {token}", "User-Agent": USER_AGENT},
-        params={
-            "filter.term": search_term,
-            "filter.locationId": location_id,
-            "filter.limit": limit,
-        },
-        timeout=TIMEOUT,
-    )
-    check_reply(response)
-    products = response.json()["data"]
+    products = ask_kroger("/products", {
+        "filter.term": search_term,
+        "filter.locationId": location_id,
+        "filter.limit": limit,
+    })
 
     results = []
     for product in products:
