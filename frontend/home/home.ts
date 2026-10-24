@@ -1386,7 +1386,7 @@ import { displayMetrics } from './metrics.js';
   if (cloud.enabled) {
     (async function () {
       const user = await cloud.getUser();
-      if (!user) { window.location.href = '../signin/signin.html'; return; }
+      if (!user) { window.location.href = '/signin'; return; }
 
       // The name can arrive only now (first visit after Google sign-in)
       const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || '';

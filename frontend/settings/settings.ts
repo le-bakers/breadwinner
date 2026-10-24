@@ -101,7 +101,7 @@
         .forEach((k) => localStorage.removeItem(k));
     } catch (e) { /* storage unavailable */ }
     clearModal.close();
-    window.location.href = '../signin/signin.html';
+    window.location.href = '/signin';
   });
 
   /* ---------- Delete account (danger zone: wipe + sign out + redirect) ---------- */
@@ -127,7 +127,7 @@
         .forEach((k) => localStorage.removeItem(k));
     } catch (e) { /* storage unavailable */ }
     if (BW.signOut) BW.signOut();
-    window.location.href = '../signin/signin.html';
+    window.location.href = '/signin';
   });
 
   /* ---------- Sign out ---------- */
@@ -136,7 +136,7 @@
       try { await BW.cloud.signOut(); } catch (e) { /* offline: still forget the login on this device below */ }
     }
     if (BW.signOut) BW.signOut();
-    window.location.href = '../signin/signin.html';
+    window.location.href = '/signin';
   });
 
   // Say truthfully where the data lives

@@ -239,7 +239,7 @@
                             document.querySelector('#stepDone .step-sub').textContent =
                                 'One last step: we emailed a link to ' + email.value.trim() + '. Click it to confirm your account, then sign in.';
                             const doneLink = document.querySelector('#stepDone a.btn');
-                            doneLink.setAttribute('href', '../signin/signin.html');
+                            doneLink.setAttribute('href', '/signin');
                             doneLink.firstChild.textContent = 'Go to sign in ';
                         }
                     }

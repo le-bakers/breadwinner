@@ -1,8 +1,26 @@
 {
+  "redirects": [
+    { "source": "/index/index.html", "destination": "/", "permanent": false },
+    { "source": "/home/home.html", "destination": "/home", "permanent": false },
+    { "source": "/history/history.html", "destination": "/history", "permanent": false },
+    { "source": "/settings/settings.html", "destination": "/settings", "permanent": false },
+    { "source": "/signin/signin.html", "destination": "/signin", "permanent": false },
+    { "source": "/onboarding/onboarding.html", "destination": "/signup", "permanent": false },
+    { "source": "/about/about.html", "destination": "/about", "permanent": false },
+    { "source": "/contactus/contactus.html", "destination": "/contact", "permanent": false },
+    { "source": "/legal/privacy.html", "destination": "/privacy", "permanent": false },
+    { "source": "/legal/terms.html", "destination": "/terms", "permanent": false }
+  ],
   "rewrites": [
-    {
-      "source": "/",
-      "destination": "/index/index.html"
-    }
+    { "source": "/", "destination": "/index/index.html" },
+    { "source": "/home", "destination": "/home/home.html" },
+    { "source": "/history", "destination": "/history/history.html" },
+    { "source": "/settings", "destination": "/settings/settings.html" },
+    { "source": "/signin", "destination": "/signin/signin.html" },
+    { "source": "/signup", "destination": "/onboarding/onboarding.html" },
+    { "source": "/about", "destination": "/about/about.html" },
+    { "source": "/contact", "destination": "/contactus/contactus.html" },
+    { "source": "/privacy", "destination": "/legal/privacy.html" },
+    { "source": "/terms", "destination": "/legal/terms.html" }
   ]
 }

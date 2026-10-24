@@ -8,7 +8,7 @@
 
   const BW = window.BreadWinner || {};
   const cloud = BW.cloud;  // cloud.js: real accounts when Supabase keys are set, otherwise demo mode
-  const HOME = '../home/home.html';
+  const HOME = '/home';
 
   // One line above the Sign In button for "wrong password", "reset email sent", and so on
   const formMessage = document.getElementById('form-message');

@@ -109,7 +109,7 @@
         }
         catch (e) { /* storage unavailable */ }
         clearModal.close();
-        window.location.href = '../signin/signin.html';
+        window.location.href = '/signin';
     });
     /* ---------- Delete account (danger zone: wipe + sign out + redirect) ---------- */
     const deleteAccountModal = BW.confirmModal(document.getElementById('deleteAccountModal'));
@@ -140,7 +140,7 @@
         catch (e) { /* storage unavailable */ }
         if (BW.signOut)
             BW.signOut();
-        window.location.href = '../signin/signin.html';
+        window.location.href = '/signin';
     });
     /* ---------- Sign out ---------- */
     document.getElementById('signOutBtn').addEventListener('click', async () => {
@@ -152,7 +152,7 @@
         }
         if (BW.signOut)
             BW.signOut();
-        window.location.href = '../signin/signin.html';
+        window.location.href = '/signin';
     });
     // Say truthfully where the data lives
     if (BW.cloud.enabled) {

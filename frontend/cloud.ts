@@ -221,4 +221,24 @@
       await this.signOut();
     }
   };
+
+  /* ---------- Private pages ----------
+     A page marked <html data-protected> stays hidden (see shared.css) until we know
+     the visitor is signed in. Otherwise they are sent to the sign-in page. */
+  if (document.documentElement.hasAttribute('data-protected')) {
+    const checkLogin = async () => {
+      let signedIn = BW.isSignedIn();
+      if (signedIn && enabled) signedIn = Boolean(await BW.cloud.getUser());
+      if (signedIn) {
+        document.documentElement.classList.add('auth-ok');
+      } else {
+        document.documentElement.classList.remove('auth-ok');
+        BW.signOut();  // forget a leftover "signed in" note so the sign-in page can't bounce back
+        window.location.replace('/signin');
+      }
+    };
+    checkLogin();
+    // Back button after signing out can show the old page from memory: check again
+    window.addEventListener('pageshow', (event) => { if (event.persisted) checkLogin(); });
+  }
 })();

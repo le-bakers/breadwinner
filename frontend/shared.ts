@@ -124,11 +124,8 @@ window.BreadWinner = window.BreadWinner || {};
   // When signed in, every "Sign In" / "Start Free" link points to the dashboard
   // instead of the sign-in page (navbars, mobile menus, footers on all pages).
   if (BW.isSignedIn()) {
-    // When signed in, point every "Sign In" / "Start Free" link to the dashboard.
-    // Because pages now live in their own subfolders, resolve the home page
-    // relative to each existing sign-in link's current (relative) path.
-    document.querySelectorAll('a[href$="signin.html"]').forEach((a) => {
-      a.setAttribute('href', a.getAttribute('href').replace(/signin\/signin\.html$/, 'home/home.html'));
+    document.querySelectorAll('a[href="/signin"]').forEach((a) => {
+      a.setAttribute('href', '/home');
     });
   }
   /* ---------- Sitewide Settings (persisted under breadwinner_settings) ---------- */

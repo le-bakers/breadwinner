@@ -1411,7 +1411,7 @@ import { displayMetrics } from './metrics.js';
         (async function () {
             const user = await cloud.getUser();
             if (!user) {
-                window.location.href = '../signin/signin.html';
+                window.location.href = '/signin';
                 return;
             }
             // The name can arrive only now (first visit after Google sign-in)

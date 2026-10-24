@@ -8,9 +8,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="../shared.css">
-<link rel="stylesheet" href="./index.css">
-<link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
+<link rel="stylesheet" href="/shared.css">
+<link rel="stylesheet" href="/index/index.css">
+<link rel="icon" type="image/x-icon" href="/images/breadwinner_icon.png">
 </head>
 <body>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -29,7 +29,7 @@
     </div>
     <div class="container hero-inner">
       <div class="hero-copy">
-        <img src="../images/breadwinner_logo_white.png" alt="BreadWinner" class="hero-title-img">
+        <img src="/images/breadwinner_logo_white.png" alt="BreadWinner" class="hero-title-img">
         <p class="hero-subtitle">Conveniently Track Gluten-Free Costs</p>
         <p class="hero-desc">
           Snap a photo of any grocery receipt and BreadWinner sorts every item:
@@ -38,7 +38,7 @@
           all year long.
         </p>
         <div class="hero-actions">
-          <a href="../signin/signin.html" class="btn btn-primary btn-lg">Start Free</a>
+          <a href="/signin" class="btn btn-primary btn-lg">Start Free</a>
           <a href="#how-it-works" class="btn btn-secondary btn-lg">Learn More</a>
         </div>
       </div>
@@ -111,7 +111,7 @@
 
       <div class="timeline">
         <div class="timeline-row reveal">
-          <div class="timeline-media"><img src="../images/placeholder-scan.svg" alt="Photographing a grocery receipt with a phone" loading="lazy"></div>
+          <div class="timeline-media"><img src="/images/placeholder-scan.svg" alt="Photographing a grocery receipt with a phone" loading="lazy"></div>
           <div class="timeline-copy">
             <span class="step-num">SCAN IT</span>
             <h3>Upload or take a picture of your receipt</h3>
@@ -120,7 +120,7 @@
         </div>
 
         <div class="timeline-row reverse reveal">
-          <div class="timeline-media"><img src="../images/placeholder-detect.svg" alt="Gluten-free items being highlighted with checkmarks" loading="lazy"></div>
+          <div class="timeline-media"><img src="/images/placeholder-detect.svg" alt="Gluten-free items being highlighted with checkmarks" loading="lazy"></div>
           <div class="timeline-copy">
             <span class="step-num">READ IT</span>
             <h3>AI identifies gluten-free items</h3>
@@ -129,7 +129,7 @@
         </div>
 
         <div class="timeline-row reveal">
-          <div class="timeline-media"><img src="../images/placeholder-tax.svg" alt="Tax deductible gluten-free items grouped into a folder" loading="lazy"></div>
+          <div class="timeline-media"><img src="/images/placeholder-tax.svg" alt="Tax deductible gluten-free items grouped into a folder" loading="lazy"></div>
           <div class="timeline-copy">
             <span class="step-num">CRUNCH IT</span>
             <h3>Eligible tax deductions are grouped</h3>
@@ -138,7 +138,7 @@
         </div>
 
         <div class="timeline-row reverse reveal">
-          <div class="timeline-media"><img src="../images/placeholder-dashboard.svg" alt="Organized reports and spending statistics dashboard" loading="lazy"></div>
+          <div class="timeline-media"><img src="/images/placeholder-dashboard.svg" alt="Organized reports and spending statistics dashboard" loading="lazy"></div>
           <div class="timeline-copy">
             <span class="step-num">SEE IT</span>
             <h3>View organized reports and statistics</h3>
@@ -196,7 +196,7 @@
       <div class="cta-card reveal-scale">
         <h2>Ready to save money?</h2>
         <p>It's time to start winning the bread.</p>
-        <a href="../signin/signin.html" class="btn btn-primary btn-lg">Start Free</a>
+        <a href="/signin" class="btn btn-primary btn-lg">Start Free</a>
       </div>
     </div>
   </section>
@@ -205,10 +205,10 @@
 
 <div data-footer></div>
 
-<script src="../components/navbar.js" type="module"></script>
-<script src="../components/footer.js" type="module"></script>
-<script src="../shared.js" type="module"></script>
-<script src="./index.js" type="module"></script>
+<script src="/components/navbar.js" type="module"></script>
+<script src="/components/footer.js" type="module"></script>
+<script src="/shared.js" type="module"></script>
+<script src="/index/index.js" type="module"></script>
 <script>
   function handleCredentialResponse(response) {
     console.log("Encoded JWT ID token: " + response.credential);

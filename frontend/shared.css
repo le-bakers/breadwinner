@@ -870,3 +870,6 @@ body:has(.msn-nav) { padding-top: 74px; }
     }
   }
 }
+
+/* Private pages stay hidden until cloud.js confirms the visitor is signed in */
+html[data-protected]:not(.auth-ok) body { visibility: hidden; }
