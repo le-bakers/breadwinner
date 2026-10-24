@@ -290,7 +290,7 @@
           approveBtn.type = 'button';
           approveBtn.className = 'badge badge-compare badge-approve';
           approveBtn.textContent = 'Approve +' + money(draft.deduction);
-          approveBtn.setAttribute('aria-label', 'Approve ' + money(draft.deduction) + ' saved for ' + line.name);
+          approveBtn.setAttribute('aria-label', 'Approve ' + money(draft.deduction) + ' deduction for ' + line.name);
           approveBtn.title = draft.warnings.concat('Press to count this suggestion.').join(' ');
           approveBtn.addEventListener('click', () => {
             approve(line);
@@ -305,7 +305,7 @@
         b.type = 'button';
         if (line.compare) {
           b.className = 'badge badge-tax' + (line.compare.warnings.length ? ' badge-check' : '');
-          b.textContent = '+' + money(line.compare.deduction) + ' saved';
+          b.textContent = '+' + money(line.compare.deduction) + ' deduction';
           b.title = line.compare.warnings.concat('Press to change the comparison.').join(' ');
         } else if (draft) {
           b.className = 'badge badge-change';
@@ -535,7 +535,7 @@
 
     const total = expand.querySelector('.receipt-total');
     total.hidden = !receipt.gfItems;
-    total.textContent = 'Saved on this receipt: ' + money(receipt.overcharge || 0)
+    total.textContent = 'Potential deduction on this receipt: ' + money(receipt.overcharge || 0)
       + '. An organized estimate, not tax advice. Confirm with a tax professional.';
   }
 
@@ -669,14 +669,14 @@
     const receipts = RECEIPTS.filter((receipt) => !receipt.processing);
     const headers = [
       'Receipt name', 'Receipt date', 'Item', 'Item price', 'Quantity',
-      'Gluten-free', 'Deduction estimate', 'Receipt saved',
+      'Gluten-free', 'Item potential deduction', 'Receipt potential deduction',
       'Receipt subtotal', 'Review status', 'Notes'
     ];
     const rows = [headers];
 
     receipts.forEach((receipt) => {
       const lines = receipt.lines && receipt.lines.length ? receipt.lines : [null];
-      lines.forEach((line) => {
+      lines.forEach((line, index) => {
         const deduction = line && line.compare && line.gf ? Number(line.compare.deduction || 0) : 0;
         const notes = line && line.unsure
           ? 'Scanner was not confident about this item; verify against the receipt.'
@@ -691,7 +691,7 @@
           line ? line.quantity || 1 : '',
           line && line.gf === true ? 'Yes' : line && line.gf === false ? 'No' : 'Not reviewed',
           deduction.toFixed(2),
-          Number(receipt.overcharge || 0).toFixed(2),
+          index === 0 ? Number(receipt.overcharge || 0).toFixed(2) : '',  // once per receipt, so adding up the column never double counts
           typeof receipt.subtotal === 'number' ? receipt.subtotal.toFixed(2) : '',
           receipt.status === 'processed' ? 'Processed' : 'Needs review',
           notes

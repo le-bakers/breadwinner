@@ -225,7 +225,7 @@
     function renderLines(receipt, row, expand) {
         const list = expand.querySelector('.expand-item-list');
         list.textContent = '';
-        receipt.lines.forEach((line) => {
+        receipt.lines.forEach((line, index) => {
             const li = document.createElement('li');
             // The circle shows our gluten-free guess. Pressing it is how the user corrects the guess.
             const mark = document.createElement('button');
@@ -276,7 +276,7 @@
                     approveBtn.type = 'button';
                     approveBtn.className = 'badge badge-compare badge-approve';
                     approveBtn.textContent = 'Approve +' + money(draft.deduction);
-                    approveBtn.setAttribute('aria-label', 'Approve ' + money(draft.deduction) + ' saved for ' + line.name);
+                    approveBtn.setAttribute('aria-label', 'Approve ' + money(draft.deduction) + ' deduction for ' + line.name);
                     approveBtn.title = draft.warnings.concat('Press to count this suggestion.').join(' ');
                     approveBtn.addEventListener('click', () => {
                         approve(line);
@@ -290,7 +290,7 @@
                 b.type = 'button';
                 if (line.compare) {
                     b.className = 'badge badge-tax' + (line.compare.warnings.length ? ' badge-check' : '');
-                    b.textContent = '+' + money(line.compare.deduction) + ' saved';
+                    b.textContent = '+' + money(line.compare.deduction) + ' deduction';
                     b.title = line.compare.warnings.concat('Press to change the comparison.').join(' ');
                 }
                 else if (draft) {
@@ -519,7 +519,7 @@
         statusCell.appendChild(pill);
         const total = expand.querySelector('.receipt-total');
         total.hidden = !receipt.gfItems;
-        total.textContent = 'Saved on this receipt: ' + money(receipt.overcharge || 0)
+        total.textContent = 'Potential deduction on this receipt: ' + money(receipt.overcharge || 0)
             + '. An organized estimate, not tax advice. Confirm with a tax professional.';
     }
     // Many receipts print a subtotal. If the items don't add up to it, a line is missing or a price was misread.
@@ -648,13 +648,13 @@
         const receipts = RECEIPTS.filter((receipt) => !receipt.processing);
         const headers = [
             'Receipt name', 'Receipt date', 'Item', 'Item price', 'Quantity',
-            'Gluten-free', 'Deduction estimate', 'Receipt saved',
+            'Gluten-free', 'Item potential deduction', 'Receipt potential deduction',
             'Receipt subtotal', 'Review status', 'Notes'
         ];
         const rows = [headers];
         receipts.forEach((receipt) => {
             const lines = receipt.lines && receipt.lines.length ? receipt.lines : [null];
-            lines.forEach((line) => {
+            lines.forEach((line, index) => {
                 const deduction = line && line.compare && line.gf ? Number(line.compare.deduction || 0) : 0;
                 const notes = line && line.unsure
                     ? 'Scanner was not confident about this item; verify against the receipt.'
@@ -669,7 +669,7 @@
                     line ? line.quantity || 1 : '',
                     line && line.gf === true ? 'Yes' : line && line.gf === false ? 'No' : 'Not reviewed',
                     deduction.toFixed(2),
-                    Number(receipt.overcharge || 0).toFixed(2),
+                    index === 0 ? Number(receipt.overcharge || 0).toFixed(2) : '',
                     typeof receipt.subtotal === 'number' ? receipt.subtotal.toFixed(2) : '',
                     receipt.status === 'processed' ? 'Processed' : 'Needs review',
                     notes
