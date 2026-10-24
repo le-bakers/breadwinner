@@ -59,7 +59,7 @@
         const quantity = line.quantity || 1;
         const params = new URLSearchParams({
             zip: zip,
-            term: line.regularTerm,
+            term: line.regularTerm || line.plainName || line.name, // an item the user ticked may have no search term yet
             gf_name: line.plainName || line.name,
             gf_price: line.price,
             quantity: quantity
@@ -89,7 +89,7 @@
                 gfSize: answer.gf_size,
                 sizeGuessed: Boolean(answer.gf_size), // the size came from Kroger's listing, not from the user
                 quantity: quantity,
-                term: line.regularTerm,
+                term: params.get('term'),
                 regularName: answer.regular.name,
                 regularPrice: answer.regular.price,
                 regularSize: answer.regular.size || '',

@@ -157,6 +157,10 @@
     const suggest = window.BreadWinner.suggest; // suggest.js: fills in comparisons for the user to approve
     // receipt -> its row on screen, so a suggestion that arrives late can redraw the right row
     const ROW_PARTS = new WeakMap();
+    // How each open receipt is shown: { gfFirst, hideOthers }. Only a view, never saved.
+    const VIEW = new WeakMap();
+    // Lines whose name/price are being edited right now
+    const EDITING = new WeakSet();
     function buildRow(receipt) {
         const frag = template.content.cloneNode(true);
         const row = frag.querySelector('.receipt-row');
@@ -198,6 +202,16 @@
             frag.querySelector('.expand-receipt-img').src = receipt.imageUrl;
         }
         ROW_PARTS.set(receipt, { row, expand });
+        const view = { gfFirst: false, hideOthers: false };
+        VIEW.set(receipt, view);
+        expand.querySelector('.tool-gf-first').addEventListener('change', (e) => {
+            view.gfFirst = e.target.checked;
+            renderLines(receipt, row, expand);
+        });
+        expand.querySelector('.tool-hide-others').addEventListener('change', (e) => {
+            view.hideOthers = e.target.checked;
+            renderLines(receipt, row, expand);
+        });
         renderLines(receipt, row, expand);
         // Typing in an item the scanner missed
         const addForm = frag.querySelector('.add-item-form');
@@ -225,8 +239,22 @@
     function renderLines(receipt, row, expand) {
         const list = expand.querySelector('.expand-item-list');
         list.textContent = '';
-        receipt.lines.forEach((line, index) => {
+        // Which lines to show, and in what order. Sorting never changes the saved order.
+        const view = VIEW.get(receipt) || {};
+        let shown = receipt.lines.slice();
+        if (view.hideOthers)
+            shown = shown.filter((line) => line.gf);
+        if (view.gfFirst)
+            shown = shown.filter((line) => line.gf).concat(shown.filter((line) => !line.gf));
+        const others = receipt.lines.filter((line) => !line.gf).length;
+        expand.querySelector('.tool-hide-text').textContent = others ? 'Hide other items (' + others + ')' : 'Hide other items';
+        shown.forEach((line) => {
+            if (EDITING.has(line)) {
+                list.appendChild(buildEditItem(receipt, row, expand, line));
+                return;
+            }
             const li = document.createElement('li');
+            li._line = line; // so focusLine can find this row however the list is sorted
             // The circle shows our gluten-free guess. Pressing it is how the user corrects the guess.
             const mark = document.createElement('button');
             mark.type = 'button';
@@ -317,6 +345,17 @@
                     }
                 }));
                 badges.appendChild(b);
+                // One press looks up a suggested regular price for just this item
+                if (!line.compare && !draft) {
+                    const s = document.createElement('button');
+                    s.type = 'button';
+                    s.className = 'badge badge-suggest';
+                    s.textContent = 'Suggest';
+                    s.setAttribute('aria-label', 'Suggest a regular price for ' + line.name);
+                    s.title = 'Look up the regular version at the nearest Kroger-family store';
+                    s.addEventListener('click', () => suggestLine(receipt, row, expand, line, s));
+                    badges.insertBefore(s, b);
+                }
             }
             if (line.added) {
                 const b = document.createElement('span');
@@ -350,13 +389,143 @@
             li.appendChild(mark);
             li.appendChild(name);
             li.appendChild(badges);
+            // The pencil: fix a name or price the scanner got wrong
+            const editBtn = document.createElement('button');
+            editBtn.type = 'button';
+            editBtn.className = 'item-edit-btn';
+            editBtn.setAttribute('aria-label', 'Edit ' + line.name);
+            editBtn.title = 'Edit the name or price';
+            editBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L19 9l-4-4L4 16v4z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>';
+            editBtn.addEventListener('click', () => {
+                EDITING.add(line);
+                renderLines(receipt, row, expand);
+                focusLine(receipt, expand, line, '.edit-name');
+            });
             li.appendChild(price);
+            li.appendChild(editBtn);
             li.appendChild(removeBtn);
             list.appendChild(li);
         });
         showRowTotals(receipt, row, expand);
         showItemsCheck(receipt, expand);
         showSuggestBar(receipt, row, expand);
+    }
+    // The row shown while the user edits an item's name or price
+    function buildEditItem(receipt, row, expand, line) {
+        const li = document.createElement('li');
+        li._line = line;
+        li.className = 'item-editing';
+        const form = document.createElement('form');
+        form.className = 'edit-item-form';
+        form.noValidate = true;
+        const nameInput = document.createElement('input');
+        nameInput.type = 'text';
+        nameInput.className = 'edit-name';
+        nameInput.maxLength = 60;
+        nameInput.value = line.name;
+        nameInput.setAttribute('aria-label', 'Item name');
+        nameInput.autocomplete = 'off';
+        const priceInput = document.createElement('input');
+        priceInput.type = 'text';
+        priceInput.inputMode = 'decimal';
+        priceInput.className = 'edit-price';
+        priceInput.value = line.price.toFixed(2);
+        priceInput.setAttribute('aria-label', 'Price in dollars');
+        priceInput.autocomplete = 'off';
+        const saveBtn = document.createElement('button');
+        saveBtn.type = 'submit';
+        saveBtn.className = 'btn btn-primary btn-sm';
+        saveBtn.textContent = 'Save';
+        const cancelBtn = document.createElement('button');
+        cancelBtn.type = 'button';
+        cancelBtn.className = 'btn btn-secondary btn-sm';
+        cancelBtn.textContent = 'Cancel';
+        const error = document.createElement('p');
+        error.className = 'add-item-error';
+        error.setAttribute('role', 'alert');
+        error.hidden = true;
+        function close() {
+            EDITING.delete(line);
+            renderLines(receipt, row, expand);
+            focusLine(receipt, expand, line, '.item-edit-btn');
+        }
+        cancelBtn.addEventListener('click', close);
+        form.addEventListener('keydown', (e) => { if (e.key === 'Escape')
+            close(); });
+        form.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const newName = nameInput.value.trim();
+            // Same price rules as adding an item: "4.99", "$4.99" and "4,99" all work
+            const newPrice = Number(priceInput.value.trim().replace(/\$/g, '').replace(',', '.'));
+            let problem = '';
+            if (!newName)
+                problem = 'Type the item’s name.';
+            else if (!priceInput.value.trim() || !Number.isFinite(newPrice) || newPrice <= 0)
+                problem = 'Type the price as a number, like 4.99.';
+            error.textContent = problem;
+            error.hidden = !problem;
+            if (problem) {
+                (newName ? priceInput : nameInput).focus();
+                return;
+            }
+            const rounded = Math.round(newPrice * 100) / 100;
+            const priceChanged = Math.abs(rounded - line.price) >= 0.005;
+            if (newName !== line.name) {
+                line.name = newName;
+                // The helper name and search word described the old text
+                delete line.plainName;
+                delete line.regularTerm;
+            }
+            line.price = rounded;
+            line.unsure = false; // the user has looked at this line
+            // A saved comparison was worked out from the old price, so it can't be kept
+            const lostComparison = priceChanged && (line.compare || line.draft);
+            if (priceChanged) {
+                delete line.compare;
+                delete line.draft;
+            }
+            EDITING.delete(line);
+            saveLines(receipt, row, expand);
+            focusLine(receipt, expand, line, '.item-edit-btn');
+            toast(lostComparison ? 'Saved. The price changed, so compare this item again.' : 'Saved ' + line.name);
+        });
+        form.appendChild(nameInput);
+        form.appendChild(priceInput);
+        form.appendChild(saveBtn);
+        form.appendChild(cancelBtn);
+        form.appendChild(error);
+        li.appendChild(form);
+        return li;
+    }
+    // The "Suggest" button on one item: an earlier approved comparison first, then Kroger
+    async function suggestLine(receipt, row, expand, line, button) {
+        let draft = suggest.recall(line, RECEIPTS);
+        if (!draft) {
+            const zip = suggest.getZip();
+            if (!zip) {
+                toast('Type your zip code in the bar above, then press Suggest again.');
+                const zipInput = expand.querySelector('.suggest-form input');
+                if (zipInput)
+                    zipInput.focus();
+                return;
+            }
+            button.disabled = true;
+            button.textContent = 'Looking…';
+            const answer = await suggest.askKroger(line, zip, API_BASE);
+            draft = answer.draft;
+            if (!draft) {
+                renderLines(receipt, row, expand);
+                toast(answer.problem || 'No match found. Use “Compare price” instead.');
+                return;
+            }
+        }
+        // The user may have compared this line by hand while Kroger was answering
+        if (line.compare)
+            return;
+        line.draft = draft;
+        saveLines(receipt, row, expand);
+        focusLine(receipt, expand, line, '.badge-approve');
+        toast('Price suggested. Check it, then approve.');
     }
     /* ---------- Suggested comparisons (see suggest.js) ---------- */
     // Turns a suggestion into a saved comparison. Only ever called by a press from the user.
@@ -396,7 +565,7 @@
             if (!line.gf || line.compare || line.draft)
                 return;
             let draft = suggest.recall(line, RECEIPTS);
-            if (!draft && zip && line.regularTerm) {
+            if (!draft && zip) {
                 const answer = await suggest.askKroger(line, zip, API_BASE);
                 draft = answer.draft;
                 problem = problem || answer.problem;
@@ -413,7 +582,7 @@
     function showSuggestBar(receipt, row, expand) {
         const bar = expand.querySelector('.suggest-bar');
         const drafts = receipt.lines.filter((line) => line.gf && !line.compare && line.draft);
-        const canAsk = receipt.lines.some((line) => line.gf && !line.compare && !line.draft && line.regularTerm);
+        const canAsk = receipt.lines.some((line) => line.gf && !line.compare && !line.draft);
         bar.textContent = '';
         bar.hidden = !drafts.length && !canAsk;
         if (drafts.length) {
@@ -488,7 +657,7 @@
     }
     // Redrawing the list replaces every button, so keyboard focus is put back on the line just changed
     function focusLine(receipt, expand, line, selector) {
-        const li = expand.querySelectorAll('.expand-item-list li')[receipt.lines.indexOf(line)];
+        const li = Array.from(expand.querySelectorAll('.expand-item-list li')).find((item) => item._line === line);
         const target = li && li.querySelector(selector);
         if (target)
             target.focus();
@@ -536,7 +705,7 @@
         note.textContent = addsUp
             ? 'These items add up to the subtotal printed on the receipt (' + money(receipt.subtotal) + ').'
             : 'These items add up to ' + money(itemsTotal) + ', but the receipt’s subtotal says ' + money(receipt.subtotal)
-                + '. An item may be missing or a price misread. Compare with the photo, then remove or add items below.';
+                + '. An item may be missing or a price misread. Compare with the photo, then edit (pencil), remove or add items below.';
     }
     function saveLines(receipt, row, expand) {
         tally(receipt);
@@ -669,7 +838,7 @@
                     line ? line.quantity || 1 : '',
                     line && line.gf === true ? 'Yes' : line && line.gf === false ? 'No' : 'Not reviewed',
                     deduction.toFixed(2),
-                    index === 0 ? Number(receipt.overcharge || 0).toFixed(2) : '',
+                    index === 0 ? Number(receipt.overcharge || 0).toFixed(2) : '', // once per receipt, so adding up the column never double counts
                     typeof receipt.subtotal === 'number' ? receipt.subtotal.toFixed(2) : '',
                     receipt.status === 'processed' ? 'Processed' : 'Needs review',
                     notes
@@ -730,18 +899,34 @@
             const nameBytes = encoder.encode(name), data = encoder.encode(parts[name]), crc = crc32(data);
             const local = new Uint8Array(30 + nameBytes.length + data.length);
             const view = new DataView(local.buffer);
-            view.setUint32(0, 0x04034b50, true); view.setUint16(4, 20, true); view.setUint16(26, nameBytes.length, true);
-            local.set(nameBytes, 30); local.set(data, 30 + nameBytes.length); chunks.push(local);
-            const entry = new Uint8Array(46 + nameBytes.length); const entryView = new DataView(entry.buffer);
-            entryView.setUint32(0, 0x02014b50, true); entryView.setUint16(4, 20, true); entryView.setUint16(6, 20, true);
-            entryView.setUint32(16, crc, true); entryView.setUint32(20, data.length, true); entryView.setUint32(24, data.length, true);
-            entryView.setUint16(28, nameBytes.length, true); entryView.setUint32(42, offset, true); entry.set(nameBytes, 46); central.push(entry);
+            view.setUint32(0, 0x04034b50, true);
+            view.setUint16(4, 20, true);
+            view.setUint16(26, nameBytes.length, true);
+            local.set(nameBytes, 30);
+            local.set(data, 30 + nameBytes.length);
+            chunks.push(local);
+            const entry = new Uint8Array(46 + nameBytes.length);
+            const entryView = new DataView(entry.buffer);
+            entryView.setUint32(0, 0x02014b50, true);
+            entryView.setUint16(4, 20, true);
+            entryView.setUint16(6, 20, true);
+            entryView.setUint32(16, crc, true);
+            entryView.setUint32(20, data.length, true);
+            entryView.setUint32(24, data.length, true);
+            entryView.setUint16(28, nameBytes.length, true);
+            entryView.setUint32(42, offset, true);
+            entry.set(nameBytes, 46);
+            central.push(entry);
             offset += local.length;
         });
         const centralSize = central.reduce((sum, entry) => sum + entry.length, 0);
-        const end = new Uint8Array(22), endView = new DataView(end.buffer);
-        endView.setUint32(0, 0x06054b50, true); endView.setUint16(8, central.length, true); endView.setUint16(10, central.length, true);
-        endView.setUint32(12, centralSize, true); endView.setUint32(16, offset, true);
+        const end = new Uint8Array(22);
+        const endView = new DataView(end.buffer);
+        endView.setUint32(0, 0x06054b50, true);
+        endView.setUint16(8, central.length, true);
+        endView.setUint16(10, central.length, true);
+        endView.setUint32(12, centralSize, true);
+        endView.setUint32(16, offset, true);
         return new Blob([...chunks, ...central, end], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
     }
     function exportXlsx() {
@@ -1186,9 +1371,9 @@
         if (!capturedBlob)
             return;
         cameraConfirmBtn.disabled = true;
-        toast('Reading receipt...', 0);
         if (cameraStatus)
             cameraStatus.textContent = 'Reading receipt…';
+        toast('Reading receipt…', 0);
         try {
             await processReceipt(capturedBlob);
         }
@@ -1223,7 +1408,6 @@
             e.stopPropagation();
             setFabOptionsOpen(!fabWrapper.classList.contains('is-options-open'));
         });
-
         // Handle "Take a picture" option click
         fabOptionCamera.addEventListener('click', (e) => {
             e.stopPropagation();
@@ -1232,7 +1416,6 @@
             cameraOverlay.hidden = false;
             startCamera();
         });
-
         // Handle "Upload a photo" option click
         fabOptionUpload.addEventListener('click', (e) => {
             e.stopPropagation();

@@ -344,7 +344,7 @@
 .item-mark.no { background: transparent; box-shadow: inset 0 0 0 1.5px #9CA3AF; }
 .item-mark.unknown { background: var(--border, #E5E7EB); color: var(--text-secondary); font-size: 11px; font-weight: 700; }
 .item-name { flex: 1; min-width: 0; font-weight: 500; overflow-wrap: anywhere; }
-.item-price { color: var(--text-secondary); font-weight: 600; }
+.item-price { color: var(--text-secondary); font-weight: 600; min-width: 56px; text-align: right; }  /* keeps the buttons lined up from row to row */
 .item-badges { display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 6px; }
 .item-badges:empty { display: none; }
 .badge { font-size: 11.5px; font-weight: 600; padding: 3px 9px; border-radius: var(--radius-full); white-space: nowrap; }
@@ -400,7 +400,47 @@
 .item-mark:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 3px; }
 .item-plain { display: block; margin-top: 2px; font-size: 12px; font-weight: 400; color: var(--text-secondary); }
 
-button.badge { border: none; font-family: inherit; cursor: pointer; transition: background 0.2s; }
+/* Every button-badge (Suggest, Compare price, Change, Approve…) gets the same size, so a row never looks lopsided */
+button.badge { border: none; font-family: inherit; cursor: pointer; transition: background 0.2s; min-width: 112px; padding: 6px 12px; font-size: 12px; line-height: 1.3; text-align: center; }
+.badge-suggest { background: transparent; color: #15803D; box-shadow: inset 0 0 0 1.5px #15803D; }
+.badge-suggest:hover { background: var(--accent-light); }
+.badge-suggest:disabled { opacity: 0.6; cursor: wait; }
+
+/* Sort / hide controls above the item list */
+.list-tools { display: flex; flex-wrap: wrap; gap: 6px 20px; margin-bottom: 12px; font-size: 13px; color: var(--text-secondary); }
+.list-tools label { display: inline-flex; align-items: center; gap: 7px; cursor: pointer; }
+.list-tools input { accent-color: var(--primary-hover); width: 16px; height: 16px; cursor: pointer; }
+
+/* The pencil beside the remove button, and the row shown while editing */
+.item-edit-btn {
+  width: 24px; height: 24px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+.item-edit-btn:hover { color: #15803D; background: var(--accent-light); }
+.item-edit-btn:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 2px; }
+.expand-item-list li.item-editing { display: block; }
+.edit-item-form { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.edit-item-form input {
+  min-width: 0;
+  padding: 8px 12px;
+  font-size: 13.5px;
+  font-family: inherit;
+  color: var(--text);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.edit-item-form input:focus { outline: none; border-color: var(--primary); box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.1); }
+.edit-name { flex: 1 1 200px; }
+.edit-price { flex: 0 1 96px; }
 button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 2px; }
 .badge-compare { background: #15803D; color: #fff; }
 .badge-compare:hover { background: #166534; }
@@ -515,6 +555,8 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
 
 :root[data-theme="dark"] .item-mark.no { box-shadow: inset 0 0 0 1.5px #6B7A6C; }
 :root[data-theme="dark"] .badge-tax { color: #4ADE80; }
+:root[data-theme="dark"] .badge-suggest { color: #4ADE80; box-shadow: inset 0 0 0 1.5px #4ADE80; }
+:root[data-theme="dark"] .item-edit-btn:hover { color: #4ADE80; }
 :root[data-theme="dark"] .badge-tax:hover { background: rgba(var(--accent-rgb), 0.26); }
 :root[data-theme="dark"] .badge-approve { background: rgba(251,191,36,0.16); color: #FCD34D; }
 :root[data-theme="dark"] .badge-approve:hover { background: rgba(251,191,36,0.26); }
