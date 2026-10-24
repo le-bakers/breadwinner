@@ -153,7 +153,7 @@
 .section-heading h2 { font-size: clamp(30px, 4vw, 42px); font-weight: 800; }
 .section-sub { margin-top: 14px; color: var(--text-secondary); font-size: 16px; }
 .section-heading.reveal, .feature-card.reveal { text-align: center; }
-.section-heading .eyebrow { text-align: center; }
+.section-heading{ text-align: center; }
 
 .timeline { display: flex; flex-direction: column; gap: 96px; }
 .timeline-row {
