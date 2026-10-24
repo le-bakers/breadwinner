@@ -77,6 +77,16 @@
               </select>
               <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
             </div>
+            <div class="export-menu">
+              <button class="btn btn-secondary btn-sm export-button" id="exportReceipts" type="button" disabled aria-haspopup="true" aria-expanded="false">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Export as spreadsheet
+              </button>
+              <div class="export-menu-options" id="exportMenuOptions" hidden>
+                <button type="button" data-export-format="csv">CSV file (.csv)</button>
+                <button type="button" data-export-format="xlsx">Excel file (.xlsx)</button>
+              </div>
+            </div>
           </div>
         </div>
         <p class="estimate-note receipts-note">Overcharge amounts are organized estimates, not tax advice. Confirm with a tax professional.</p>

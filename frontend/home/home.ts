@@ -156,6 +156,8 @@
   const template = document.getElementById('rowTemplate');
   const searchInput = document.getElementById('receiptSearch');
   const sortSelect = document.getElementById('sortSelect');
+  const exportButton = document.getElementById('exportReceipts');
+  const exportMenu = document.getElementById('exportMenuOptions');
 
   const suggest = window.BreadWinner.suggest;  // suggest.js: fills in comparisons for the user to approve
   // receipt -> its row on screen, so a suggestion that arrives late can redraw the right row
@@ -646,9 +648,134 @@
       empty.className = 'receipt-empty';
       empty.textContent = 'No receipts yet! Click the green + button to upload or take a photo of a receipt.';
       table.appendChild(empty);
+      updateExportButton();
       return;
     }
     list.forEach((r) => table.appendChild(buildRow(r)));
+    updateExportButton();
+  }
+
+  function updateExportButton() {
+    if (!exportButton) return;
+    exportButton.disabled = !RECEIPTS.some((receipt) => !receipt.processing);
+  }
+
+  function csvCell(value) {
+    const text = value === null || value === undefined ? '' : String(value);
+    return '"' + text.replace(/"/g, '""') + '"';
+  }
+
+  function getExportRows() {
+    const receipts = RECEIPTS.filter((receipt) => !receipt.processing);
+    const headers = [
+      'Receipt name', 'Receipt date', 'Item', 'Item price', 'Quantity',
+      'Gluten-free', 'Deduction estimate', 'Receipt overcharge',
+      'Receipt subtotal', 'Review status', 'Notes'
+    ];
+    const rows = [headers];
+
+    receipts.forEach((receipt) => {
+      const lines = receipt.lines && receipt.lines.length ? receipt.lines : [null];
+      lines.forEach((line) => {
+        const deduction = line && line.compare && line.gf ? Number(line.compare.deduction || 0) : 0;
+        const notes = line && line.unsure
+          ? 'Scanner was not confident about this item; verify against the receipt.'
+          : line && line.gf && !line.compare
+            ? 'Gluten-free item needs a regular-price comparison.'
+            : '';
+        rows.push([
+          receipt.name,
+          receipt.date,
+          line ? line.name : '',
+          line ? Number(line.price || 0).toFixed(2) : '',
+          line ? line.quantity || 1 : '',
+          line && line.gf === true ? 'Yes' : line && line.gf === false ? 'No' : 'Not reviewed',
+          deduction.toFixed(2),
+          Number(receipt.overcharge || 0).toFixed(2),
+          typeof receipt.subtotal === 'number' ? receipt.subtotal.toFixed(2) : '',
+          receipt.status === 'processed' ? 'Processed' : 'Needs review',
+          notes
+        ]);
+      });
+    });
+    return rows;
+  }
+
+  function downloadExport(content, type, extension) {
+    const url = URL.createObjectURL(new Blob([content], { type }));
+    const link = document.createElement('a');
+    const today = new Date().toISOString().slice(0, 10);
+    link.href = url;
+    link.download = 'breadwinner-tax-receipts-' + today + extension;
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    URL.revokeObjectURL(url);
+  }
+
+  function exportCsv() {
+    const rows = getExportRows();
+    if (rows.length === 1) { toast('There are no completed receipts to export yet.'); return; }
+    downloadExport('\uFEFF' + rows.map((row) => row.map(csvCell).join(',')).join('\r\n'), 'text/csv;charset=utf-8', '.csv');
+    toast('Spreadsheet exported. Review it with your tax professional.');
+  }
+
+  function xmlCell(value) {
+    const text = value === null || value === undefined ? '' : String(value);
+    return '<c t="inlineStr"><is><t>' + text.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;') + '</t></is></c>';
+  }
+
+  function crc32(bytes) {
+    let crc = 0xFFFFFFFF;
+    for (let i = 0; i < bytes.length; i++) {
+      crc ^= bytes[i];
+      for (let j = 0; j < 8; j++) crc = (crc >>> 1) ^ (0xEDB88320 & -(crc & 1));
+    }
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function createXlsx(rows) {
+    const encoder = new TextEncoder();
+    const sheet = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+      + '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetData>'
+      + rows.map((row, rowIndex) => '<row r="' + (rowIndex + 1) + '">' + row.map(xmlCell).join('') + '</row>').join('')
+      + '</sheetData></worksheet>';
+    const parts = {
+      '[Content_Types].xml': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/></Types>',
+      '_rels/.rels': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>',
+      'xl/workbook.xml': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Tax Receipts" sheetId="1" r:id="rId1"/></sheets></workbook>',
+      'xl/_rels/workbook.xml.rels': '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/></Relationships>',
+      'xl/worksheets/sheet1.xml': sheet
+    };
+    const chunks = [], central = [];
+    let offset = 0;
+    Object.keys(parts).forEach((name) => {
+      const nameBytes = encoder.encode(name), data = encoder.encode(parts[name]), crc = crc32(data);
+      const local = new Uint8Array(30 + nameBytes.length + data.length);
+      const view = new DataView(local.buffer);
+      view.setUint32(0, 0x04034b50, true); view.setUint16(4, 20, true); view.setUint16(26, nameBytes.length, true);
+      local.set(nameBytes, 30); local.set(data, 30 + nameBytes.length); chunks.push(local);
+      const entry = new Uint8Array(46 + nameBytes.length); const entryView = new DataView(entry.buffer);
+      entryView.setUint32(0, 0x02014b50, true); entryView.setUint16(4, 20, true); entryView.setUint16(6, 20, true);
+      entryView.setUint32(16, crc, true); entryView.setUint32(20, data.length, true); entryView.setUint32(24, data.length, true);
+      entryView.setUint16(28, nameBytes.length, true); entryView.setUint32(42, offset, true); entry.set(nameBytes, 46); central.push(entry);
+      offset += local.length;
+    });
+    const centralSize = central.reduce((sum, entry) => sum + entry.length, 0);
+    const end = new Uint8Array(22); const endView = new DataView(end.buffer);
+    endView.setUint32(0, 0x06054b50, true); endView.setUint16(8, central.length, true); endView.setUint16(10, central.length, true);
+    endView.setUint32(12, centralSize, true); endView.setUint32(16, offset, true);
+    return new Blob([...chunks, ...central, end], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+  }
+
+  function exportXlsx() {
+    const rows = getExportRows();
+    if (rows.length === 1) { toast('There are no completed receipts to export yet.'); return; }
+    const blobUrl = URL.createObjectURL(createXlsx(rows));
+    const link = document.createElement('a');
+    link.href = blobUrl; link.download = 'breadwinner-tax-receipts-' + new Date().toISOString().slice(0, 10) + '.xlsx';
+    document.body.appendChild(link); link.click(); link.remove(); URL.revokeObjectURL(blobUrl);
+    toast('Excel spreadsheet exported. Review it with your tax professional.');
   }
 
   function applyFilters() {
@@ -675,6 +802,26 @@
     render(RECEIPTS);
     searchInput.addEventListener('input', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
+    exportButton.addEventListener('click', () => {
+      if (exportMenu) {
+        exportMenu.hidden = !exportMenu.hidden;
+        exportButton.setAttribute('aria-expanded', String(!exportMenu.hidden));
+      }
+    });
+    exportMenu.querySelectorAll('[data-export-format]').forEach((option) => {
+      option.addEventListener('click', () => {
+        exportMenu.hidden = true;
+        exportButton.setAttribute('aria-expanded', 'false');
+        if (option.dataset.exportFormat === 'xlsx') exportXlsx();
+        else exportCsv();
+      });
+    });
+    document.addEventListener('click', (event) => {
+      if (exportMenu && !exportMenu.hidden && !exportMenu.parentElement.contains(event.target)) {
+        exportMenu.hidden = true;
+        exportButton.setAttribute('aria-expanded', 'false');
+      }
+    });
   }
 
   if (window.BreadWinner && window.BreadWinner.staggerReveal) {

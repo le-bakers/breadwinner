@@ -124,6 +124,36 @@
   flex-wrap: wrap;
 }
 .toolbar-controls { display: flex; gap: 10px; flex-wrap: wrap; }
+.export-menu { position: relative; }
+.export-button { display: inline-flex; align-items: center; gap: 7px; white-space: nowrap; }
+.export-button:disabled { cursor: not-allowed; opacity: 0.55; }
+.export-menu-options {
+  position: absolute;
+  z-index: 5;
+  right: 0;
+  top: calc(100% + 6px);
+  min-width: 170px;
+  padding: 5px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+}
+.export-menu-options button {
+  display: block;
+  width: 100%;
+  padding: 8px 10px;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  color: var(--text);
+  text-align: left;
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.export-menu-options button:hover,
+.export-menu-options button:focus-visible { background: var(--accent-light); }
 .search-box {
   display: flex;
   align-items: center;
