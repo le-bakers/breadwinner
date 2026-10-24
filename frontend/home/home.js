@@ -146,6 +146,7 @@
         animateMetric('receiptsCount', RECEIPTS.length, 'int', animate ? 300 : 0);
         animateMetric('gfItemsCount', gfItems, 'int', animate ? 450 : 0);
         animateMetric('averageOvercharge', average, 'money', animate ? 600 : 0);
+    if (window.BreadWinner.receiptHistory) window.BreadWinner.receiptHistory.refresh();
     }
     updateMetrics(true);
     const table = document.getElementById('receiptTable');
@@ -792,6 +793,11 @@
         btn.setAttribute('aria-label', isOpen ? 'Collapse receipt details' : 'Expand receipt details');
     }
     function render(list) {
+    if (window.BreadWinner.receiptHistory) {
+      window.BreadWinner.receiptHistory.render(table, list, buildRow);
+      updateExportButton();
+      return;
+    }
         table.querySelectorAll('.receipt-row:not(.receipt-row-head), .receipt-expand, .receipt-empty').forEach((el) => el.remove());
         if (!list.length) {
             const empty = document.createElement('div');
@@ -1229,11 +1235,7 @@
         if (!window.matchMedia('(max-width: 860px)').matches)
             return;
         switchMobileView('receipt');
-        const receiptItem = bottomNav && bottomNav.querySelector('[data-nav="receipt"]');
-        if (receiptItem) {
-            bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => item.classList.remove('active'));
-            receiptItem.classList.add('active');
-        }
+
     }
     /* ---------- Receipt scanning ---------- */
     // Where the Python server lives (set in shared.ts: this computer, or Render)
@@ -1466,20 +1468,6 @@
     }
     /* ---------- Mobile bottom navbar ---------- */
     const bottomNav = document.getElementById('mobileBottomNav');
-    function initBottomNav() {
-        if (!bottomNav)
-            return;
-        // If we landed with #receipts (e.g. from the mobile bottom nav on
-        // profile/settings), the active item should be Receipts, not Dashboard.
-        const hash = window.location.hash || '';
-        if (hash === '#receipts') {
-            const activeItem = bottomNav.querySelector('.bottom-nav-item[data-nav="receipt"]');
-            if (activeItem) {
-                bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
-                activeItem.classList.add('active');
-            }
-        }
-    }
     // Show the correct mobile view when landing on the page with a #receipts hash.
     function applyInitialRoute() {
         if (!bottomNav)
@@ -1507,31 +1495,11 @@
         }
         window.scrollTo(0, 0);
     }
-    if (bottomNav) {
-        bottomNav.querySelectorAll('.bottom-nav-item').forEach((item) => {
-            item.addEventListener('click', (e) => {
-                // Same-page dashboard / receipts toggles are handled in JS so the
-                // receipt view is pulled up as its own screen on mobile (no hash race).
-                const nav = item.dataset.nav;
-                if (nav === 'dashboard' || nav === 'receipt') {
-                    if (window.matchMedia('(max-width: 860px)').matches)
-                        e.preventDefault();
-                    bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
-                    item.classList.add('active');
-                    switchMobileView(nav);
-                    return;
-                }
-                // Other pages (e.g. settings) keep default anchor/navigation.
-                bottomNav.querySelectorAll('.bottom-nav-item').forEach((i) => i.classList.remove('active'));
-                item.classList.add('active');
-            });
-        });
-        // On first load, honor a #receipts hash (view + active item) so the
-        // bottom nav reflects where we landed.
-        applyInitialRoute();
-        initBottomNav();
-    }
-    /* ---------- Signed in with an account: fetch this person's receipts ---------- */
+
+  // Preserve old #receipts bookmarks; navigation links use their own pages.
+  applyInitialRoute();
+
+  /* ---------- Signed in with an account: fetch this person's receipts ---------- */
     if (cloud.enabled) {
         (async function () {
             const user = await cloud.getUser();

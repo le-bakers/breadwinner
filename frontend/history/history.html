@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<script>try{var s=JSON.parse(localStorage.getItem('breadwinner_settings')||'{}');var t=s.theme||'light';if(t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme: dark)').matches))document.documentElement.setAttribute('data-theme','dark');}catch(e){}</script>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Receipt History | BreadWinner</title>
+<meta name="description" content="Browse, search, manage, and export your saved BreadWinner receipts.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<link rel="stylesheet" href="./history.css">
+<link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
+</head>
+<body>
+
+
+  
+<a class="sr-only" href="#main-content">Skip to main content</a>
+
+<div data-navbar="home"></div>
+
+<main id="main-content" class="dashboard">
+  <div class="container">
+
+    <!-- ============ RECEIPT VIEW ============ -->
+    <div class="mobile-view" id="receiptView">
+      <section class="receipts-section" id="receipts">
+        <div class="receipts-toolbar">
+          <h1>Receipt History</h1>
+          <div class="toolbar-controls">
+            <div class="search-box">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#6B7280" stroke-width="1.8"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg>
+              <input type="search" id="receiptSearch" placeholder="Search receipts…" aria-label="Search receipts">
+            </div>
+            <div class="select-wrap">
+              <select id="sortSelect" aria-label="Sort receipts">
+                <option value="newest">Newest</option>
+                <option value="oldest">Oldest</option>
+                <option value="savings">Highest Savings</option>
+                <option value="items">Most Items</option>
+              </select>
+              <svg class="select-chevron" width="14" height="14" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+            </div>
+            <div class="export-menu">
+              <button class="btn btn-secondary btn-sm export-button" id="exportReceipts" type="button" disabled aria-haspopup="true" aria-expanded="false">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+                Export as spreadsheet
+              </button>
+              <div class="export-menu-options" id="exportMenuOptions" hidden>
+                <button type="button" data-export-format="csv">CSV file (.csv)</button>
+                <button type="button" data-export-format="xlsx">Excel file (.xlsx)</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="receipt-table" id="receiptTable">
+          <div class="receipt-row receipt-row-head" role="row">
+            <span>Receipt Name</span>
+            <span>Date</span>
+            <span>Items</span>
+            <span>GF Items</span>
+            <span>Deduction</span>
+            <span>Status</span>
+            <span>Actions</span>
+          </div>
+          <!-- Rows injected from saved receipts -->
+        </div>
+      </section>
+    </div>
+
+  </div>
+</main>
+
+<!-- ============ FLOATING UPLOAD BUTTON ============ -->
+<div class="fab-wrapper" id="fabWrapper">
+  <button class="fab" id="fabUpload" aria-label="Scan a receipt">
+    <svg class="fab-icon" width="24" height="24" viewBox="0 0 24 24" fill="none"><path d="M12 5v14M5 12h14" stroke="#fff" stroke-width="2.4" stroke-linecap="round"/></svg>
+    <span class="fab-label">Add Receipt</span>
+  </button>
+  <button class="fab-option" id="fabOptionCamera" aria-label="Take a picture" hidden>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11zM12 10a3 3 0 100 6 3 3 0 000-6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    <span class="fab-label">Take a picture</span>
+  </button>
+
+  <!-- Upload photo option -->
+  <button class="fab-option" id="fabOptionUpload" aria-label="Upload a photo" hidden>
+<svg width="18" height="18" viewBox="0 0 24 24" fill="none">
+  <path d="M12 16V4m-5 5l5-5 5 5M4 16v4h16v-4"
+        stroke="currentColor" stroke-width="1.8"
+        stroke-linecap="round" stroke-linejoin="round"/>
+</svg>
+
+<span class="fab-label">Upload a photo</span>
+  </button>
+</div>
+
+<!-- Hidden file input for upload -->
+<input type="file" id="fileInput" accept="image/*" style="display:none">
+
+
+<!-- ============ CAMERA OVERLAY ============ -->
+<div class="camera-overlay" id="cameraOverlay" hidden>
+  <div class="camera-modal camera-workspace" role="dialog" aria-modal="true" aria-labelledby="cameraTitle">
+    <div class="camera-header">
+      <button class="camera-close" id="cameraClose" aria-label="Close camera">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"/></svg>
+      </button>
+      <div class="camera-heading"><span class="camera-kicker">Receipt scanner</span><h2 id="cameraTitle">Take a clear photo</h2></div>
+      <span class="camera-status" id="cameraStatus" role="status" aria-live="polite">Starting camera…</span>
+    </div>
+
+    <div class="camera-viewport" id="cameraViewport">
+      <video id="cameraVideo" autoplay playsinline muted></video>
+      <canvas id="cameraCanvas" hidden></canvas>
+
+      <!-- Scanner guide (capture state) -->
+      <div class="scan-guide" id="scanGuide" aria-hidden="true">
+        <div class="scan-frame"><span></span><span></span><span></span><span></span></div>
+        <p class="scan-hint"><span class="scan-pulse"></span>Fit the receipt inside the frame</p>
+      </div>
+
+      <div class="camera-placeholder" id="cameraPlaceholder">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11z" stroke="#6B7280" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="13" r="4" stroke="#6B7280" stroke-width="1.8"/></svg>
+        <p>Camera loading…</p>
+      </div>
+
+      <!-- Flash overlay for shutter feedback -->
+      <div class="camera-flash" id="cameraFlash" hidden></div>
+    </div>
+
+    <div class="camera-footer" id="cameraFooter">
+      <p class="camera-caption">Use natural light and keep the receipt flat.</p>
+      <button class="shutter-btn" id="cameraCaptureBtn" aria-label="Take photo" disabled>
+        <span class="shutter-inner"></span>
+      </button>
+      <button class="camera-caption-end camera-upload-btn" id="cameraUploadBtn" type="button">Upload a photo</button>
+    </div>
+
+    <div class="camera-preview" id="cameraPreview" hidden>
+      <div class="confirm-heading"><span class="camera-kicker">Review before saving</span><h2 id="confirmPhotoTitle">Does this receipt look clear?</h2><p>Make sure the store name, date, and totals are visible.</p></div>
+      <div class="camera-stage">
+        <img id="cameraPreviewImg" alt="Captured receipt preview">
+      </div>
+      <div class="camera-preview-actions">
+        <button class="btn btn-secondary" id="cameraRetakeBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Retake
+        </button>
+        <button class="btn btn-primary" id="cameraConfirmBtn" type="button">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="#fff" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          Confirm &amp; Add Receipt
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============ CONFIRM DELETE RECEIPT MODAL ============ -->
+<div class="modal-overlay" id="deleteReceiptModal" hidden>
+  <div class="modal-card" role="alertdialog" aria-modal="true" aria-labelledby="deleteReceiptTitle" aria-describedby="deleteReceiptText">
+    <span class="modal-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+    </span>
+    <h3 id="deleteReceiptTitle">Delete this receipt?</h3>
+    <p id="deleteReceiptText">This removes the photo and its items from this device. This can't be undone.</p>
+    <div class="modal-actions">
+      <button type="button" class="btn btn-secondary" id="deleteReceiptCancel">Cancel</button>
+      <button type="button" class="btn btn-danger" id="deleteReceiptConfirm">Delete Receipt</button>
+    </div>
+  </div>
+</div>
+
+<!-- ============ COMPARE PRICE POPUP (run by compare.js) ============ -->
+<div class="modal-overlay" id="compareModal" hidden>
+  <form class="modal-card compare-card" role="dialog" aria-modal="true" aria-labelledby="compareTitle" novalidate>
+    <h3 id="compareTitle">Compare with the regular version</h3>
+    <p class="compare-item"><span id="compareItemName"></span> <strong id="compareItemPrice"></strong></p>
+
+    <fieldset class="compare-group">
+      <legend>1. Your gluten-free item</legend>
+      <div class="compare-fields">
+        <label class="grow">Package size <input id="compareGfSize" type="text" placeholder="14 oz" autocomplete="off" maxlength="20"></label>
+        <label>How many <input id="compareQuantity" type="number" min="1" max="99" value="1" inputmode="numeric"></label>
+      </div>
+      <p class="compare-hint">Check the package size. Leave it blank if you don't know it.</p>
+    </fieldset>
+
+    <fieldset class="compare-group">
+      <legend>2. The regular version</legend>
+      <div class="compare-tabs">
+        <button type="button" class="compare-tab" data-pane="kroger">Search Stores</button>
+        <button type="button" class="compare-tab" data-pane="manual">Type it in</button>
+        <button type="button" class="compare-tab" data-pane="none">None exists</button>
+      </div>
+
+      <div id="compareKroger">
+        <div class="compare-fields">
+          <label class="grow">Search for <input id="compareTerm" type="text" placeholder="white bread" autocomplete="off" maxlength="60"></label>
+          <label>Zip code <input id="compareZip" type="text" inputmode="numeric" maxlength="5" placeholder="45202" autocomplete="postal-code"></label>
+          <button type="button" class="btn btn-secondary btn-sm" id="compareSearchBtn">Search</button>
+        </div>
+        <p class="compare-hint compare-search-note" id="compareSearchNote" role="status" hidden></p>
+        <div class="compare-results" id="compareResults" role="radiogroup" aria-label="Regular products found"></div>
+      </div>
+
+      <div id="compareManual" hidden>
+        <div class="compare-fields">
+          <label class="grow">Product <input id="compareManualName" type="text" placeholder="Store-brand white bread" autocomplete="off" maxlength="60"></label>
+          <label>Price <input id="compareManualPrice" type="text" inputmode="decimal" placeholder="3.49" autocomplete="off"></label>
+          <label>Size <input id="compareManualSize" type="text" placeholder="20 oz" autocomplete="off" maxlength="20"></label>
+        </div>
+        <p class="compare-hint">Read it off a shelf tag, or look it up at
+          <a id="compareLinkWalmart" href="https://www.walmart.com" target="_blank" rel="noopener">Walmart</a>,
+          <a id="compareLinkTarget" href="https://www.target.com" target="_blank" rel="noopener">Target</a> or
+          <a id="compareLinkCostco" href="https://www.costco.com" target="_blank" rel="noopener">Costco</a>.
+          Use the store you would really have shopped at.</p>
+      </div>
+
+      <div id="compareNone" hidden>
+        <p class="compare-hint">Some gluten-free items have no regular version, like xanthan gum. The whole price is counted for those.</p>
+      </div>
+    </fieldset>
+
+    <!-- Stays in view while the rest of the popup scrolls, so the result and Save are never hidden -->
+    <div class="compare-footer">
+      <div class="compare-outcome" id="compareOutcome" role="status" aria-live="polite" hidden></div>
+      <div class="modal-actions">
+        <button type="button" class="btn btn-secondary" id="compareCancel">Cancel</button>
+        <button type="submit" class="btn btn-primary" id="compareSave" disabled>Save</button>
+      </div>
+    </div>
+  </form>
+</div>
+
+<!-- Row template used by JS -->
+<template id="rowTemplate">
+  <div class="receipt-row" role="row" tabindex="0">
+    <span class="cell-name">
+      <span class="receipt-thumb" aria-hidden="true">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#16A34A" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#16A34A" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </span>
+      <span class="cell-name-text"></span>
+    </span>
+    <span class="cell-date"></span>
+    <span class="cell-items"></span>
+    <span class="cell-gf"></span>
+    <span class="cell-overcharge"></span>
+    <span class="cell-status"></span>
+    <span class="cell-actions">
+      <button class="row-expand-btn" aria-label="Expand receipt details">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </button>
+      <button class="row-delete-btn" type="button" aria-label="Delete receipt">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </button>
+    </span>
+  </div>
+  <div class="receipt-expand" role="region">
+    <div class="expand-inner">
+      <img class="expand-receipt-img" src="../images/placeholder-receipt.svg" alt="Placeholder scanned receipt image">
+      <div class="expand-items">
+        <label class="rename-field">
+          <span>Receipt name</span>
+          <input class="rename-input" type="text" maxlength="60" autocomplete="off" placeholder="Captured Receipt">
+        </label>
+        <h4>Items</h4>
+        <p class="items-hint">The green ticks are our guess at the gluten-free products. Tap a circle to change it. Each gluten-free item is compared with its regular version, and a suggested price only counts after you approve it.</p>
+        <p class="items-check" role="status" hidden></p>
+        <!-- Suggested comparisons waiting for the user (filled in by home.js) -->
+        <div class="suggest-bar" hidden></div>
+        <!-- Only changes how the list looks on screen. Nothing here is saved. -->
+        <div class="list-tools">
+          <label><input type="checkbox" class="tool-gf-first"> Gluten-free items first</label>
+          <label><input type="checkbox" class="tool-hide-others"> <span class="tool-hide-text">Hide other items</span></label>
+        </div>
+        <ul class="expand-item-list"></ul>
+        <p class="receipt-total" role="status" hidden></p>
+        <!-- For anything the scanner missed or misread -->
+        <form class="add-item-form" novalidate>
+          <input class="add-item-name" type="text" placeholder="Item name" aria-label="Item name" maxlength="60" autocomplete="off">
+          <input class="add-item-price" type="text" inputmode="decimal" placeholder="Price" aria-label="Price in dollars" autocomplete="off">
+          <button class="btn btn-secondary btn-sm" type="submit">+ Add item</button>
+          <p class="add-item-error" role="alert" hidden></p>
+        </form>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- ============ MOBILE BOTTOM NAVBAR ============ -->
+<nav class="mobile-bottom-nav" id="historyBottomNav" aria-label="Mobile navigation">
+  <a href="../home/home.html" class="bottom-nav-item" data-nav="dashboard" aria-label="Dashboard">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="3" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="3" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/><rect x="14" y="14" width="7" height="7" rx="1.5" stroke="currentColor" stroke-width="1.8"/></svg>
+  </a>
+  <a href="../history/history.html" class="bottom-nav-item active" data-nav="receipt" aria-label="Receipt History" aria-current="page">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M6 3h12v18l-3-2-3 2-3-2-3 2V3Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 7h6M9 11h6M9 15h3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+  </a>
+  <a href="../settings/settings.html" class="bottom-nav-item" data-nav="settings" aria-label="Settings">
+    <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="m9.5 3-.5 2-2 .9-1.8-.6-2.5 4.4L4.2 11v2l-1.5 1.3 2.5 4.4 1.8-.6 2 .9.5 2h5l.5-2 2-.9 1.8.6 2.5-4.4-1.5-1.3v-2l1.5-1.3-2.5-4.4-1.8.6-2-.9-.5-2h-5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><circle cx="12" cy="12" r="3" stroke="currentColor" stroke-width="1.8"/></svg>
+  </a>
+</nav>
+
+<script src="../components/navbar.js" type="module"></script>
+<script src="../shared.js" type="module"></script>
+<script src="../cloud.js" type="module"></script>
+<script src="../home/compare.js?v=2" type="module"></script>
+<script src="../home/suggest.js?v=1" type="module"></script>
+<script src="./history.js" type="module"></script>
+</body>
+</html>

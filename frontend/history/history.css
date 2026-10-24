@@ -1,0 +1,56 @@
+@import url("../home/home.css");
+
+.receipts-section h1 {
+  font-size: 21px;
+  font-weight: 700;
+}
+
+@media (max-width: 860px) {
+  .receipts-section h1 {
+    font-size: 20px;
+  }
+}
+
+.history-groups { display: grid; gap: 20px; }
+.history-group { background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-md); }
+.history-group > summary {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 22px 24px;
+  cursor: pointer;
+  list-style: none;
+  border-radius: inherit;
+}
+.history-group > summary::-webkit-details-marker { display: none; }
+.history-group > summary::before {
+  content: '';
+  flex: 0 0 8px;
+  width: 8px;
+  height: 8px;
+  border-right: 2px solid var(--text-secondary);
+  border-bottom: 2px solid var(--text-secondary);
+  transform: rotate(-45deg);
+}
+.history-group[open] > summary::before { transform: rotate(45deg); }
+.history-group > summary:focus-visible { outline: 2px solid var(--primary); outline-offset: 3px; }
+.history-group > summary:hover { background: var(--bg); }
+.receipts-section .history-group-title { font-size: 18px; font-weight: 700; }
+.history-group-stats { display: grid; grid-template-columns: repeat(3, minmax(100px, 1fr)); gap: 28px; margin-left: auto; }
+.history-stat { display: flex; flex-direction: column; gap: 3px; }
+.history-stat strong { font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.history-stat:first-child strong { color: var(--primary-hover); }
+.history-stat > span { font-size: 12px; color: var(--text-secondary); }
+.history-year-content { display: grid; gap: 14px; padding: 0 20px 20px; }
+.history-month > summary { padding: 18px; }
+.receipts-section .history-month .history-group-title { font-size: 16px; }
+.history-month .history-stat strong { font-size: 18px; }
+.history-month > .receipt-table { border-width: 1px 0 0; border-radius: 0 0 var(--radius-md) var(--radius-md); }
+
+@media (max-width: 700px) {
+  .history-group > summary { flex-wrap: wrap; gap: 12px; padding: 18px 14px; }
+  .history-group-stats { flex-basis: 100%; margin-left: 20px; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+  .history-stat strong { font-size: 19px; }
+  .history-stat > span { font-size: 11px; }
+  .history-year-content { padding: 0 10px 10px; }
+}

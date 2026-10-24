@@ -45,7 +45,7 @@
     }
     const appLinks = '<div class="msn-links">' +
         '<a href="../home/home.html">Dashboard</a>' +
-        '<a href="../home/home.html#receipts">Receipts</a>' +
+        '<a href="../history/history.html">Receipt History</a>' +
         '<a href="../settings/settings.html">Settings</a>' +
         '</div>';
     const app = '<nav class="msn-nav" aria-label="Primary navigation">' +
