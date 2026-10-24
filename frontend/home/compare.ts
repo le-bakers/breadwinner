@@ -220,7 +220,7 @@
     };
     // With no regular version there is no math to show; the server's note already says why
     const lines = source === 'none' ? answer.warnings : [explain(outcome, line.price)].concat(answer.warnings);
-    showOutcome(answer.warnings.length ? 'warn' : 'ok', money(answer.deduction) + ' extra cost', lines);
+    showOutcome(answer.warnings.length ? 'warn' : 'ok', money(answer.deduction) + ' saved', lines);
     saveBtn.disabled = false;
   }
 
