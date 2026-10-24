@@ -13,7 +13,7 @@
 <link rel="stylesheet" href="./home.css">
 <link rel="icon" type="image/x-icon" href="../images/breadwinner_icon.png">
 </head>
-<body>
+<body data-receipt-period="current-month">
 
 
   
@@ -21,7 +21,7 @@
 
 <div data-navbar="home"></div>
 
-<main id="main-content" class="dashboard">
+<main id="main-content" class="dashboard dashboard-home">
   <div class="container">
 
     <!-- ============ DASHBOARD VIEW ============ -->
@@ -32,37 +32,44 @@
           <h1>Welcome back, Jordan!</h1>
           <p>Here's how your gluten-free spending looks this month.</p>
         </div>
+        <div class="dashboard-period" aria-label="Reporting month">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3" stroke="currentColor" stroke-width="1.6"/><path d="M7 3v4m10-4v4M3 11h18" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+          <span id="dashboardPeriod">This month</span>
+        </div>
       </section>
 
       <!-- ============ SUMMARY ============ -->
       <section class="summary-panel" aria-label="Summary statistics">
         <div class="summary-total">
-          <p class="summary-value odometer" id="totalOvercharge" data-format="money" aria-label="0">$0.00</p>
           <p class="summary-label">Potential deduction</p>
+          <p class="summary-value metric-number" id="totalOvercharge">$0.00</p>
           <p class="estimate-note">An organized estimate from your receipts, not tax advice. Confirm with a tax professional before claiming a deduction.</p>
         </div>
         <div class="summary-details">
           <div class="summary-stat">
-            <p class="summary-stat-value odometer" id="receiptsCount" data-format="int" aria-label="0">0</p>
             <p class="summary-stat-label">Receipts scanned</p>
+            <p class="summary-stat-value metric-number" id="receiptsCount">0</p>
           </div>
           <div class="summary-stat">
-            <p class="summary-stat-value odometer" id="gfItemsCount" data-format="int" aria-label="0">0</p>
             <p class="summary-stat-label">GF items</p>
+            <p class="summary-stat-value metric-number" id="gfItemsCount">0</p>
           </div>
           <div class="summary-stat">
-            <p class="summary-stat-value odometer" id="averageOvercharge" data-format="money" aria-label="50 dollars">$0.00</p>
             <p class="summary-stat-label">Average per receipt</p>
+            <p class="summary-stat-value metric-number" id="averageOvercharge">$0.00</p>
           </div>
         </div>
       </section>
     </div>
 
     <!-- ============ RECEIPT VIEW ============ -->
-    <div class="mobile-view" id="receiptView" hidden>
+    <div class="mobile-view" id="receiptView">
       <section class="receipts-section" id="receipts">
+        <div class="receipts-heading">
+          <h2>Receipt History <span>This month</span></h2>
+          <a class="history-link" href="../history/history.html">View all receipts <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 12h14m-6-6 6 6-6 6" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></a>
+        </div>
         <div class="receipts-toolbar">
-          <h2>Receipt History</h2>
           <div class="toolbar-controls">
             <div class="search-box">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><circle cx="11" cy="11" r="7" stroke="#6B7280" stroke-width="1.8"/><line x1="16.5" y1="16.5" x2="21" y2="21" stroke="#6B7280" stroke-width="1.8" stroke-linecap="round"/></svg>
@@ -80,7 +87,7 @@
             <div class="export-menu">
               <button class="btn btn-secondary btn-sm export-button" id="exportReceipts" type="button" disabled aria-haspopup="true" aria-expanded="false">
                 <svg width="15" height="15" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 3v12m0 0l-4-4m4 4l4-4M5 19h14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
-                Export as spreadsheet
+                Export receipts
               </button>
               <div class="export-menu-options" id="exportMenuOptions" hidden>
                 <button type="button" data-export-format="csv">CSV file (.csv)</button>
@@ -101,7 +108,7 @@
             <span>Status</span>
             <span>Actions</span>
           </div>
-          <!-- Rows injected by home.js from placeholder data -->
+          <!-- Rows injected by home.js from saved receipts for the current month -->
         </div>
       </section>
     </div>

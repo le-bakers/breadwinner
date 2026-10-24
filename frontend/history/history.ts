@@ -22,6 +22,7 @@ function makeSection(key, title, receipts, level) {
     const stat = document.createElement('span');
     stat.className = 'history-stat';
     const value = document.createElement('strong');
+    value.className = 'metric-number';
     const caption = document.createElement('span');
     caption.textContent = label;
     stat.append(value, caption);

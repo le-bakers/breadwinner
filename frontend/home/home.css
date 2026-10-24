@@ -24,93 +24,46 @@
   border: 1.5px solid var(--card);
 }
 
-/* ---------- Header ---------- */
-.dash-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 20px;
-  margin: 8px 0 36px;
-  flex-wrap: wrap;
-}
-.dash-header h1 { font-size: clamp(24px, 3vw, 30px); font-weight: 800; }
-.dash-header p { color: var(--text-secondary); margin-top: 6px; font-size: 15px; }
+/* ---------- Dashboard hierarchy ---------- */
+.dashboard-home { padding-top: 44px; }
+.dashboard-home .mobile-view { animation: none; }
+.dashboard-home > .container { max-width: 1160px; }
+.dashboard-home .dash-header { display: flex; align-items: center; justify-content: space-between; gap: 24px; margin: 0 0 30px; }
+.dashboard-home .dash-header h1 { font-size: 28px; line-height: 1.25; font-weight: 700; letter-spacing: -0.035em; }
+.dashboard-home .dash-header p { font-size: 14px; line-height: 1.6; margin-top: 8px; color: var(--text-secondary); }
+.dashboard-period { display: inline-flex; align-items: center; gap: 9px; flex: 0 0 auto; padding: 10px 13px; border: 1px solid var(--border); border-radius: 10px; background: var(--card); color: var(--text-secondary); font-size: 13px; font-weight: 500; }
 
-/* ---------- Summary ---------- */
-.summary-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1.25fr) minmax(260px, 0.75fr);
-  min-height: 246px;
-  background: var(--card);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-sm);
-  margin-bottom: 48px;
-}
-.summary-total { display: flex; flex-direction: column; justify-content: center; padding: 34px 42px; }
-.summary-value { color: var(--text); font-family: var(--font-display); font-size: clamp(52px, 7vw, 88px); font-weight: 800; letter-spacing: -0.055em; line-height: 1; margin: 14px 0 10px; }
-.summary-label { color: var(--text-secondary); font-size: 15px; }
-.summary-details { display: flex; flex-direction: column; justify-content: center; border-left: 1px solid var(--border); padding: 24px 38px; }
-.summary-stat { padding: 13px 0; }
+/* ---------- Summary: one dominant figure, three supporting measures ---------- */
+.summary-panel { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(290px, 0.8fr); background: var(--card); border: 1px solid var(--border); border-radius: 16px; margin-bottom: 42px; }
+.summary-total { display: flex; flex-direction: column; justify-content: center; min-width: 0; padding: 34px 38px; container-type: inline-size; }
+.summary-label { color: var(--text-secondary); font-size: 14px; line-height: 1.5; font-weight: 500; }
+.summary-value, .summary-stat-value { line-height: 1.12; height: 1.12em; white-space: nowrap; }
+.summary-total .summary-value { color: var(--text); font-size: min(72px, calc(100cqi / var(--metric-width, 6))); margin: 12px 0 16px; }
+.summary-total .estimate-note { color: var(--text-secondary); font-size: 12px; line-height: 1.65; max-width: 46ch; }
+.summary-details { display: flex; flex-direction: column; justify-content: center; padding: 20px 30px; border-left: 1px solid var(--border); }
+.summary-stat { display: flex; align-items: center; justify-content: space-between; gap: 18px; padding: 22px 0; min-width: 0; }
 .summary-stat + .summary-stat { border-top: 1px solid var(--border); }
-.summary-stat-value { font-family: var(--font-display); font-size: 25px; font-weight: 800; line-height: 1.15; }
-.summary-stat-label { color: var(--text-secondary); font-size: 13px; margin-top: 3px; }
+.summary-stat-value { font-size: 28px; color: var(--text); flex: 0 0 auto; }
+.summary-stat-label { font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
 
-/* ---------- Compact odometer: one reusable reel per digit ---------- */
-.odometer { font-variant-numeric: tabular-nums; line-height: 1; white-space: nowrap; }
-.summary-value.odometer { letter-spacing: 0; }
-.summary-value.odometer, .summary-stat-value.odometer { display: block; }
-.odometer > * + * { margin-left: 0.035em; }
-.odometer .odo-static {
-  display: inline-block;
-  height: 1.12em;
-  line-height: 1.12em;
-  vertical-align: top;
-}
-/* Keep the currency mark aligned with the digit baseline without enlarging the
-   rest of the odometer. */
-#totalOvercharge .odo-static.odo-currency {
-  font-size: 0.5em;
-  height: 2.24em;
-  line-height: 1;
-  display: inline-flex;
-  align-items: flex-end;
-  justify-content: center;
-  padding-bottom: 0.4em;
-  box-sizing: border-box;
-}
-.odometer .odo-digit {
-  display: inline-block;
-  position: relative;
-  width: 0.62em;
-  height: 1.12em;
-  overflow: hidden;
-  vertical-align: top;
-  -webkit-mask-image: linear-gradient(to bottom, transparent, black 16%, black 84%, transparent);
-  mask-image: linear-gradient(to bottom, transparent, black 16%, black 84%, transparent);
-}
-.odometer .odo-reel {
-  display: inline-flex;
-  flex-direction: column;
-  line-height: 1;
-  transform: translateY(0.06em);
-}
-.odometer .odo-reel > span {
-  display: block;
-  height: 1em;
-  line-height: 1;
-}
-.odometer .odo-reel.rolling {
-  transition: transform 0.72s cubic-bezier(0.2, 0.78, 0.25, 1);
-}
-@media (prefers-reduced-motion: reduce) {
-  .odometer .odo-reel.rolling { transition: none; }
-}
+/* The outer line, symbols, and digit windows remain fixed during rotation. */
+.metric-visual { display: flex; align-items: center; height: 1.12em; white-space: nowrap; line-height: 1.12; }
+.metric-digit { display: block; flex: 0 0 auto; width: 1ch; height: 1.12em; overflow: hidden; }
+.metric-reel { display: block; width: 100%; text-align: center; }
+.metric-reel > span { display: block; height: 1.12em; line-height: 1.12; }
+.metric-symbol { display: block; flex: 0 0 auto; height: 1.12em; line-height: 1.12; }
 
-@media (max-width: 700px) {
-  .summary-panel { grid-template-columns: 1fr; }
-  .summary-total { min-height: 206px; padding: 30px 26px; }
-  .summary-details { border-left: 0; border-top: 1px solid var(--border); padding: 12px 26px 18px; }
+@media (max-width: 760px) {
+  .dashboard-home .dash-header { align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .dashboard-home .dash-header h1 { font-size: 25px; }
+  .summary-panel { grid-template-columns: minmax(0, 1fr); margin-bottom: 32px; }
+  .summary-total { padding: 28px 24px; min-height: 0; }
+  .summary-total .summary-value { font-size: min(56px, calc(100cqi / var(--metric-width, 6))); }
+  .summary-details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); padding: 20px 22px; gap: 16px; border-left: 0; border-top: 1px solid var(--border); }
+  .summary-stat { flex-direction: column; justify-content: flex-start; align-items: flex-start; gap: 10px; padding: 0; container-type: inline-size; }
+  .summary-stat + .summary-stat { border-top: 0; }
+  .summary-stat-label { min-height: 32px; font-size: 11px; line-height: 1.45; }
+  .summary-stat-value { font-size: min(26px, calc(100cqi / var(--metric-width, 4))); }
 }
 
 /* ---------- Receipts toolbar ---------- */
@@ -1066,4 +1019,46 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
   .camera-preview { display: flex; flex: 1; flex-direction: column; justify-content: center; padding: 22px 16px calc(22px + env(safe-area-inset-bottom)); }
   .camera-preview .camera-stage { height: min(58dvh, 500px); min-height: 220px; }
   .camera-preview-actions { flex-direction: column; }.camera-preview-actions .btn { width: 100%; }
+}
+
+/* ---------- Home receipt workspace ---------- */
+.dashboard-home .receipts-heading { display: flex; align-items: center; justify-content: space-between; gap: 18px; margin-bottom: 20px; }
+.dashboard-home .receipts-heading h2 { font-size: 19px; font-weight: 700; letter-spacing: -0.025em; }
+.dashboard-home .receipts-heading h2 span { display: inline-block; margin-left: 12px; color: var(--text-secondary); font-family: var(--font-body); font-size: 13px; font-weight: 400; letter-spacing: 0; }
+.history-link { display: inline-flex; align-items: center; gap: 7px; min-height: 40px; color: var(--text-secondary); font-size: 13px; font-weight: 500; text-decoration: none; white-space: nowrap; }
+.history-link:hover { color: var(--primary-hover); }
+.history-link:focus-visible { outline: 2px solid var(--primary); outline-offset: 4px; border-radius: 4px; }
+.dashboard-home .receipts-toolbar { margin-bottom: 14px; }
+.dashboard-home .toolbar-controls { display: grid; grid-template-columns: minmax(180px, 1fr) 152px auto; align-items: stretch; gap: 10px; width: 100%; }
+.dashboard-home .search-box { min-width: 0; min-height: 44px; border-radius: 11px; padding: 10px 14px; box-shadow: none; }
+.dashboard-home .search-box input { width: 100%; font-size: 13px; }
+.dashboard-home .select-wrap select { width: 100%; height: 44px; border-radius: 11px; font-size: 13px; }
+.dashboard-home .export-button { height: 44px; padding: 0 16px; font-size: 13px; font-weight: 500; border-radius: 11px; background: var(--card); color: var(--text); box-shadow: none; }
+.dashboard-home .receipts-note { margin-bottom: 18px; font-size: 12px; line-height: 1.6; }
+.dashboard-home .receipt-table { border-radius: 14px; box-shadow: none; }
+.dashboard-home .receipt-row { padding: 18px 22px; font-size: 13px; }
+.dashboard-home .receipt-row-head { padding-top: 14px; padding-bottom: 14px; background: var(--bg); font-size: 10px; letter-spacing: 0.045em; font-weight: 600; }
+.dashboard-home .cell-name { font-weight: 600; }
+.dashboard-home .cell-overcharge { font-variant-numeric: tabular-nums; font-weight: 600; }
+.dashboard-home .receipt-thumb { width: 32px; height: 36px; border-radius: 8px; background: var(--bg); color: var(--primary-hover); }
+.dashboard-home .receipt-row:not(.receipt-row-head):hover { background: var(--bg); }
+.dashboard-home .receipt-empty { padding: 40px 24px; font-size: 14px; line-height: 1.7; }
+body[data-receipt-period="current-month"] .fab { box-shadow: var(--shadow-md); }
+
+@media (max-width: 560px) {
+  .dashboard-home { padding-top: 26px; }
+  .dashboard-home .dash-header { margin-bottom: 24px; gap: 14px; }
+  .dashboard-home .dash-header h1 { font-size: 23px; }
+  .dashboard-home .dash-header p { font-size: 13px; max-width: 32ch; }
+  .dashboard-period { padding: 0; min-height: 24px; border: 0; background: transparent; font-size: 12px; }
+  .dashboard-home .receipts-heading { align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+  .dashboard-home .receipts-heading h2 { font-size: 18px; line-height: 1.4; }
+  .dashboard-home .receipts-heading h2 span { display: block; margin: 4px 0 0; font-size: 12px; }
+  .history-link { min-height: 28px; font-size: 12px; }
+  .dashboard-home .toolbar-controls { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 10px; }
+  .dashboard-home .search-box { grid-column: 1 / -1; }
+  .dashboard-home .search-box input { font-size: 16px; }
+  .dashboard-home .export-button { width: 100%; font-size: 12px; padding: 0 10px; justify-content: center; }
+  .dashboard-home .receipt-row { padding: 16px 14px; }
+  .dashboard-home .receipts-note { font-size: 11px; }
 }

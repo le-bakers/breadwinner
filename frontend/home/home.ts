@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { displayMetrics } from './metrics.js';
 /* ============================================
    BreadWinner — Dashboard JS
    ============================================ */
@@ -32,6 +33,9 @@
     welcomeHeading.textContent = 'Welcome back, ' + firstName + '!';
   }
 
+  const reportingMonth = document.getElementById('dashboardPeriod');
+  if (reportingMonth) reportingMonth.textContent = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date());
+
   /* ---------- Receipt data ---------- */
   // Signed in with an account (cloud.js): receipts live in the database and are loaded at the bottom of this file.
   // Demo mode (no database connected): receipts live in this browser's localStorage.
@@ -53,105 +57,35 @@
   }
   const RECEIPTS = cloud.enabled ? [] : loadReceipts();
 
+  // Scope the dashboard to this month without dropping older saved receipts.
+  function getPageReceipts() {
+    if (document.body.dataset.receiptPeriod !== 'current-month') return RECEIPTS;
+    const now = new Date();
+    const month = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-';
+    return RECEIPTS.filter(receipt => typeof receipt.date === 'string' && receipt.date.startsWith(month));
+  }
+
+
   const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
   const money = (n) => '$' + n.toFixed(2);
 
-  function animateMetric(id, target, format, delay) {
-    // Each digit keeps its reel between updates, so only changed digits roll.
-    const element = document.getElementById(id);
-    if (!element) return;
-    const reduceMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const label = format === 'money' ? (Number(target).toFixed(2) + ' dollars') : String(target);
-
-    const fixed = format === 'money' ? Number(target).toFixed(2) : String(Math.round(Number(target)));
-    const parts = fixed.split('.');
-    const digits = parts.join('');
-    const decimals = parts.length > 1 ? parts[1].length : 0;
-
-    // Build (or reuse) the reel structure once per digit-shape.
-    const key = (format === 'money' ? '$' : '') + '|' + digits.length + '|' + decimals;
-    if (element.getAttribute('data-layout') !== key) {
-      element.setAttribute('data-layout', key);
-      element.setAttribute('data-current', '0'.repeat(digits.length));
-      element.innerHTML = '';
-      const frag = document.createDocumentFragment();
-      if (format === 'money') {
-        const pre = document.createElement('span');
-        pre.className = 'odo-static' + (id === 'totalOvercharge' ? ' odo-currency' : '');
-        pre.textContent = '$';
-        frag.appendChild(pre);
-      }
-      const intLen = digits.length - decimals;
-      for (let i = 0; i < digits.length; i++) {
-        if (decimals && i === intLen) {
-          const dot = document.createElement('span');
-          dot.className = 'odo-static';
-          dot.textContent = '.';
-          frag.appendChild(dot);
-        }
-        const win = document.createElement('span');
-        win.className = 'odo-digit';
-        win.setAttribute('aria-hidden', 'true');
-        const reel = document.createElement('span');
-        reel.className = 'odo-reel';
-        for (let d = 0; d <= 19; d++) {
-          const cell = document.createElement('span');
-          cell.textContent = String(d % 10);
-          reel.appendChild(cell);
-        }
-        reel.style.transform = 'translateY(0.06em)';
-        win.appendChild(reel);
-        frag.appendChild(win);
-      }
-      element.appendChild(frag);
-    }
-
-    const reels = element.querySelectorAll('.odo-reel');
-    const current = (element.getAttribute('data-current') || '').padStart(digits.length, '0');
-    setTimeout(() => {
-      for (let i = 0; i < reels.length; i++) {
-        const reel = reels[i];
-        const from = Number(current[i] || 0);
-        const to = Number(digits[i]);
-        const steps = to >= from ? to - from : to + 10 - from;
-        const end = 0.06 - from - steps;
-        reel.style.transitionDelay = (i * 35) + 'ms';
-        if (steps === 0) {
-          reel.classList.remove('rolling');
-          reel.style.transform = 'translateY(' + (0.06 - from) + 'em)';
-          continue;
-        }
-        if (reduceMotion) {
-          reel.classList.remove('rolling');
-          reel.style.transform = 'translateY(' + end + 'em)';
-          continue;
-        }
-        reel.classList.remove('rolling');
-        reel.style.transform = 'translateY(' + (0.06 - from) + 'em)';
-        void reel.offsetHeight;
-        reel.classList.add('rolling');
-        reel.style.transform = 'translateY(' + end + 'em)';
-      }
-      element.setAttribute('data-current', digits);
-      element.setAttribute('aria-label', label);
-    }, reduceMotion ? 0 : delay);
-  }
-
   // The dashboard numbers are added up from the saved receipts, so they are always real.
-  // animate = true staggers the four rolls (page load); false updates them all at once.
-  function updateMetrics(animate) {
-    const total = Math.round(RECEIPTS.reduce((sum, receipt) => sum + (receipt.overcharge || 0), 0) * 100) / 100;
-    const gfItems = RECEIPTS.reduce((sum, receipt) => sum + (receipt.gfItems || 0), 0);
-    const average = RECEIPTS.length ? total / RECEIPTS.length : 0;
+  function updateMetrics(animateOnLoad = false) {
+    const receipts = getPageReceipts();
+    const total = Math.round(receipts.reduce((sum, receipt) => sum + (receipt.overcharge || 0), 0) * 100) / 100;
+    const gfItems = receipts.reduce((sum, receipt) => sum + (receipt.gfItems || 0), 0);
+    const average = receipts.length ? total / receipts.length : 0;
 
-    animateMetric('totalOvercharge', total, 'money', animate ? 150 : 0);
-    animateMetric('receiptsCount', RECEIPTS.length, 'int', animate ? 300 : 0);
-    animateMetric('gfItemsCount', gfItems, 'int', animate ? 450 : 0);
-    animateMetric('averageOvercharge', average, 'money', animate ? 600 : 0);
+    displayMetrics([
+      { id: 'totalOvercharge', value: total, format: 'money' },
+      { id: 'receiptsCount', value: receipts.length, format: 'int' },
+      { id: 'gfItemsCount', value: gfItems, format: 'int' },
+      { id: 'averageOvercharge', value: average, format: 'money' }
+    ], animateOnLoad);
     if (window.BreadWinner.receiptHistory) window.BreadWinner.receiptHistory.refresh();
   }
 
-  updateMetrics(true);
+  updateMetrics(!cloud.enabled);
 
   const table = document.getElementById('receiptTable');
   const template = document.getElementById('rowTemplate');
@@ -729,7 +663,7 @@
     tally(receipt);
     saveReceipts(receipt);
     renderLines(receipt, row, expand);
-    updateMetrics(false);
+    updateMetrics();
   }
 
   function addLine(receipt, row, expand) {
@@ -789,7 +723,7 @@
       if (cloud.enabled) cloud.deleteReceipt(receiptToDelete).catch((error) => toast('Not deleted from your account: ' + error.message));
       else saveReceipts();
       applyFilters();
-      updateMetrics(false);
+      updateMetrics();
       toast('Receipt deleted');
     }
     closeDeleteModal();
@@ -822,7 +756,9 @@
     if (!list.length) {
       const empty = document.createElement('div');
       empty.className = 'receipt-empty';
-      empty.textContent = 'No receipts yet! Click the green + button to upload or take a photo of a receipt.';
+      empty.textContent = searchInput.value.trim()
+      ? 'No receipts match your search.'
+      : 'No receipts this month yet! Click the green + button to upload or take a photo of a receipt.';
       table.appendChild(empty);
       updateExportButton();
       return;
@@ -833,7 +769,7 @@
 
   function updateExportButton() {
     if (!exportButton) return;
-    exportButton.disabled = !RECEIPTS.some((receipt) => !receipt.processing);
+    exportButton.disabled = !getPageReceipts().some((receipt) => !receipt.processing);
   }
 
   function csvCell(value) {
@@ -842,7 +778,7 @@
   }
 
   function getExportRows() {
-    const receipts = RECEIPTS.filter((receipt) => !receipt.processing);
+    const receipts = getPageReceipts().filter((receipt) => !receipt.processing);
     const headers = [
       'Receipt name', 'Receipt date', 'Item', 'Item price', 'Quantity',
       'Gluten-free', 'Item potential deduction', 'Receipt potential deduction',
@@ -956,7 +892,7 @@
 
   function applyFilters() {
     const query = (searchInput.value || '').toLowerCase().trim();
-    let list = RECEIPTS.filter((r) => r.name.toLowerCase().includes(query));
+    let list = getPageReceipts().filter((r) => r.name.toLowerCase().includes(query));
 
     switch (sortSelect.value) {
       case 'oldest':
@@ -975,7 +911,7 @@
   }
 
   if (table && template) {
-    render(RECEIPTS);
+    applyFilters();
     searchInput.addEventListener('input', applyFilters);
     sortSelect.addEventListener('change', applyFilters);
     exportButton.addEventListener('click', () => {
@@ -1210,10 +1146,9 @@
 
   function showReceiptHistory() {
     applyFilters();
-    updateMetrics(false);
+    updateMetrics();
     if (!window.matchMedia('(max-width: 860px)').matches) return;
-    switchMobileView('receipt');
-
+    document.getElementById('receipts').scrollIntoView({ block: 'start' });
   }
 
   /* ---------- Receipt scanning ---------- */
@@ -1281,7 +1216,7 @@
     tally(receipt);
     saveReceipts(receipt);
     applyFilters();
-    updateMetrics(false);
+    updateMetrics();
 
     // Fill in a suggested comparison for each gluten-free item. The user still approves every one.
     const suggested = (await makeDrafts(receipt)).made;
@@ -1446,39 +1381,6 @@
       }
     });
   }
-
-  /* ---------- Mobile bottom navbar ---------- */
-  const bottomNav = document.getElementById('mobileBottomNav');
-  // Show the correct mobile view when landing on the page with a #receipts hash.
-  function applyInitialRoute() {
-    if (!bottomNav) return;
-    if ((window.location.hash || '') === '#receipts') {
-      // On desktop this is a no-op, leaving the default anchor scroll intact.
-      switchMobileView('receipt');
-    }
-  }
-
-  const dashboardView = document.getElementById('dashboardView');
-  const receiptView = document.getElementById('receiptView');
-
-  function switchMobileView(viewName) {
-    if (!dashboardView || !receiptView) return;
-    const isMobile = window.matchMedia('(max-width: 860px)').matches;
-    if (!isMobile) return;
-
-    if (viewName === 'receipt') {
-      dashboardView.hidden = true;
-      receiptView.hidden = false;
-    } else {
-      dashboardView.hidden = false;
-      receiptView.hidden = true;
-    }
-    window.scrollTo(0, 0);
-  }
-
-
-  // Preserve old #receipts bookmarks; navigation links use their own pages.
-  applyInitialRoute();
 
   /* ---------- Signed in with an account: fetch this person's receipts ---------- */
   if (cloud.enabled) {
