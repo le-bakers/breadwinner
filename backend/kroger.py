@@ -17,6 +17,7 @@ USER_AGENT = "BreadWinner/1.0 (celiac receipt tracker)"
 # (frontend/api/kroger.py). Unset on the laptop = ask Kroger directly.
 PROXY_URL = os.getenv("KROGER_PROXY_URL")
 PROXY_KEY = os.getenv("KROGER_PROXY_KEY")  # shared secret, so only our server can use the forwarder
+print(f"Kroger forwarder: {PROXY_URL or 'off, asking Kroger directly'}, password {'set' if PROXY_KEY else 'missing'}")
 
 _token_cache = {"access_token": None, "expires_at": 0}
 
