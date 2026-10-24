@@ -406,8 +406,9 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
 .badge-compare:hover { background: #166534; }
 .badge-tax { background: var(--accent-light); color: #15803D; }
 .badge-tax:hover { background: #BBF7D0; }
-.badge-tax.badge-check { background: #FEF3C7; color: #92400E; }  /* saved, but with a warning worth a look */
-.badge-tax.badge-check:hover { background: #FDE68A; }
+/* Colors: green = approved and counted, yellow = still needs the user's review */
+.badge-approve { background: #FDE68A; color: #78350F; }
+.badge-approve:hover { background: #FCD34D; }
 
 /* Suggested comparisons: the strip above the items, and the "Change" button next to "Approve" */
 .suggest-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 8px 12px; margin-bottom: 12px; padding: 10px 14px; font-size: 13px; line-height: 1.5; color: var(--text); background: var(--accent-light); border-radius: 10px; }
@@ -515,8 +516,8 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
 :root[data-theme="dark"] .item-mark.no { box-shadow: inset 0 0 0 1.5px #6B7A6C; }
 :root[data-theme="dark"] .badge-tax { color: #4ADE80; }
 :root[data-theme="dark"] .badge-tax:hover { background: rgba(var(--accent-rgb), 0.26); }
-:root[data-theme="dark"] .badge-tax.badge-check { background: rgba(251,191,36,0.16); color: #FCD34D; }
-:root[data-theme="dark"] .badge-tax.badge-check:hover { background: rgba(251,191,36,0.26); }
+:root[data-theme="dark"] .badge-approve { background: rgba(251,191,36,0.16); color: #FCD34D; }
+:root[data-theme="dark"] .badge-approve:hover { background: rgba(251,191,36,0.26); }
 :root[data-theme="dark"] .compare-outcome.ok { color: #4ADE80; }
 :root[data-theme="dark"] .compare-outcome.warn { background: rgba(251,191,36,0.1); color: #FCD34D; border-color: rgba(251,191,36,0.3); }
 :root[data-theme="dark"] .badge-unsure { background: rgba(251,191,36,0.16); color: #FCD34D; }
