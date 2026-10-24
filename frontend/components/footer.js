@@ -1,32 +1,32 @@
-"use strict";
 // @ts-nocheck
+import { pageUrl, assetUrl } from '../routes.js';
 (function () {
     'use strict';
     const footer = '<footer class="footer">' +
         '<div class="container">' +
         '<div class="footer-inner">' +
         '<div>' +
-        '<a class="logo" href="/">' +
-        '<img src="/images/breadwinner_logo_black.png" alt="BreadWinner" height="36">' +
+        '<a class="logo" href="' + pageUrl('/') + '">' +
+        '<img src="' + assetUrl('images/breadwinner_logo_black.png') + '" alt="BreadWinner" height="36">' +
         '</a>' +
         '<p class="footer-tagline">Gluten-free grocery tracking, simplified.</p>' +
         '</div>' +
         '<div class="footer-links">' +
         '<div class="footer-col">' +
         '<h4>Product</h4>' +
-        '<a href="/#how-it-works">How it Works</a>' +
-        '<a href="/signin">Sign In</a>' +
-        '<a href="/signin">Start Free</a>' +
+        '<a href="' + pageUrl('/#how-it-works') + '">How it Works</a>' +
+        '<a href="' + pageUrl('/signin') + '">Sign In</a>' +
+        '<a href="' + pageUrl('/signup') + '">Start Free</a>' +
         '</div>' +
         '<div class="footer-col">' +
         '<h4>Company</h4>' +
-        '<a href="/about">About Us</a>' +
-        '<a href="/contact">Contact</a>' +
+        '<a href="' + pageUrl('/about') + '">About Us</a>' +
+        '<a href="' + pageUrl('/contact') + '">Contact</a>' +
         '</div>' +
         '<div class="footer-col">' +
         '<h4>Legal</h4>' +
-        '<a href="/privacy">Privacy</a>' +
-        '<a href="/terms">Terms</a>' +
+        '<a href="' + pageUrl('/privacy') + '">Privacy</a>' +
+        '<a href="' + pageUrl('/terms') + '">Terms</a>' +
         '</div>' +
         '</div>' +
         '</div>' +

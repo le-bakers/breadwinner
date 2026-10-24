@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { pageUrl } from '../routes.js';
 import { displayMetrics } from './metrics.js';
 /* ============================================
    BreadWinner — Dashboard JS
@@ -32,9 +33,9 @@ import { displayMetrics } from './metrics.js';
         welcomeHeading.textContent = 'Welcome back, ' + firstName + '!';
     }
     const reportingMonth = document.getElementById('dashboardPeriod');
-  if (reportingMonth) reportingMonth.textContent = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date());
-
-  /* ---------- Receipt data ---------- */
+    if (reportingMonth)
+        reportingMonth.textContent = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date());
+    /* ---------- Receipt data ---------- */
     // Signed in with an account (cloud.js): receipts live in the database and are loaded at the bottom of this file.
     // Demo mode (no database connected): receipts live in this browser's localStorage.
     const cloud = window.BreadWinner.cloud;
@@ -60,33 +61,31 @@ import { displayMetrics } from './metrics.js';
         catch (e) { /* storage unavailable */ }
     }
     const RECEIPTS = cloud.enabled ? [] : loadReceipts();
-
-  // Scope the dashboard to this month without dropping older saved receipts.
-  function getPageReceipts() {
-    if (document.body.dataset.receiptPeriod !== 'current-month') return RECEIPTS;
-    const now = new Date();
-    const month = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-';
-    return RECEIPTS.filter(receipt => typeof receipt.date === 'string' && receipt.date.startsWith(month));
-  }
-
+    // Scope the dashboard to this month without dropping older saved receipts.
+    function getPageReceipts() {
+        if (document.body.dataset.receiptPeriod !== 'current-month')
+            return RECEIPTS;
+        const now = new Date();
+        const month = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-';
+        return RECEIPTS.filter(receipt => typeof receipt.date === 'string' && receipt.date.startsWith(month));
+    }
     const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
     const money = (n) => '$' + n.toFixed(2);
     // The dashboard numbers are added up from the saved receipts, so they are always real.
     function updateMetrics(animateOnLoad = false) {
-      const receipts = getPageReceipts();
-      const total = Math.round(receipts.reduce((sum, receipt) => sum + (receipt.overcharge || 0), 0) * 100) / 100;
-      const gfItems = receipts.reduce((sum, receipt) => sum + (receipt.gfItems || 0), 0);
-      const average = receipts.length ? total / receipts.length : 0;
-
-      displayMetrics([
-        { id: 'totalOvercharge', value: total, format: 'money' },
-        { id: 'receiptsCount', value: receipts.length, format: 'int' },
-        { id: 'gfItemsCount', value: gfItems, format: 'int' },
-        { id: 'averageOvercharge', value: average, format: 'money' }
-      ], animateOnLoad);
-      if (window.BreadWinner.receiptHistory) window.BreadWinner.receiptHistory.refresh();
+        const receipts = getPageReceipts();
+        const total = Math.round(receipts.reduce((sum, receipt) => sum + (receipt.overcharge || 0), 0) * 100) / 100;
+        const gfItems = receipts.reduce((sum, receipt) => sum + (receipt.gfItems || 0), 0);
+        const average = receipts.length ? total / receipts.length : 0;
+        displayMetrics([
+            { id: 'totalOvercharge', value: total, format: 'money' },
+            { id: 'receiptsCount', value: receipts.length, format: 'int' },
+            { id: 'gfItemsCount', value: gfItems, format: 'int' },
+            { id: 'averageOvercharge', value: average, format: 'money' }
+        ], animateOnLoad);
+        if (window.BreadWinner.receiptHistory)
+            window.BreadWinner.receiptHistory.refresh();
     }
-
     updateMetrics(!cloud.enabled);
     const table = document.getElementById('receiptTable');
     const template = document.getElementById('rowTemplate');
@@ -732,18 +731,18 @@ import { displayMetrics } from './metrics.js';
         btn.setAttribute('aria-label', isOpen ? 'Collapse receipt details' : 'Expand receipt details');
     }
     function render(list) {
-    if (window.BreadWinner.receiptHistory) {
-      window.BreadWinner.receiptHistory.render(table, list, buildRow);
-      updateExportButton();
-      return;
-    }
+        if (window.BreadWinner.receiptHistory) {
+            window.BreadWinner.receiptHistory.render(table, list, buildRow);
+            updateExportButton();
+            return;
+        }
         table.querySelectorAll('.receipt-row:not(.receipt-row-head), .receipt-expand, .receipt-empty').forEach((el) => el.remove());
         if (!list.length) {
             const empty = document.createElement('div');
             empty.className = 'receipt-empty';
             empty.textContent = searchInput.value.trim()
-      ? 'No receipts match your search.'
-      : 'No receipts this month yet! Click the green + button to upload or take a photo of a receipt.';
+                ? 'No receipts match your search.'
+                : 'No receipts this month yet! Click the green + button to upload or take a photo of a receipt.';
             table.appendChild(empty);
             updateExportButton();
             return;
@@ -1171,13 +1170,13 @@ import { displayMetrics } from './metrics.js';
         });
     }
     function showReceiptHistory() {
-    applyFilters();
-    updateMetrics();
-    if (!window.matchMedia('(max-width: 860px)').matches) return;
-    document.getElementById('receipts').scrollIntoView({ block: 'start' });
-  }
-
-  /* ---------- Receipt scanning ---------- */
+        applyFilters();
+        updateMetrics();
+        if (!window.matchMedia('(max-width: 860px)').matches)
+            return;
+        document.getElementById('receipts').scrollIntoView({ block: 'start' });
+    }
+    /* ---------- Receipt scanning ---------- */
     // Where the Python server lives (set in shared.ts: this computer, or Render)
     const API_BASE = window.BreadWinner.apiBase;
     function toast(message) {
@@ -1408,10 +1407,17 @@ import { displayMetrics } from './metrics.js';
     }
     /* ---------- Signed in with an account: fetch this person's receipts ---------- */
     if (cloud.enabled) {
-        (async function () {
-            const user = await cloud.getUser();
+        async function loadAccount() {
+            let user;
+            try {
+                user = await cloud.getUser();
+            }
+            catch (error) {
+                // cloud.js keeps the protected page hidden and offers a retry.
+                return;
+            }
             if (!user) {
-                window.location.href = '/signin';
+                window.location.href = pageUrl('/signin');
                 return;
             }
             // The name can arrive only now (first visit after Google sign-in)
@@ -1429,6 +1435,7 @@ import { displayMetrics } from './metrics.js';
             RECEIPTS.forEach(tally); // fills in items, gfItems, overcharge and status
             applyFilters();
             updateMetrics(true);
-        })();
+        }
+        loadAccount();
     }
 })();

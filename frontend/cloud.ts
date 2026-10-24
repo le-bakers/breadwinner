@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { pageUrl } from './routes.js';
 /* ============================================
    BreadWinner — Accounts + saved receipts (Supabase)
    ============================================
@@ -27,6 +28,38 @@
      Ticked: stay signed in after the browser closes (localStorage).
      Not ticked: signed out when this tab closes (sessionStorage). */
   const REMEMBER_KEY = 'breadwinner_remember';
+  const AUTH_KEY = 'breadwinner_auth';
+  const DEADLINE_KEY = 'breadwinner_auth_expires_at';
+  const REMEMBER_MS = 30 * 24 * 60 * 60 * 1000;
+  let authState = null; // null = still checking / temporarily unavailable
+  let resolving = null;
+  let revision = 0;
+  let callbackAuthentication = window.location.hash.includes('access_token=');
+  let authenticating = false;
+  let expiryTimer;
+  function publish(user, known = true) {
+    authState = known ? Boolean(user) : null;
+    if (known) {
+      if (user) rememberPerson(user);
+      else BW.signOut();
+    }
+    window.dispatchEvent(new CustomEvent('breadwinner:auth-changed', { detail: { signedIn: authState } }));
+    clearTimeout(expiryTimer);
+    if (user && known) {
+      const remaining = Number(loginStore.getItem(DEADLINE_KEY)) - Date.now();
+      if (remaining > 0) expiryTimer = setTimeout(() => {
+        BW.cloud.getUser().catch(() => {});
+      }, Math.min(remaining, 2147483647));
+    }
+  }
+  function expired() {
+    if (sessionStorage.getItem(AUTH_KEY)) return false;
+    const deadline = Number(loginStore.getItem(DEADLINE_KEY));
+    return deadline > 0 && Date.now() >= deadline;
+  }
+  function startWindow() {
+    loginStore.setItem(DEADLINE_KEY, String(Date.now() + REMEMBER_MS));
+  }
   function setRemember(keep) {
     try { localStorage.setItem(REMEMBER_KEY, keep ? 'yes' : 'no'); } catch (e) { /* storage unavailable */ }
   }
@@ -36,9 +69,17 @@
     },
     setItem(key, value) {
       try {
-        const keep = localStorage.getItem(REMEMBER_KEY) !== 'no';
+        // Refreshes keep the session in its original store, even if another tab
+        // has since changed the Remember me preference.
+        const keep = key === AUTH_KEY && !authenticating && !callbackAuthentication && sessionStorage.getItem(AUTH_KEY) ? false
+          : key === AUTH_KEY && !authenticating && !callbackAuthentication && localStorage.getItem(AUTH_KEY) ? true
+          : localStorage.getItem(REMEMBER_KEY) !== 'no';
         (keep ? localStorage : sessionStorage).setItem(key, value);
         (keep ? sessionStorage : localStorage).removeItem(key);
+        if (key === AUTH_KEY && keep && (authenticating || callbackAuthentication || !localStorage.getItem(DEADLINE_KEY))) {
+          localStorage.setItem(DEADLINE_KEY, String(Date.now() + REMEMBER_MS));
+        }
+        if (key === AUTH_KEY && !keep) localStorage.removeItem(DEADLINE_KEY);
       } catch (e) { /* storage unavailable */ }
     },
     removeItem(key) {
@@ -51,18 +92,37 @@
   let connection = null;
   function supabase() {
     if (!connection) {
-      connection = import(LIBRARY).then((library) => library.createClient(SUPABASE_URL, SUPABASE_KEY, {
-        auth: {
-          storage: loginStore,
-          storageKey: 'breadwinner_auth',  // starts with breadwinner_ so Settings -> Clear Data removes it too
-          flowType: 'implicit',
-          detectSessionInUrl: true         // finishes Google sign-in and reset links when the page opens
-        }
-      }));
+      connection = import(LIBRARY).then((library) => {
+        const client = library.createClient(SUPABASE_URL, SUPABASE_KEY, {
+          auth: {
+            storage: loginStore,
+            storageKey: AUTH_KEY,
+            persistSession: true,
+            autoRefreshToken: true,
+            flowType: 'implicit',
+            detectSessionInUrl: true         // finishes Google sign-in and reset links when the page opens
+          }
+        });
+        client.auth.onAuthStateChange((event, session) => {
+          // Do not call async auth methods inside this callback: Supabase holds
+          // its session lock until the callback returns.
+          revision++;
+          if (event === 'SIGNED_OUT') {
+            loginStore.removeItem(DEADLINE_KEY);
+            publish(null);
+          } else if (session && !expired() && session.expires_at * 1000 > Date.now()) {
+            publish(session.user);
+          } else {
+            publish(null, false);
+          }
+          if (event === 'INITIAL_SESSION') callbackAuthentication = false;
+        });
+        return client;
+      }).catch((error) => { connection = null; throw error; });
     }
     return connection;
   }
-  if (enabled) supabase();  // start now, so the sign-in link in the address bar is read right away
+  if (enabled) supabase().catch(() => publish(null, false));
 
   // Turns Supabase's error into a sentence for the user, and stops the action
   function fail(error) {
@@ -83,9 +143,51 @@
   function rememberPerson(user) {
     const details = user.user_metadata || {};
     const name = details.full_name || details.name || '';
-    if (!BW.isSignedIn()) BW.signIn({ method: (user.app_metadata && user.app_metadata.provider) || 'email', email: user.email });
+    BW.signIn({ method: (user.app_metadata && user.app_metadata.provider) || 'email', email: user.email });
     if (name) BW.safeSet(BW.STORAGE.name, name);
     if (user.email) BW.safeSet(BW.STORAGE.email, user.email);
+  }
+
+  function terminalAuthError(error) {
+    return ['refresh_token_not_found', 'refresh_token_already_used', 'session_not_found',
+      'session_expired', 'user_not_found', 'user_banned', 'bad_jwt', 'invalid_credentials']
+      .includes(error && error.code) || /invalid refresh token|refresh token.*(not found|expired|already used)/i.test(error && error.message || '');
+  }
+
+  async function forgetSession(client) {
+    // Remove credentials immediately, including offline and expired sessions.
+    loginStore.removeItem(AUTH_KEY);
+    loginStore.removeItem(DEADLINE_KEY);
+    revision++;
+    publish(null);
+    try { await client.auth.signOut({ scope: 'local' }); } catch (e) { /* already forgotten locally */ }
+  }
+
+  async function resolveUser() {
+    const client = await supabase();
+    const before = revision;
+    const { data, error } = await client.auth.getSession(); // waits for restoration and refresh
+    if (before !== revision) return resolveUser(); // a sign-out/sign-in raced this check
+    // OAuth callbacks must finish replacing an older session before applying
+    // its retention deadline; getSession waits for that initialization.
+    if (expired()) { await forgetSession(client); return null; }
+    if (error) {
+      if (terminalAuthError(error)) { await forgetSession(client); return null; }
+      throw error;
+    }
+    const session = data && data.session;
+    if (session && !(session.expires_at * 1000 > Date.now())) {
+      throw new Error('Your session could not be refreshed. Check your connection and try again.');
+    }
+    if (session) {
+      // Migrate existing remembered sessions without extending on future refreshes.
+      if (localStorage.getItem(AUTH_KEY) && !loginStore.getItem(DEADLINE_KEY)) startWindow();
+      publish(session.user);
+      return session.user;
+    }
+    loginStore.removeItem(DEADLINE_KEY);
+    publish(null);
+    return null;
   }
 
   /* ---------- Receipts: website shape <-> database row ---------- */
@@ -122,37 +224,59 @@
   BW.cloud = {
     enabled,
     cameFromResetEmail,
+    get signedIn() { return authState; },
+
+    async getSignedInState() {
+      if (!enabled) return BW.isSignedIn();
+      return Boolean(await this.getUser());
+    },
 
     // Who is signed in on this browser (null = nobody)
     async getUser() {
-      const { data } = await (await supabase()).auth.getSession();
-      const user = data.session ? data.session.user : null;
-      if (user) rememberPerson(user);
-      return user;
+      if (!resolving) {
+        resolving = resolveUser().catch((error) => {
+          publish(null, false);
+          throw error;
+        }).finally(() => { resolving = null; });
+      }
+      return resolving;
     },
 
     async signIn(email, password, keep) {
       setRemember(keep);
-      const { data, error } = await (await supabase()).auth.signInWithPassword({ email, password });
+      const client = await supabase();
+      authenticating = true;
+      let result;
+      try { result = await client.auth.signInWithPassword({ email, password }); }
+      finally { authenticating = false; }
+      const { data, error } = result;
       if (error) fail(error);
-      rememberPerson(data.user);
+      if (keep) startWindow();
+      else loginStore.removeItem(DEADLINE_KEY);
+      publish(data.user);
     },
 
     // Returns true when the person is signed in right away,
     // false when Supabase first wants them to click the link in a confirmation email
     async signUp(fullName, email, password) {
       setRemember(true);
-      const { data, error } = await (await supabase()).auth.signUp({
-        email,
-        password,
-        options: { data: { full_name: fullName }, emailRedirectTo: pageAddress('home/home.html') }
-      });
+      const client = await supabase();
+      authenticating = true;
+      let result;
+      try {
+        result = await client.auth.signUp({
+          email,
+          password,
+          options: { data: { full_name: fullName }, emailRedirectTo: pageAddress('home/home.html') }
+        });
+      } finally { authenticating = false; }
+      const { data, error } = result;
       if (error) fail(error);
       // Supabase answers an already-used email with a user that has no identities (so strangers can't test emails)
       if (data.user && data.user.identities && data.user.identities.length === 0) {
         fail({ message: 'already registered' });
       }
-      if (data.session) rememberPerson(data.user);
+      if (data.session) { startWindow(); publish(data.user); }
       return Boolean(data.session);
     },
 
@@ -182,8 +306,10 @@
       try { await (await supabase()).auth.signOut(); }
       finally {
         // Even if the internet is down, forget the login on this device
-        loginStore.removeItem('breadwinner_auth');
-        BW.signOut();
+        loginStore.removeItem(AUTH_KEY);
+        loginStore.removeItem(DEADLINE_KEY);
+        revision++;
+        publish(null);
       }
     },
 
@@ -222,21 +348,47 @@
     }
   };
 
+  if (enabled) {
+    const recheck = () => BW.cloud.getUser().catch(() => {});
+    window.addEventListener('pageshow', recheck);
+    window.addEventListener('online', recheck);
+    window.addEventListener('storage', (event) => {
+      if (event.key === null || event.key.startsWith(AUTH_KEY)) recheck();
+    });
+    recheck();
+  }
+
   /* ---------- Private pages ----------
      A page marked <html data-protected> stays hidden (see shared.css) until we know
      the visitor is signed in. Otherwise they are sent to the sign-in page. */
   if (document.documentElement.hasAttribute('data-protected')) {
+    let notice;
+    function showRetry() {
+      document.documentElement.classList.remove('auth-ok');
+      if (notice) return;
+      notice = document.createElement('p');
+      notice.setAttribute('role', 'status');
+      notice.style.visibility = 'visible';
+      notice.textContent = 'Could not check your sign-in. Check your connection and try again. ';
+      const retry = document.createElement('button');
+      retry.type = 'button';
+      retry.className = 'btn btn-secondary';
+      retry.textContent = 'Retry';
+      retry.addEventListener('click', () => window.location.reload());
+      notice.appendChild(retry);
+      document.body.prepend(notice);
+    }
+    function applyAccess(signedIn) {
+      if (signedIn === null) return;
+      if (notice) { notice.remove(); notice = null; }
+      document.documentElement.classList.toggle('auth-ok', signedIn);
+      if (!signedIn) window.location.replace(pageUrl('/signin'));
+    }
     const checkLogin = async () => {
-      let signedIn = BW.isSignedIn();
-      if (signedIn && enabled) signedIn = Boolean(await BW.cloud.getUser());
-      if (signedIn) {
-        document.documentElement.classList.add('auth-ok');
-      } else {
-        document.documentElement.classList.remove('auth-ok');
-        BW.signOut();  // forget a leftover "signed in" note so the sign-in page can't bounce back
-        window.location.replace('/signin');
-      }
+      try { applyAccess(await BW.cloud.getSignedInState()); }
+      catch (error) { showRetry(); }
     };
+    window.addEventListener('breadwinner:auth-changed', (event) => applyAccess(event.detail.signedIn));
     checkLogin();
     // Back button after signing out can show the old page from memory: check again
     window.addEventListener('pageshow', (event) => { if (event.persisted) checkLogin(); });

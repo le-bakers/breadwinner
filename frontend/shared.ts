@@ -17,13 +17,13 @@
       navToggle.setAttribute('aria-expanded', String(open));
       document.body.style.overflow = open ? 'hidden' : '';
     });
-    mobileMenu.querySelectorAll('a').forEach((link) => {
-      link.addEventListener('click', () => {
+    mobileMenu.addEventListener('click', (event) => {
+      if (event.target.closest('a')) {
         navToggle.classList.remove('open');
         mobileMenu.classList.remove('open');
         navToggle.setAttribute('aria-expanded', 'false');
         document.body.style.overflow = '';
-      });
+      }
     });
   }
 
@@ -113,6 +113,7 @@ window.BreadWinner = window.BreadWinner || {};
 
   /* ---------- Session ("are you signed in?") ---------- */
   BW.isSignedIn = function () {
+    if (BW.cloud && BW.cloud.enabled) return BW.cloud.signedIn === true;
     return !!BW.safeGet(BW.STORAGE.session, '');
   };
   BW.signIn = function (details) {
@@ -121,13 +122,6 @@ window.BreadWinner = window.BreadWinner || {};
   BW.signOut = function () {
     return BW.safeRemove(BW.STORAGE.session);
   };
-  // When signed in, every "Sign In" / "Start Free" link points to the dashboard
-  // instead of the sign-in page (navbars, mobile menus, footers on all pages).
-  if (BW.isSignedIn()) {
-    document.querySelectorAll('a[href="/signin"]').forEach((a) => {
-      a.setAttribute('href', '/home');
-    });
-  }
   /* ---------- Sitewide Settings (persisted under breadwinner_settings) ---------- */
   const SETTINGS_KEY = 'breadwinner_settings';
   const SETTINGS_DEFAULTS = {

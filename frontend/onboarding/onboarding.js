@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { pageUrl } from '../routes.js';
 /* ============================================
    BreadWinner — Onboarding JS
    ============================================ */
@@ -239,7 +240,7 @@
                             document.querySelector('#stepDone .step-sub').textContent =
                                 'One last step: we emailed a link to ' + email.value.trim() + '. Click it to confirm your account, then sign in.';
                             const doneLink = document.querySelector('#stepDone a.btn');
-                            doneLink.setAttribute('href', '/signin');
+                            doneLink.setAttribute('href', pageUrl('/signin'));
                             doneLink.firstChild.textContent = 'Go to sign in ';
                         }
                     }

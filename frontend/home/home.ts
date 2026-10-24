@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { pageUrl } from '../routes.js';
 import { displayMetrics } from './metrics.js';
 /* ============================================
    BreadWinner — Dashboard JS
@@ -1384,9 +1385,14 @@ import { displayMetrics } from './metrics.js';
 
   /* ---------- Signed in with an account: fetch this person's receipts ---------- */
   if (cloud.enabled) {
-    (async function () {
-      const user = await cloud.getUser();
-      if (!user) { window.location.href = '/signin'; return; }
+    async function loadAccount() {
+      let user;
+      try { user = await cloud.getUser(); }
+      catch (error) {
+        // cloud.js keeps the protected page hidden and offers a retry.
+        return;
+      }
+      if (!user) { window.location.href = pageUrl('/signin'); return; }
 
       // The name can arrive only now (first visit after Google sign-in)
       const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || '';
@@ -1401,6 +1407,7 @@ import { displayMetrics } from './metrics.js';
       RECEIPTS.forEach(tally);  // fills in items, gfItems, overcharge and status
       applyFilters();
       updateMetrics(true);
-    })();
+    }
+    loadAccount();
   }
 })();

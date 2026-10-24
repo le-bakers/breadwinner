@@ -1,4 +1,5 @@
 // @ts-nocheck
+import { pageUrl } from '../routes.js';
 /* ============================================
    BreadWinner â€” Settings page JS
    ============================================ */
@@ -101,7 +102,7 @@
         .forEach((k) => localStorage.removeItem(k));
     } catch (e) { /* storage unavailable */ }
     clearModal.close();
-    window.location.href = '/signin';
+    window.location.href = pageUrl('/signin');
   });
 
   /* ---------- Delete account (danger zone: wipe + sign out + redirect) ---------- */
@@ -127,7 +128,7 @@
         .forEach((k) => localStorage.removeItem(k));
     } catch (e) { /* storage unavailable */ }
     if (BW.signOut) BW.signOut();
-    window.location.href = '/signin';
+    window.location.href = pageUrl('/signin');
   });
 
   /* ---------- Sign out ---------- */
@@ -136,7 +137,7 @@
       try { await BW.cloud.signOut(); } catch (e) { /* offline: still forget the login on this device below */ }
     }
     if (BW.signOut) BW.signOut();
-    window.location.href = '/signin';
+    window.location.href = pageUrl('/signin');
   });
 
   // Say truthfully where the data lives
