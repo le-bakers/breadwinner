@@ -1289,8 +1289,8 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
 
 @media (max-width: 860px) {
   /* Reserve a fourth slot in the navigation footprint for the existing scan action. */
-  #mobileBottomNav { padding-right: 70px; transition: padding-top 240ms var(--ease-out), border-radius 240ms var(--ease-out), background 180ms; }
-  #mobileBottomNav.is-scan-open { padding-top: 130px; border-radius: 28px; background: var(--card); border-color: var(--border); }
+  #mobileBottomNav { padding-right: 70px; border-radius: 35px; transition: padding-top 240ms var(--ease-out), background 180ms; }
+  #mobileBottomNav.is-scan-open { padding-top: 130px; background: var(--card); border-color: var(--border); }
   .dashboard-home ~ .fab-wrapper {
     bottom: calc(19px + env(safe-area-inset-bottom, 0px));
     right: max(23px, calc((100vw - 340px) / 2 + 7px));
