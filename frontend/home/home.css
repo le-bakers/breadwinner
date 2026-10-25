@@ -680,6 +680,9 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
 .fab-wrapper.is-options-open .fab-option:nth-child(3) { transition-delay: 0.08s; }
 .fab-wrapper.is-options-open .fab-icon { transform: rotate(45deg); }
 .fab-icon { transition: transform 0.3s var(--ease-out); }
+/* Wide screens: the button slides away while scrolling down (home.ts), so it never covers row buttons */
+.fab-wrapper { transition: transform 0.3s var(--ease-out), opacity 0.2s; }
+.fab-wrapper.is-tucked { transform: translateY(calc(100% + 40px)); opacity: 0; pointer-events: none; }
  
 @media (max-width: 560px) {
   .fab-wrapper { bottom: 20px; right: 20px; }
@@ -1167,7 +1170,7 @@ body[data-receipt-period="current-month"] .fab { box-shadow: var(--shadow-md); }
 .item-remove-btn { grid-column: 5; grid-row: 1; width: 44px; height: 44px; border-radius: 8px; }
 button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 10px; font-size: 12px; }
 .badge-suggest { box-shadow: none; background: var(--bg); }
-.badge-compare { background: var(--accent-deep); }
+.badge-compare:not(.badge-approve) { background: var(--accent-deep); }
 .edit-item-form { align-items: flex-end; padding: 4px 0; }
 .edit-item-form label, .add-item-form label { display: flex; flex-direction: column; gap: 6px; min-width: 0; color: var(--text-secondary); font-size: 12px; font-weight: 500; }
 .edit-name-field { flex: 1 1 200px; }

@@ -77,11 +77,18 @@ import { pageUrl, assetUrl } from '../routes.js';
     '</div>';
   }
 
+  // Marks the link for the page you're on, so it shows as selected.
+  function appLink(route, label) {
+    const path = globalThis.location ? globalThis.location.pathname : '';
+    const here = path === route || path === new URL(pageUrl(route)).pathname;
+    return '<a href="' + pageUrl(route) + '"' + (here ? ' aria-current="page"' : '') + '>' + label + '</a>';
+  }
+
   const appLinks =
     '<div class="msn-links">' +
-      '<a href="' + pageUrl('/home') + '">Dashboard</a>' +
-      '<a href="' + pageUrl('/history') + '">Receipt History</a>' +
-      '<a href="' + pageUrl('/settings') + '">Settings</a>' +
+      appLink('/home', 'Dashboard') +
+      appLink('/history', 'Receipt History') +
+      appLink('/settings', 'Settings') +
     '</div>';
 
   const app =

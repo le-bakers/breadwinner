@@ -221,7 +221,8 @@ import { pageUrl } from '../routes.js';
 
     function validateConfirmPassword() {
       const errorEl = document.getElementById('confirmPassword-error');
-      if (confirmPassword.value !== password.value || !confirmPassword.value) {
+      if (!confirmPassword.value) return showError(confirmPassword, errorEl, 'Type your password again.');
+      if (confirmPassword.value !== password.value) {
         return showError(confirmPassword, errorEl, 'Passwords do not match.');
       }
       return showError(confirmPassword, errorEl, '');
