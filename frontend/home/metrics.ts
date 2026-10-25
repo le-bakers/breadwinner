@@ -149,7 +149,9 @@ export function displayMetrics(entries, animateOnLoad = false) {
     const progress = Math.max(0, Math.min((now - started) / duration, 1));
     // Reserve the final 40% for the wheels to land smoothly on their targets.
     const countProgress = Math.min(progress / 0.6, 1);
-    const eased = 1 - Math.pow(1 - countProgress, 2);
+    // Ease into rotation from rest, then ease out before the final landing.
+    const eased = countProgress * countProgress * countProgress
+      * (countProgress * (countProgress * 6 - 15) + 10);
     for (const metric of metrics) {
       const scale = metric.format === 'money' ? 100 : 1;
       let amount = Math.round(metric.value * eased * scale) / scale;

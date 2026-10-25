@@ -29,7 +29,7 @@ import { displayMetrics } from './metrics.js';
   }
 
   const welcomeHeading = document.querySelector('.dash-header h1');
-  if (welcomeHeading && storedName) {
+  if (welcomeHeading && storedName && welcomeHeading.textContent.includes('Welcome back')) {
     const firstName = storedName.trim().split(/\s+/)[0];
     welcomeHeading.textContent = 'Welcome back, ' + firstName + '!';
   }
@@ -102,11 +102,16 @@ import { displayMetrics } from './metrics.js';
   const VIEW = new WeakMap();
   // Lines whose name/price are being edited right now
   const EDITING = new WeakSet();
+  let receiptSequence = 0;
 
   function buildRow(receipt) {
     const frag = template.content.cloneNode(true);
     const row = frag.querySelector('.receipt-row');
     const expand = frag.querySelector('.receipt-expand');
+    expand.id = 'receipt-details-' + (++receiptSequence);
+    expand.setAttribute('aria-label', receipt.name + ' details');
+    row.querySelector('.row-expand-btn').setAttribute('aria-controls', expand.id);
+    row.querySelector('.row-expand-btn').setAttribute('aria-expanded', 'false');
     if (receipt.processing) {
       row.classList.add('receipt-row-processing');
       row.setAttribute('aria-label', 'Reading receipt');
@@ -144,6 +149,17 @@ import { displayMetrics } from './metrics.js';
     if (receipt.imageUrl) {
       frag.querySelector('.expand-receipt-img').src = receipt.imageUrl;
     }
+    const photoButton = frag.querySelector('.receipt-photo-button');
+    if (photoButton) {
+      photoButton.hidden = !receipt.imageUrl;
+      frag.querySelector('.receipt-photo-empty').hidden = !!receipt.imageUrl;
+      frag.querySelector('.receipt-photo-hint').hidden = !receipt.imageUrl;
+      photoButton.addEventListener('click', () => {
+        const dialog = document.getElementById('receiptPhotoDialog');
+        dialog.querySelector('img').src = receipt.imageUrl;
+        dialog.showModal();
+      });
+    }
 
     ROW_PARTS.set(receipt, { row, expand });
     const view = { gfFirst: false, hideOthers: false };
@@ -167,9 +183,15 @@ import { displayMetrics } from './metrics.js';
 
     // A closed receipt can't be tabbed into
     expand.inert = true;
+    const doneButton = expand.querySelector('.receipt-review-done');
+    if (doneButton) doneButton.addEventListener('click', () => {
+      toggleRow(row, expand);
+      row.querySelector('.row-expand-btn').focus();
+    });
 
     row.addEventListener('click', () => toggleRow(row, expand));
     row.addEventListener('keydown', (e) => {
+      if (e.target !== row) return;
       if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleRow(row, expand); }
     });
 
@@ -296,7 +318,7 @@ import { displayMetrics } from './metrics.js';
           const s = document.createElement('button');
           s.type = 'button';
           s.className = 'badge badge-suggest';
-          s.textContent = 'Suggest';
+          s.textContent = 'Find at Kroger';
           s.setAttribute('aria-label', 'Suggest a regular price for ' + line.name);
           s.title = 'Look up the regular version at the nearest Kroger-family store';
           s.addEventListener('click', () => suggestLine(receipt, row, expand, line, s));
@@ -317,39 +339,38 @@ import { displayMetrics } from './metrics.js';
         badges.appendChild(b);
       }
 
-      const price = document.createElement('span');
-      price.className = 'item-price';
-      price.textContent = money(line.price);
-
       const removeBtn = document.createElement('button');
       removeBtn.type = 'button';
       removeBtn.className = 'item-remove-btn';
       removeBtn.setAttribute('aria-label', 'Remove ' + line.name);
-      removeBtn.innerHTML = '<svg width="11" height="11" viewBox="0 0 24 24" fill="none"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/></svg>';
+      removeBtn.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13M10 11v5m4-5v5" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg>';
       removeBtn.addEventListener('click', () => {
-        receipt.lines.splice(receipt.lines.indexOf(line), 1);
+        const index = receipt.lines.indexOf(line);
+        receipt.lines.splice(index, 1);
         saveLines(receipt, row, expand);
+        const next = receipt.lines[Math.min(index, receipt.lines.length - 1)];
+        if (next) focusLine(receipt, expand, next, '.item-edit-btn');
+        else expand.querySelector('.add-item-name').focus();
         toast('Removed ' + line.name);
       });
 
       li.appendChild(mark);
       li.appendChild(name);
-      li.appendChild(badges);
       // The pencil: fix a name or price the scanner got wrong
       const editBtn = document.createElement('button');
       editBtn.type = 'button';
-      editBtn.className = 'item-edit-btn';
-      editBtn.setAttribute('aria-label', 'Edit ' + line.name);
+      editBtn.className = 'item-price item-edit-btn';
+      editBtn.setAttribute('aria-label', 'Edit ' + line.name + ', price paid ' + money(line.price));
       editBtn.title = 'Edit the name or price';
-      editBtn.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L19 9l-4-4L4 16v4z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"/></svg>';
+      editBtn.innerHTML = money(line.price) + ' <svg width="13" height="13" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M4 20h4L19 9l-4-4L4 16v4z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
       editBtn.addEventListener('click', () => {
         EDITING.add(line);
         renderLines(receipt, row, expand);
         focusLine(receipt, expand, line, '.edit-name');
       });
 
-      li.appendChild(price);
       li.appendChild(editBtn);
+      li.appendChild(badges);
       li.appendChild(removeBtn);
       list.appendChild(li);
     });
@@ -441,8 +462,16 @@ import { displayMetrics } from './metrics.js';
       toast(lostComparison ? 'Saved. The price changed, so compare this item again.' : 'Saved ' + line.name);
     });
 
-    form.appendChild(nameInput);
-    form.appendChild(priceInput);
+    const nameLabel = document.createElement('label');
+    nameLabel.className = 'edit-name-field';
+    nameLabel.textContent = 'Item name';
+    nameLabel.appendChild(nameInput);
+    const priceLabel = document.createElement('label');
+    priceLabel.className = 'edit-price-field';
+    priceLabel.textContent = 'Price paid';
+    priceLabel.appendChild(priceInput);
+    form.appendChild(nameLabel);
+    form.appendChild(priceLabel);
     form.appendChild(saveBtn);
     form.appendChild(cancelBtn);
     form.appendChild(error);
@@ -539,8 +568,8 @@ import { displayMetrics } from './metrics.js';
     if (drafts.length) {
       const text = document.createElement('p');
       text.textContent = drafts.length === 1
-        ? '1 suggested price is waiting. It only counts after you approve it.'
-        : drafts.length + ' suggested prices are waiting. They only count after you approve them.';
+        ? '1 comparison to approve. Only approved amounts count.'
+        : drafts.length + ' comparisons to approve. Only approved amounts count.';
       bar.appendChild(text);
     }
 
@@ -563,7 +592,10 @@ import { displayMetrics } from './metrics.js';
     if (canAsk) {
       if (!drafts.length) {
         const text = document.createElement('p');
-        text.textContent = 'Want a head start? We can suggest each regular price from the Kroger-family store nearest you.';
+        const title = document.createElement('strong');
+        title.textContent = 'Compare with Kroger';
+        text.appendChild(title);
+        text.appendChild(document.createTextNode('Find regular alternatives nearby. Review before approving.'));
         bar.appendChild(text);
       }
       const form = document.createElement('form');
@@ -580,8 +612,11 @@ import { displayMetrics } from './metrics.js';
       const askBtn = document.createElement('button');
       askBtn.type = 'submit';
       askBtn.className = 'btn btn-secondary btn-sm';
-      askBtn.textContent = 'Suggest prices';
-      form.appendChild(zipInput);
+      askBtn.textContent = 'Find prices';
+      const zipLabel = document.createElement('label');
+      zipLabel.textContent = 'ZIP code';
+      zipLabel.appendChild(zipInput);
+      form.appendChild(zipLabel);
       form.appendChild(askBtn);
 
       form.addEventListener('submit', async (e) => {
@@ -629,7 +664,7 @@ import { displayMetrics } from './metrics.js';
     row.querySelector('.cell-gf').textContent = receipt.gfItems;
 
     const overchargeCell = row.querySelector('.cell-overcharge');
-    overchargeCell.textContent = receipt.overcharge > 0 ? money(receipt.overcharge) : '—';
+    overchargeCell.textContent = money(receipt.overcharge || 0);
     overchargeCell.classList.toggle('zero', !(receipt.overcharge > 0));
 
     const statusCell = row.querySelector('.cell-status');
@@ -641,8 +676,7 @@ import { displayMetrics } from './metrics.js';
 
     const total = expand.querySelector('.receipt-total');
     total.hidden = !receipt.gfItems;
-    total.textContent = 'Potential deduction on this receipt: ' + money(receipt.overcharge || 0)
-      + '. An organized estimate, not tax advice. Confirm with a tax professional.';
+    total.textContent = 'Receipt deduction · ' + money(receipt.overcharge || 0);
   }
 
   // Many receipts print a subtotal. If the items don't add up to it, a line is missing or a price was misread.
@@ -745,6 +779,9 @@ import { displayMetrics } from './metrics.js';
     expand.inert = !isOpen;
     const btn = row.querySelector('.row-expand-btn');
     btn.setAttribute('aria-label', isOpen ? 'Collapse receipt details' : 'Expand receipt details');
+    btn.setAttribute('aria-expanded', String(isOpen));
+    const reviewLabel = btn.querySelector('.row-review-label');
+    if (reviewLabel) reviewLabel.textContent = isOpen ? 'Close' : 'Review';
   }
 
   function render(list) {

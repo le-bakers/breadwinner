@@ -1,0 +1,627 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-10-25T00:46:23.921Z",
+  "title": "Design System: BreadWinner",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "primary",
+        "tonalRamp": [
+          "oklch(15% 0.0520 149.58)",
+          "oklch(27% 0.1064 149.58)",
+          "oklch(39% 0.1443 149.58)",
+          "oklch(51% 0.1598 149.58)",
+          "oklch(63% 0.1505 149.58)",
+          "oklch(75% 0.1177 149.58)",
+          "oklch(87% 0.0667 149.58)",
+          "oklch(95% 0.0263 149.58)"
+        ]
+      },
+      "primary-hover": {
+        "role": "primary",
+        "displayName": "primary hover",
+        "tonalRamp": [
+          "oklch(15% 0.0520 149.21)",
+          "oklch(27% 0.1064 149.21)",
+          "oklch(39% 0.1443 149.21)",
+          "oklch(51% 0.1598 149.21)",
+          "oklch(63% 0.1505 149.21)",
+          "oklch(75% 0.1177 149.21)",
+          "oklch(87% 0.0667 149.21)",
+          "oklch(95% 0.0263 149.21)"
+        ]
+      },
+      "accent-light": {
+        "role": "primary",
+        "displayName": "accent light",
+        "tonalRamp": [
+          "oklch(15% 0.0141 156.74)",
+          "oklch(27% 0.0288 156.74)",
+          "oklch(39% 0.0391 156.74)",
+          "oklch(51% 0.0433 156.74)",
+          "oklch(63% 0.0408 156.74)",
+          "oklch(75% 0.0319 156.74)",
+          "oklch(87% 0.0181 156.74)",
+          "oklch(95% 0.0071 156.74)"
+        ]
+      },
+      "accent-deep": {
+        "role": "primary",
+        "displayName": "accent deep",
+        "tonalRamp": [
+          "oklch(15% 0.0291 152.54)",
+          "oklch(27% 0.0596 152.54)",
+          "oklch(39% 0.0808 152.54)",
+          "oklch(51% 0.0895 152.54)",
+          "oklch(63% 0.0843 152.54)",
+          "oklch(75% 0.0659 152.54)",
+          "oklch(87% 0.0374 152.54)",
+          "oklch(95% 0.0148 152.54)"
+        ]
+      },
+      "background": {
+        "role": "neutral",
+        "displayName": "background",
+        "tonalRamp": [
+          "oklch(15% 0.0011 145.55)",
+          "oklch(27% 0.0022 145.55)",
+          "oklch(39% 0.0030 145.55)",
+          "oklch(51% 0.0034 145.55)",
+          "oklch(63% 0.0032 145.55)",
+          "oklch(75% 0.0025 145.55)",
+          "oklch(87% 0.0014 145.55)",
+          "oklch(95% 0.0006 145.55)"
+        ]
+      },
+      "card": {
+        "role": "neutral",
+        "displayName": "card",
+        "tonalRamp": [
+          "oklch(15% 0.0000 89.88)",
+          "oklch(27% 0.0000 89.88)",
+          "oklch(39% 0.0000 89.88)",
+          "oklch(51% 0.0000 89.88)",
+          "oklch(63% 0.0000 89.88)",
+          "oklch(75% 0.0000 89.88)",
+          "oklch(87% 0.0000 89.88)",
+          "oklch(95% 0.0000 89.88)"
+        ]
+      },
+      "border": {
+        "role": "neutral",
+        "displayName": "border",
+        "tonalRamp": [
+          "oklch(15% 0.0019 264.53)",
+          "oklch(27% 0.0039 264.53)",
+          "oklch(39% 0.0052 264.53)",
+          "oklch(51% 0.0058 264.53)",
+          "oklch(63% 0.0055 264.53)",
+          "oklch(75% 0.0043 264.53)",
+          "oklch(87% 0.0024 264.53)",
+          "oklch(95% 0.0010 264.53)"
+        ]
+      },
+      "text": {
+        "role": "neutral",
+        "displayName": "text",
+        "tonalRamp": [
+          "oklch(15% 0.0096 256.85)",
+          "oklch(27% 0.0197 256.85)",
+          "oklch(39% 0.0267 256.85)",
+          "oklch(51% 0.0296 256.85)",
+          "oklch(63% 0.0278 256.85)",
+          "oklch(75% 0.0218 256.85)",
+          "oklch(87% 0.0123 256.85)",
+          "oklch(95% 0.0049 256.85)"
+        ]
+      },
+      "text-secondary": {
+        "role": "neutral",
+        "displayName": "text secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0076 264.36)",
+          "oklch(27% 0.0155 264.36)",
+          "oklch(39% 0.0211 264.36)",
+          "oklch(51% 0.0233 264.36)",
+          "oklch(63% 0.0220 264.36)",
+          "oklch(75% 0.0172 264.36)",
+          "oklch(87% 0.0097 264.36)",
+          "oklch(95% 0.0038 264.36)"
+        ]
+      },
+      "success": {
+        "role": "primary",
+        "displayName": "success",
+        "tonalRamp": [
+          "oklch(15% 0.0484 162.48)",
+          "oklch(27% 0.0991 162.48)",
+          "oklch(39% 0.1345 162.48)",
+          "oklch(51% 0.1489 162.48)",
+          "oklch(63% 0.1402 162.48)",
+          "oklch(75% 0.1097 162.48)",
+          "oklch(87% 0.0621 162.48)",
+          "oklch(95% 0.0245 162.48)"
+        ]
+      },
+      "workspace-muted": {
+        "role": "neutral",
+        "displayName": "workspace muted",
+        "tonalRamp": [
+          "oklch(15% 0.0063 162.17)",
+          "oklch(27% 0.0129 162.17)",
+          "oklch(39% 0.0175 162.17)",
+          "oklch(51% 0.0193 162.17)",
+          "oklch(63% 0.0182 162.17)",
+          "oklch(75% 0.0142 162.17)",
+          "oklch(87% 0.0081 162.17)",
+          "oklch(95% 0.0032 162.17)"
+        ]
+      },
+      "workspace-green": {
+        "role": "primary",
+        "displayName": "workspace green",
+        "tonalRamp": [
+          "oklch(15% 0.0352 151.33)",
+          "oklch(27% 0.0720 151.33)",
+          "oklch(39% 0.0977 151.33)",
+          "oklch(51% 0.1082 151.33)",
+          "oklch(63% 0.1019 151.33)",
+          "oklch(75% 0.0797 151.33)",
+          "oklch(87% 0.0451 151.33)",
+          "oklch(95% 0.0178 151.33)"
+        ]
+      },
+      "review-background": {
+        "role": "secondary",
+        "displayName": "review background",
+        "tonalRamp": [
+          "oklch(15% 0.0225 103.19)",
+          "oklch(27% 0.0461 103.19)",
+          "oklch(39% 0.0626 103.19)",
+          "oklch(51% 0.0693 103.19)",
+          "oklch(63% 0.0652 103.19)",
+          "oklch(75% 0.0510 103.19)",
+          "oklch(87% 0.0289 103.19)",
+          "oklch(95% 0.0114 103.19)"
+        ]
+      },
+      "review-text": {
+        "role": "secondary",
+        "displayName": "review text",
+        "tonalRamp": [
+          "oklch(15% 0.0392 66.44)",
+          "oklch(27% 0.0803 66.44)",
+          "oklch(39% 0.1089 66.44)",
+          "oklch(51% 0.1205 66.44)",
+          "oklch(63% 0.1135 66.44)",
+          "oklch(75% 0.0888 66.44)",
+          "oklch(87% 0.0503 66.44)",
+          "oklch(95% 0.0199 66.44)"
+        ]
+      },
+      "approval-background": {
+        "role": "secondary",
+        "displayName": "approval background",
+        "tonalRamp": [
+          "oklch(15% 0.0374 95.75)",
+          "oklch(27% 0.0766 95.75)",
+          "oklch(39% 0.1038 95.75)",
+          "oklch(51% 0.1150 95.75)",
+          "oklch(63% 0.1083 95.75)",
+          "oklch(75% 0.0847 95.75)",
+          "oklch(87% 0.0480 95.75)",
+          "oklch(95% 0.0189 95.75)"
+        ]
+      },
+      "approval-text": {
+        "role": "secondary",
+        "displayName": "approval text",
+        "tonalRamp": [
+          "oklch(15% 0.0342 45.90)",
+          "oklch(27% 0.0701 45.90)",
+          "oklch(39% 0.0950 45.90)",
+          "oklch(51% 0.1052 45.90)",
+          "oklch(63% 0.0991 45.90)",
+          "oklch(75% 0.0775 45.90)",
+          "oklch(87% 0.0439 45.90)",
+          "oklch(95% 0.0173 45.90)"
+        ]
+      },
+      "destructive": {
+        "role": "secondary",
+        "displayName": "destructive",
+        "tonalRamp": [
+          "oklch(15% 0.0520 27.33)",
+          "oklch(27% 0.1064 27.33)",
+          "oklch(39% 0.1443 27.33)",
+          "oklch(51% 0.1598 27.33)",
+          "oklch(63% 0.1505 27.33)",
+          "oklch(75% 0.1177 27.33)",
+          "oklch(87% 0.0667 27.33)",
+          "oklch(95% 0.0263 27.33)"
+        ]
+      },
+      "dark-background": {
+        "role": "neutral",
+        "displayName": "dark background",
+        "tonalRamp": [
+          "oklch(15% 0.0054 141.08)",
+          "oklch(27% 0.0111 141.08)",
+          "oklch(39% 0.0150 141.08)",
+          "oklch(51% 0.0166 141.08)",
+          "oklch(63% 0.0156 141.08)",
+          "oklch(75% 0.0122 141.08)",
+          "oklch(87% 0.0069 141.08)",
+          "oklch(95% 0.0027 141.08)"
+        ]
+      },
+      "dark-card": {
+        "role": "neutral",
+        "displayName": "dark card",
+        "tonalRamp": [
+          "oklch(15% 0.0060 151.56)",
+          "oklch(27% 0.0123 151.56)",
+          "oklch(39% 0.0166 151.56)",
+          "oklch(51% 0.0184 151.56)",
+          "oklch(63% 0.0173 151.56)",
+          "oklch(75% 0.0136 151.56)",
+          "oklch(87% 0.0077 151.56)",
+          "oklch(95% 0.0030 151.56)"
+        ]
+      },
+      "dark-border": {
+        "role": "neutral",
+        "displayName": "dark border",
+        "tonalRamp": [
+          "oklch(15% 0.0068 147.82)",
+          "oklch(27% 0.0139 147.82)",
+          "oklch(39% 0.0189 147.82)",
+          "oklch(51% 0.0209 147.82)",
+          "oklch(63% 0.0197 147.82)",
+          "oklch(75% 0.0154 147.82)",
+          "oklch(87% 0.0087 147.82)",
+          "oklch(95% 0.0034 147.82)"
+        ]
+      },
+      "dark-text": {
+        "role": "neutral",
+        "displayName": "dark text",
+        "tonalRamp": [
+          "oklch(15% 0.0036 141.26)",
+          "oklch(27% 0.0075 141.26)",
+          "oklch(39% 0.0101 141.26)",
+          "oklch(51% 0.0112 141.26)",
+          "oklch(63% 0.0106 141.26)",
+          "oklch(75% 0.0083 141.26)",
+          "oklch(87% 0.0047 141.26)",
+          "oklch(95% 0.0018 141.26)"
+        ]
+      },
+      "dark-text-secondary": {
+        "role": "neutral",
+        "displayName": "dark text secondary",
+        "tonalRamp": [
+          "oklch(15% 0.0085 147.18)",
+          "oklch(27% 0.0174 147.18)",
+          "oklch(39% 0.0236 147.18)",
+          "oklch(51% 0.0261 147.18)",
+          "oklch(63% 0.0246 147.18)",
+          "oklch(75% 0.0192 147.18)",
+          "oklch(87% 0.0109 147.18)",
+          "oklch(95% 0.0043 147.18)"
+        ]
+      },
+      "dark-primary-hover": {
+        "role": "primary",
+        "displayName": "dark primary hover",
+        "tonalRamp": [
+          "oklch(15% 0.0520 151.71)",
+          "oklch(27% 0.1064 151.71)",
+          "oklch(39% 0.1443 151.71)",
+          "oklch(51% 0.1598 151.71)",
+          "oklch(63% 0.1505 151.71)",
+          "oklch(75% 0.1177 151.71)",
+          "oklch(87% 0.0667 151.71)",
+          "oklch(95% 0.0263 151.71)"
+        ]
+      },
+      "dark-success": {
+        "role": "primary",
+        "displayName": "dark success",
+        "tonalRamp": [
+          "oklch(15% 0.0498 163.22)",
+          "oklch(27% 0.1021 163.22)",
+          "oklch(39% 0.1384 163.22)",
+          "oklch(51% 0.1533 163.22)",
+          "oklch(63% 0.1443 163.22)",
+          "oklch(75% 0.1129 163.22)",
+          "oklch(87% 0.0640 163.22)",
+          "oklch(95% 0.0253 163.22)"
+        ]
+      },
+      "dark-workspace-muted": {
+        "role": "neutral",
+        "displayName": "dark workspace muted",
+        "tonalRamp": [
+          "oklch(15% 0.0062 150.48)",
+          "oklch(27% 0.0128 150.48)",
+          "oklch(39% 0.0174 150.48)",
+          "oklch(51% 0.0192 150.48)",
+          "oklch(63% 0.0181 150.48)",
+          "oklch(75% 0.0142 150.48)",
+          "oklch(87% 0.0080 150.48)",
+          "oklch(95% 0.0032 150.48)"
+        ]
+      },
+      "dark-workspace-green": {
+        "role": "primary",
+        "displayName": "dark workspace green",
+        "tonalRamp": [
+          "oklch(15% 0.0442 154.45)",
+          "oklch(27% 0.0906 154.45)",
+          "oklch(39% 0.1229 154.45)",
+          "oklch(51% 0.1361 154.45)",
+          "oklch(63% 0.1281 154.45)",
+          "oklch(75% 0.1003 154.45)",
+          "oklch(87% 0.0568 154.45)",
+          "oklch(95% 0.0224 154.45)"
+        ]
+      },
+      "dark-row-hover": {
+        "role": "neutral",
+        "displayName": "dark row hover",
+        "tonalRamp": [
+          "oklch(15% 0.0073 150.12)",
+          "oklch(27% 0.0149 150.12)",
+          "oklch(39% 0.0202 150.12)",
+          "oklch(51% 0.0224 150.12)",
+          "oklch(63% 0.0211 150.12)",
+          "oklch(75% 0.0165 150.12)",
+          "oklch(87% 0.0093 150.12)",
+          "oklch(95% 0.0037 150.12)"
+        ]
+      },
+      "dark-row-open": {
+        "role": "neutral",
+        "displayName": "dark row open",
+        "tonalRamp": [
+          "oklch(15% 0.0085 153.51)",
+          "oklch(27% 0.0174 153.51)",
+          "oklch(39% 0.0236 153.51)",
+          "oklch(51% 0.0261 153.51)",
+          "oklch(63% 0.0246 153.51)",
+          "oklch(75% 0.0192 153.51)",
+          "oklch(87% 0.0109 153.51)",
+          "oklch(95% 0.0043 153.51)"
+        ]
+      },
+      "dark-editor": {
+        "role": "neutral",
+        "displayName": "dark editor",
+        "tonalRamp": [
+          "oklch(15% 0.0058 148.40)",
+          "oklch(27% 0.0119 148.40)",
+          "oklch(39% 0.0161 148.40)",
+          "oklch(51% 0.0178 148.40)",
+          "oklch(63% 0.0168 148.40)",
+          "oklch(75% 0.0131 148.40)",
+          "oklch(87% 0.0074 148.40)",
+          "oklch(95% 0.0029 148.40)"
+        ]
+      }
+    },
+    "typographyMeta": {
+      "display": {
+        "displayName": "Deduction amount",
+        "purpose": "Dominant Home summary with tabular figures."
+      },
+      "headline": {
+        "displayName": "Greeting",
+        "purpose": "Home greeting with responsive phone sizing."
+      }
+    },
+    "shadows": [
+      {
+        "name": "small",
+        "value": "0 1px 2px rgba(31, 41, 55, 0.04), 0 1px 1px rgba(31, 41, 55, 0.03)",
+        "purpose": "Inherited shared theme shadow; Home uses selectively."
+      },
+      {
+        "name": "medium",
+        "value": "0 4px 12px rgba(31, 41, 55, 0.06), 0 2px 4px rgba(31, 41, 55, 0.04)",
+        "purpose": "Inherited shared theme shadow; Home uses selectively."
+      },
+      {
+        "name": "large",
+        "value": "0 20px 40px -12px rgba(31, 41, 55, 0.12), 0 8px 16px -8px rgba(31, 41, 55, 0.06)",
+        "purpose": "Inherited shared theme shadow; Home uses selectively."
+      },
+      {
+        "name": "glow",
+        "value": "0 0 0 1px rgba(var(--accent-rgb), 0.08), 0 12px 32px -8px rgba(var(--accent-rgb), 0.28)",
+        "purpose": "Inherited shared theme shadow; Home uses selectively."
+      },
+      {
+        "name": "dark-small",
+        "value": "0 1px 2px rgba(0,0,0,0.35), 0 1px 1px rgba(0,0,0,0.25)",
+        "purpose": "Inherited shared theme shadow; Home uses selectively."
+      },
+      {
+        "name": "dark-medium",
+        "value": "0 4px 16px rgba(0,0,0,0.45), 0 2px 6px rgba(0,0,0,0.3)",
+        "purpose": "Inherited shared theme shadow; Home uses selectively."
+      },
+      {
+        "name": "dark-large",
+        "value": "0 20px 44px -12px rgba(0,0,0,0.6), 0 8px 18px -8px rgba(0,0,0,0.4)",
+        "purpose": "Inherited shared theme shadow; Home uses selectively."
+      },
+      {
+        "name": "dark-glow",
+        "value": "0 0 0 1px rgba(var(--accent-rgb), 0.16), 0 12px 32px -8px rgba(var(--accent-rgb), 0.32)",
+        "purpose": "Inherited shared theme shadow; Home uses selectively."
+      }
+    ],
+    "motion": [
+      {
+        "name": "ease-out",
+        "value": "cubic-bezier(0.16, 1, 0.3, 1)",
+        "purpose": "Shared state transitions."
+      },
+      {
+        "name": "ease-in-out",
+        "value": "cubic-bezier(0.65, 0, 0.35, 1)",
+        "purpose": "Existing shared easing token."
+      },
+      {
+        "name": "receipt-expansion",
+        "value": "400ms",
+        "purpose": "Grid-row opening."
+      },
+      {
+        "name": "metric-load",
+        "value": "500ms",
+        "purpose": "Initial digit animation with 200ms eased landing; edits immediate; reduced motion bypasses."
+      }
+    ],
+    "breakpoints": [
+      {
+        "name": "editor-rail",
+        "value": "1100px"
+      },
+      {
+        "name": "mobile-nav-and-review",
+        "value": "860px"
+      },
+      {
+        "name": "editor-stack",
+        "value": "800px"
+      },
+      {
+        "name": "summary-compact",
+        "value": "760px"
+      },
+      {
+        "name": "phone",
+        "value": "560px"
+      },
+      {
+        "name": "history-stats-wrap",
+        "value": "700px"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary action",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Shared green action; Home editor locally squares its corners.",
+      "html": "<button class=\"ds-primary\">Save</button>",
+      "css": ".ds-primary{font-family:var(--font-body,Inter,sans-serif);font-size:14px;padding:13px 26px;border:0;border-radius:999px;background:var(--primary,#22C55E);color:#fff;font-weight:600;box-shadow:var(--shadow-glow,0 12px 32px -8px rgba(34,197,94,.28));transition:background .25s,transform .35s;}.ds-primary:hover{background:var(--primary-hover,#16A34A)}.ds-primary:focus-visible{outline:2px solid var(--primary,#22C55E);outline-offset:3px;}.ds-primary:active{transform:scale(.97)}"
+    },
+    {
+      "name": "Secondary action",
+      "kind": "button",
+      "refersTo": "button-secondary",
+      "description": "Inherited shared secondary action.",
+      "html": "<button class=\"ds-secondary\">Cancel</button>",
+      "css": ".ds-secondary{font-family:var(--font-body,Inter,sans-serif);font-size:14px;padding:13px 26px;border:1px solid var(--border,#E5E7EB);border-radius:999px;background:rgba(255,255,255,.678);color:rgb(43,43,43);font-weight:600;transition:border-color .2s,color .2s}.ds-secondary:hover{border-color:var(--primary,#22C55E);color:var(--primary-hover,#16A34A)}.ds-secondary:focus-visible{outline:2px solid var(--primary,#22C55E);outline-offset:3px;}.ds-secondary:active{transform:scale(.97)}"
+    },
+    {
+      "name": "Labeled paid-price field",
+      "kind": "input",
+      "refersTo": "input-home",
+      "description": "Visible-label item editor field shared by Home and History; original token key retained.",
+      "html": "<label class=\"ds-field\">Price<input value=\"4.99\" inputmode=\"decimal\" aria-label=\"Price in dollars\"></label>",
+      "css": ".ds-field{font-family:var(--font-body,Inter,sans-serif);font-size:14px;display:flex;flex-direction:column;gap:6px;color:var(--text-secondary,#6B7280);font-size:12px;font-weight:500}.ds-field input{font-family:var(--font-body,Inter,sans-serif);font-size:14px;height:44px;padding:8px 12px;border:1px solid var(--border,#E5E7EB);border-radius:8px;background:var(--card,#fff);color:var(--text,#1F2937)}.ds-field input:hover{border-color:var(--primary,#22C55E)}.ds-field input:focus-visible{outline:none;border-color:var(--primary,#22C55E);box-shadow:0 0 0 4px rgba(var(--accent-rgb,34,197,94),.1)}"
+    },
+    {
+      "name": "Top navigation link",
+      "kind": "nav",
+      "description": "Existing green active underline.",
+      "html": "<nav aria-label=\"Example\"><a class=\"ds-nav\" href=\"#home\" aria-current=\"location\">Home</a></nav>",
+      "css": ".ds-nav{font-family:var(--font-body,Inter,sans-serif);font-size:14px;position:relative;display:inline-block;padding:8px 2px;color:var(--text-secondary,#6B7280);font-weight:600;text-decoration:none}.ds-nav::after{content:\"\";position:absolute;left:2px;right:2px;bottom:1px;height:2px;border-radius:999px;background:var(--primary,#22C55E);transform:scaleX(0);transition:transform .2s}.ds-nav:hover,.ds-nav[aria-current]{color:var(--primary-hover,#16A34A)}.ds-nav:hover::after,.ds-nav[aria-current]::after{transform:scaleX(1)}.ds-nav:focus-visible{outline:2px solid var(--primary,#22C55E);outline-offset:3px;}"
+    },
+    {
+      "name": "Review status",
+      "kind": "chip",
+      "refersTo": "status-review",
+      "description": "Review remains distinct from approved comparison.",
+      "html": "<span class=\"ds-status\">Needs Review</span>",
+      "css": ".ds-status{font-family:var(--font-body,Inter,sans-serif);font-size:14px;display:inline-flex;padding:4px 9px;border-radius:999px;background:#FEF9C3;color:#A16207;font-size:12px;font-weight:600}"
+    },
+    {
+      "name": "Summary platform",
+      "kind": "card",
+      "refersTo": "summary-platform",
+      "description": "Home-specific dominant amount with three supporting figures.",
+      "html": "<section class=\"ds-summary\" aria-label=\"Summary\"><span>Estimated deduction</span><strong>$125.50</strong><div><span>12<small>Receipts</small></span><span>28<small>Gluten-free items</small></span><span>$10.46<small>Average deduction</small></span></div></section>",
+      "css": ".ds-summary{font-family:var(--font-body,Inter,sans-serif);font-size:14px;padding:28px 32px;border-radius:16px;color:var(--text,#1F2937);background:linear-gradient(110deg,color-mix(in srgb,var(--primary,#22C55E) 13%,var(--bg,#F8FAF8)),color-mix(in srgb,var(--primary,#22C55E) 4%,var(--bg,#F8FAF8)) 65%,var(--bg,#F8FAF8))}.ds-summary>span{color:var(--workspace-muted,#59665F)}.ds-summary>strong{display:block;margin:8px 0 24px;font-family:var(--font-display,Manrope,sans-serif);font-size:52px;line-height:1.12;font-weight:600;font-variant-numeric:tabular-nums}.ds-summary>div{display:grid;grid-template-columns:repeat(3,minmax(0,180px));gap:16px;font-size:24px}.ds-summary small{display:block;margin-top:6px;font-size:12px;color:var(--workspace-muted,#59665F)}"
+    },
+    {
+      "name": "Receipt review",
+      "kind": "button",
+      "refersTo": "review-button",
+      "description": "Explicit shared Home and History entry to receipt editing.",
+      "html": "<button class=\"ds-review\">Review <svg width=\"14\" height=\"14\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"m6 9 6 6 6-6\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"/></svg></button>",
+      "css": ".ds-review{font-family:var(--font-body,Inter,sans-serif);font-size:14px;display:inline-flex;align-items:center;justify-content:center;gap:8px;min-width:88px;height:40px;padding:0 12px;border:1px solid var(--border,#E5E7EB);border-radius:10px;background:var(--card,#fff);color:var(--text,#1F2937);font-weight:500}.ds-review:hover{border-color:var(--primary,#22C55E)}.ds-review:focus-visible{outline:2px solid var(--primary,#22C55E);outline-offset:3px;}.ds-review:active{transform:scale(.97)}"
+    },
+    {
+      "name": "Approve comparison",
+      "kind": "button",
+      "refersTo": "approval-button",
+      "description": "Amber action awaits explicit approval.",
+      "html": "<button class=\"ds-approve\">Approve +$1.20</button>",
+      "css": ".ds-approve{font-family:var(--font-body,Inter,sans-serif);font-size:14px;padding:8px 10px;min-height:36px;border:0;border-radius:8px;background:#FDE68A;color:#78350F;font-size:12px}.ds-approve:hover{background:#FCD34D}.ds-approve:focus-visible{outline:2px solid var(--primary,#22C55E);outline-offset:3px;}.ds-approve:active{transform:scale(.97)}"
+    },
+    {
+      "name": "History year and month disclosures",
+      "kind": "custom",
+      "refersTo": "history-year-header",
+      "description": "History-only native disclosure hierarchy. Values are illustrative; disclosure state is native and the real page preserves it across rendering.",
+      "html": "<details class=\"ds-year\" open><summary><h2>Tax year 2026</h2><span class=\"ds-stats\"><span><strong>$125.50</strong><small>Deduction</small></span><span><strong>12</strong><small>Receipts</small></span><span><strong>28</strong><small>GF items</small></span></span></summary><div class=\"ds-year-content\"><details class=\"ds-month\" open><summary><h3>October</h3><span class=\"ds-stats\"><span><strong>$25.50</strong><small>Deduction</small></span><span><strong>3</strong><small>Receipts</small></span><span><strong>6</strong><small>GF items</small></span></span></summary><p class=\"ds-month-content\">Receipt rows use the shared workspace layout.</p></details></div></details>",
+      "css": ".ds-year,.ds-month{font-family:var(--font-body,Inter,sans-serif);color:var(--text,#1F2937);border:0;background:transparent}.ds-year>summary,.ds-month>summary{display:flex;align-items:center;gap:16px;min-height:84px;padding:20px 24px;cursor:pointer;list-style:none;border-radius:12px;transition:background .2s}.ds-year>summary{background:color-mix(in srgb,var(--primary,#22C55E) 6%,var(--bg,#F8FAF8))}.ds-year>summary:hover{background:color-mix(in srgb,var(--primary,#22C55E) 10%,var(--bg,#F8FAF8))}.ds-year>summary::-webkit-details-marker,.ds-month>summary::-webkit-details-marker{display:none}.ds-year>summary::before,.ds-month>summary::before{content:\"\";flex:0 0 8px;width:8px;height:8px;border-right:1.5px solid var(--workspace-muted,#59665F);border-bottom:1.5px solid var(--workspace-muted,#59665F);transform:rotate(-45deg);transition:transform .2s var(--ease-out,cubic-bezier(.16,1,.3,1))}.ds-year[open]>summary::before,.ds-month[open]>summary::before{transform:rotate(45deg)}.ds-year>summary:focus-visible,.ds-month>summary:focus-visible{outline:2px solid var(--primary-hover,#16A34A);outline-offset:3px}.ds-year h2,.ds-month h3{margin:0;font-family:var(--font-display,Manrope,Inter,sans-serif);font-size:18px;font-weight:600;letter-spacing:-.02em;white-space:nowrap}.ds-stats{display:grid;grid-template-columns:minmax(110px,1.2fr) repeat(2,minmax(72px,1fr));gap:28px;margin-left:auto;text-align:right;align-items:baseline}.ds-stats>span{display:flex;flex-direction:column;gap:4px}.ds-stats strong{font-family:var(--font-metrics,Manrope,Inter,sans-serif);font-variant-numeric:lining-nums tabular-nums;font-size:18px;font-weight:500;line-height:1.2}.ds-stats>span:first-child strong{font-size:26px;font-weight:600}.ds-stats small{font-size:12px;color:var(--workspace-muted,#59665F)}.ds-year-content{padding:12px 20px 0}.ds-month>summary{min-height:80px;padding:16px 12px}.ds-month>summary:hover{background:color-mix(in srgb,var(--primary,#22C55E) 4%,var(--bg,#F8FAF8))}.ds-month h3,.ds-month .ds-stats strong{font-size:16px}.ds-month .ds-stats>span:first-child strong{font-size:20px;font-weight:600}.ds-month-content{padding:12px;color:var(--text-secondary,#6B7280);font-size:13px}@media(max-width:700px){.ds-year>summary,.ds-month>summary{flex-wrap:wrap;gap:12px;padding:18px 16px}.ds-stats{flex-basis:100%;margin-left:24px;grid-template-columns:minmax(0,1.3fr) repeat(2,minmax(0,1fr));gap:12px;text-align:left}.ds-stats strong{font-size:16px}.ds-stats>span:first-child strong{font-size:24px}.ds-year-content{padding:8px 0 0 8px}.ds-month>summary{padding:16px 8px}.ds-month .ds-stats>span:first-child strong{font-size:20px}}@media(prefers-reduced-motion:reduce){.ds-year>summary,.ds-month>summary,.ds-year>summary::before,.ds-month>summary::before{transition:none}}"
+    },
+    {
+      "name": "History mobile scan action",
+      "kind": "custom",
+      "description": "On History at mobile widths (860px and below), the existing scan action docks wholly inside the bottom-navigation footprint, leaving receipt delete controls unobscured. History navigation reserves a fourth visual slot with right padding (70px). The existing fixed scan wrapper sits at bottom calc(19px + env(safe-area-inset-bottom, 0px)), right max(23px, calc((100vw - 340px) / 2 + 7px)), with stacking level (96). Its scan button is (54px square), has no shadow, and hides its main label; camera/upload options retain readable labels and a minimum width (180px). This is a History-only placement rule. The same open-year/open-month review condition still hides both scan and bottom navigation. The isolated native-disclosure preview below illustrates button and option styling; production retains its existing scan-menu behavior.",
+      "html": "<details class=\"ds-scan\"><summary aria-label=\"Scan a receipt\"><svg width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" aria-hidden=\"true\"><path d=\"M12 5v14M5 12h14\" stroke=\"currentColor\" stroke-width=\"2.4\" stroke-linecap=\"round\"/></svg></summary><div class=\"ds-scan-options\"><button type=\"button\">Take a picture</button><button type=\"button\">Upload a photo</button></div></details>",
+      "css": ".ds-scan{display:inline-block;position:relative;font-family:var(--font-body,Inter,sans-serif)}.ds-scan>summary{display:flex;align-items:center;justify-content:center;width:54px;height:54px;padding:0;border:0;border-radius:999px;list-style:none;cursor:pointer;background:var(--primary,#22C55E);color:#fff;box-shadow:none;transition:background .2s,transform .2s}.ds-scan>summary::-webkit-details-marker{display:none}.ds-scan>summary:hover{background:var(--primary-hover,#16A34A)}.ds-scan>summary:focus-visible,.ds-scan-options button:focus-visible{outline:2px solid var(--primary,#22C55E);outline-offset:3px}.ds-scan>summary:active{transform:scale(.97)}.ds-scan-options{display:grid;gap:8px;margin-top:12px}.ds-scan-options button{display:flex;align-items:center;justify-content:center;min-width:180px;min-height:44px;padding:0 16px;border:1px solid var(--border,#E5E7EB);border-radius:999px;background:var(--card,#fff);color:var(--text,#1F2937);font-family:var(--font-body,Inter,sans-serif);font-size:13px;cursor:pointer}.ds-scan-options button:hover{background:var(--accent-light,#DCFCE7)}@media(prefers-reduced-motion:reduce){.ds-scan>summary{transition:none}}"
+    }
+  ],
+  "narrative": {
+    "northStar": "A calm green workspace",
+    "overview": "BreadWinner's incumbent identity combines fresh green, green-tinted backgrounds, softly rounded controls, and Inter with Manrope. Preserve the existing logo, top navigation, theme support, and shared interaction language. The descriptive north star records the implementation rather than inventing product positioning.\n\nThe Home and History extension makes receipt work sleek, elegant, compact, and direct, with less repeated copy and visible editing actions. The pastel-consumer direction (seed 2024013947) is translated into the existing palette and navigation. Home retains its own gradient metrics platform; Home and History now share the receipt row, toolbar, editor, and photo-dialog language. History preserves its calendar-year and month disclosure groups. These scoped extensions are not a sitewide restyle mandate. Camera styling is inherited and remains a distinct treatment; this document does not authorize broader drift repair.",
+    "keyCharacteristics": [
+      "Existing green identity and theme-aware surfaces.",
+      "One dominant Home amount above three supporting metrics.",
+      "Shared Home and History receipt rows with visible review and price editing.",
+      "Native History year/month groups with clear deduction hierarchy.",
+      "Responsive editing with explicit comparison approval."
+    ],
+    "rules": [
+      {
+        "name": "The Approval Rule",
+        "body": "A suggested comparison stays visually distinct from an approved amount. Its deduction does not count until the user approves it.",
+        "section": "colors"
+      }
+    ],
+    "dos": [
+      "Do preserve the existing green palette, Inter/Manrope, logo, navigation, and themes.",
+      "Do keep the Home deduction dominant, with three supporting metrics below on a compact gradient platform.",
+      "Do make prices, deletion, comparison, and review visibly actionable and keyboard reachable.",
+      "Do count only approved comparisons.",
+      "Do retain labeled fields, responsive photo placement, reduced motion, and the mobile review exit.",
+      "Do preserve native History year/month disclosures, calendar-year grouping, open-state persistence, filters, and exports."
+    ],
+    "donts": [
+      "Don't turn the Home composition into a sitewide restyle requirement.",
+      "Don't repeat the same explanation across the greeting, summary, and receipt workspace.",
+      "Don't replace explicit review and price editing with unlabeled icon-only discovery.",
+      "Don't redesign inherited camera styling as part of these receipt workspace extensions."
+    ]
+  }
+}

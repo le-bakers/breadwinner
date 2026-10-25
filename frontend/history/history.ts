@@ -4,7 +4,7 @@ import { groupReceipts, receiptStats } from './history-groups.js';
 const openSections = new Map();
 let summaries = [];
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
-const monthName = new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' });
+const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' });
 
 function makeSection(key, title, receipts, level) {
   const section = document.createElement('details');
@@ -18,7 +18,7 @@ function makeSection(key, title, receipts, level) {
   summary.appendChild(heading);
   const stats = document.createElement('span');
   stats.className = 'history-group-stats';
-  const values = ['Total deductible', 'Receipts scanned', 'GF items'].map(label => {
+  const values = ['Deduction', 'Receipts', 'GF items'].map(label => {
     const stat = document.createElement('span');
     stat.className = 'history-stat';
     const value = document.createElement('strong');
@@ -61,13 +61,13 @@ window.BreadWinner.receiptHistory = {
       empty.className = 'receipt-empty';
       empty.textContent = document.getElementById('receiptSearch').value.trim()
         ? 'No receipts match your search.'
-        : 'No receipts yet! Click the green + button to upload or take a photo of a receipt.';
+        : 'No receipts yet. Add a receipt to start your history.';
       table.appendChild(empty);
       return;
     }
     const oldestFirst = document.getElementById('sortSelect').value === 'oldest';
     for (const year of groupReceipts(receipts, oldestFirst)) {
-      const section = makeSection('year-' + year.year, year.year === null ? 'Undated receipts' : 'Tax Year ' + year.year, year.receipts, 'year');
+      const section = makeSection('year-' + year.year, year.year === null ? 'Undated receipts' : 'Tax year ' + year.year, year.receipts, 'year');
       const content = document.createElement('div');
       content.className = 'history-year-content';
       for (const month of year.months) {
