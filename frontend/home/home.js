@@ -69,7 +69,7 @@ import { displayMetrics } from './metrics.js';
         const month = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-';
         return RECEIPTS.filter(receipt => typeof receipt.date === 'string' && receipt.date.startsWith(month));
     }
-    const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+    const dateFormatter = { format: (date) => window.BreadWinner.formatDate(date) };
     const money = (n) => '$' + n.toFixed(2);
     // The dashboard numbers are added up from the saved receipts, so they are always real.
     function updateMetrics(animateOnLoad = false) {

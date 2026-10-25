@@ -1,18 +1,38 @@
-/* ============================================
-   BreadWinner — Settings page styles
-   (sits on top of shared.css)
-   ============================================ */
-
-/* Settings controls take a comfortably wide tap target on touch devices */
-@media (max-width: 560px) {
-  .form-row-control .select { width: 100%; }
-  .segmented { flex-wrap: wrap; }
-}
-
-/* ============================================
-   Profile styles (merged from profile.css)
-   ============================================ */
-
+/* Settings inherits the shared dashboard palette, typography, and controls. */
+.settings-page .account-header { margin-bottom: 32px; }
+.settings-layout { display: grid; grid-template-columns: 220px minmax(0, 1fr); gap: 36px; align-items: start; }
+.settings-nav { position: sticky; top: 100px; display: grid; gap: 4px; }
+.settings-nav a { padding: 12px 14px; border-radius: 10px; font-size: 14px; font-weight: 600; color: var(--text-secondary); }
+.settings-nav a:hover, .settings-nav a:focus-visible { background: var(--accent-light); color: var(--text); }
+.settings-nav p { margin: 18px 14px 0; font-size: 12px; line-height: 1.6; color: var(--text-secondary); }
+.settings-content { display: grid; gap: 24px; min-width: 0; }
+.settings-page .section-card { border-radius: 16px; box-shadow: none; scroll-margin-top: 100px; padding: 28px; }
+.settings-page .section-card-header { margin-bottom: 24px; }
+.settings-page .section-card-header h2 { font-size: 19px; }
+.settings-page .form-row { padding: 20px 0; }
+.settings-page .form-row:last-child { padding-bottom: 0; }
+.settings-page .btn-secondary { background: var(--card); color: var(--text); }
+.settings-page .btn-secondary:hover { color: var(--primary-hover); }
+.settings-page .btn, .settings-page .select, .settings-page .segmented button { min-height: 44px; }
+.settings-page .segmented { background: var(--bg); border: 1px solid var(--border); }
+.settings-page .segmented button.active { color: var(--accent-deep); background: var(--accent-light); box-shadow: none; }
+[data-theme="dark"] .settings-page .segmented button.active { color: var(--primary-hover); }
+.settings-page .form-row-text { max-width: 470px; }
+.settings-page .switch { min-height: 44px; min-width: 44px; }
+.settings-page .select { max-width: 100%; font-size: 13px; border-radius: 10px; }
+.settings-page .destructive-row { margin-top: 12px; padding-top: 24px; }
+.settings-page .destructive-row strong { color: #B91C1C; }
+[data-theme="dark"] .settings-page .destructive-row strong { color: #FCA5A5; }
+.setting-note { color: var(--text-secondary); font-size: 12px; line-height: 1.6; margin-top: 10px; }
+.setting-note:empty { display: none; }
+.settings-storage-note { color: var(--text); background: var(--bg); border-radius: 10px; padding: 14px 16px; margin-bottom: 8px; font-size: 13px; line-height: 1.7; }
+.settings-guidance h3 { font-size: 14px; font-weight: 600; margin-bottom: 8px; }
+.settings-guidance p { font-size: 13px; line-height: 1.8; color: var(--text-secondary); max-width: 70ch; }
+.settings-legal-links { display: flex; flex-wrap: wrap; gap: 24px; margin-top: 24px; padding-top: 20px; border-top: 1px solid var(--border); }
+.settings-legal-links a { display: inline-flex; gap: 16px; align-items: center; min-height: 44px; font-size: 14px; font-weight: 600; color: var(--text); text-decoration: underline; text-underline-offset: 4px; }
+.settings-legal-links a:hover { color: var(--primary-hover); }
+.settings-page button:disabled { cursor: not-allowed; opacity: .65; transform: none; box-shadow: none; }
+.profile-details { padding-bottom: 20px; }
 .profile-summary {
   display: flex;
   align-items: center;
@@ -74,57 +94,59 @@
 }
 .profile-summary .btn { margin-left: auto; }
 
-/* ---------- Personal information field padding ---------- */
-/* The shared floating-label inputs use a heavy top / thin bottom padding
-   (18/8), which makes the name + email text hug the bottom edge of the
-   field. Balance it out for the profile form only (onboarding keeps its own). */
-#profileForm .field-row-2 {
-  gap: 10px; /* pull the name + email boxes closer together (shared default is 16px) */
+.remove-photo-btn {
+  margin-top: 14px;
+  min-height: 44px;
+  padding: 9px 18px;
+  border: 1px solid currentColor;
+  border-radius: var(--radius-full);
+  background: transparent;
+  color: #B91C1C;
+  font-size: 13.5px;
+  font-weight: 600;
+  line-height: 1.4;
+  transition: background 0.2s var(--ease-out);
 }
-#profileForm .field-group input {
-  /* Extra bottom padding pushes the typed value lower, widening the gap
-     between the floated label ("Full name") and the entered text. */
-  padding: 22px 16px 16px;
+.remove-photo-btn:hover { background: #FEF2F2; }
+.remove-photo-btn:active { background: #FEE2E2; }
+.remove-photo-btn:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
 }
-#profileForm .field-group label {
-  top: 21px; /* matches the new top padding so the resting label aligns with the text */
-}
+[data-theme="dark"] .remove-photo-btn { color: #FCA5A5; }
+[data-theme="dark"] .remove-photo-btn:hover { background: #451A1A; }
+[data-theme="dark"] .remove-photo-btn:active { background: #5C2020; }
+
+
+#profileForm { margin: 24px 0; border-top: 1px solid var(--border); padding-top: 24px; }
+#profileForm[hidden], .settings-page [hidden] { display: none !important; }
+#profileForm .field-group input { padding: 22px 16px 14px; }
+#profileForm input:read-only { color: var(--text-secondary); background: var(--bg); }
+#profileForm .field-group label { top: 20px; }
 #profileForm .field-group input:focus + label,
-#profileForm .field-group input:not(:placeholder-shown) + label {
-  top: 8px;
+#profileForm .field-group input:not(:placeholder-shown) + label { top: 8px; }
+#saveProfileBtn:disabled { background: var(--border); color: var(--text-secondary); }
+@media (max-width: 1080px) {
+  .settings-layout { grid-template-columns: 180px minmax(0, 1fr); gap: 24px; }
+  .settings-page .form-row { align-items: flex-start; flex-direction: column; gap: 12px; }
+  .settings-page .motion-row { flex-direction: row; align-items: center; }
 }
-
+@media (max-width: 760px) {
+  .settings-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .settings-nav { position: static; display: flex; flex-wrap: wrap; gap: 4px; }
+  .settings-nav a { padding: 10px 12px; background: var(--card); border: 1px solid var(--border); font-size: 12px; }
+  .settings-nav p { flex-basis: 100%; margin: 8px 0 0; }
+  .settings-page .section-card { padding: 22px; scroll-margin-top: 24px; }
+}
 @media (max-width: 560px) {
-  .profile-summary { flex-direction: column; align-items: flex-start; }
+  .settings-page .container { padding: 0 16px; }
+  .settings-page .account-header { margin-bottom: 24px; }
+  .profile-summary { gap: 14px; }
+  .profile-summary-text { flex-basis: calc(100% - 94px); }
   .profile-summary .btn { margin-left: 0; }
-}
-/* Save button is greyed out until the profile has actually been edited */
-#saveProfileBtn:disabled {
-  background: var(--border);
-  color: var(--text-secondary);
-  box-shadow: none;
-  cursor: not-allowed;
-  transform: none;
-}
-#saveProfileBtn:disabled:hover {
-  background: var(--border);
-  transform: none;
-}
-
-/* ---------- Profile edit: expand/collapse within the merged card ---------- */
-/* The name/email inputs live inside the profile card and grow/shrink so the card
-   "lengthens down" while editing, instead of opening a separate card. This uses
-   the modern 0fr -> 1fr grid-row trick to animate height cleanly. */
-#profileForm {
-  margin-top: 20px;
-  display: grid;
-  grid-template-rows: 0fr;
-  transition: grid-template-rows 0.32s var(--ease-out);
-}
-#profileForm.editing { grid-template-rows: 1fr; }
-#profileForm .profile-edit-body {
-  overflow: hidden;
-  min-height: 0;
-  border-top: 1px solid var(--border);
-  padding: 18px 20px 6px;
+  .settings-page .form-row-control { max-width: 100%; }
+  .settings-page .segmented { flex-wrap: wrap; }
+  .settings-page .segmented button { padding: 8px 10px; }
+  .settings-page .select { width: 100%; }
+  .settings-page .form-actions { flex-wrap: wrap; }
 }

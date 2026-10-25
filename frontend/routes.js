@@ -6,6 +6,7 @@ export const pages = {
     '/history': 'history/history.html',
     '/settings': 'settings/settings.html',
     '/signin': 'signin/signin.html',
+    '/resetlink': 'resetlink/resetlink.html',
     '/signup': 'onboarding/onboarding.html',
     '/about': 'about/about.html',
     '/contact': 'contactus/contactus.html',

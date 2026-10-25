@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="robots" content="noindex">
+  <title>Page not found | BreadWinner</title>
+  <!-- Keep assets and navigation working even at a deeply nested missing URL. -->
+  <base href="/">
+  <script>
+    // Direct previews may serve frontend below another folder or from file://.
+    // Actual missing routes keep the hosting root configured above.
+    if (location.pathname.endsWith('/404.html')) {
+      document.querySelector('base').href = new URL('./', location.href).href;
+    }
+  </script>
+  <link rel="icon" type="image/png" href="images/breadwinner_icon.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Manrope:wght@500;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="shared.css">
+  <style>
+    body { min-height: 100vh; min-height: 100svh; display: flex; flex-direction: column; }
+    .not-found-header { padding: 24px; border-bottom: 1px solid var(--border); }
+    .not-found-brand { display: inline-flex; padding: 4px 0; }
+    .not-found-brand img { width: 174px; height: auto; }
+    .not-found { flex: 1; display: grid; place-items: center; padding: 72px 24px; text-align: center; }
+    .not-found-content { max-width: 540px; }
+    .not-found h1 { font-size: clamp(32px, 6vw, 48px); font-weight: 800; line-height: 1.2; text-wrap: balance; }
+    .not-found-code { display: block; margin-bottom: 24px; color: var(--accent-deep); font-size: clamp(64px, 16vw, 96px); line-height: 1; font-variant-numeric: tabular-nums; }
+    .not-found p { margin: 20px auto 32px; max-width: 40ch; color: var(--text-secondary); }
+    .not-found .btn { background: var(--accent-deep); box-shadow: none; color: #fff; min-height: 48px; }
+    .not-found .btn:hover { background: #166534; }
+  </style>
+</head>
+<body>
+  <header class="not-found-header">
+    <div class="container">
+      <a class="not-found-brand" href="index/index.html" aria-label="BreadWinner home">
+        <img src="images/breadwinner_logo_black.png" alt="BreadWinner" width="174">
+      </a>
+    </div>
+  </header>
+  <main class="not-found">
+    <div class="not-found-content">
+      <h1><span class="not-found-code">404</span>Page not found</h1>
+      <p>We couldn’t find the page you’re looking for. It may have moved, or the link may be incorrect.</p>
+      <a class="btn" href="index/index.html">Back to home</a>
+    </div>
+  </main>
+</body>
+</html>

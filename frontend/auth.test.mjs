@@ -15,6 +15,10 @@ const navbarSource = (await readFile(new URL('./components/navbar.js', import.me
   .replace(/^import .* from ['"].*routes\.js['"];?\r?$/m, '')
   .replaceAll(/import\('\.\.\/(shared|cloud)\.js'\)/g, 'Promise.resolve()')
   .replace(/export\s*\{\s*\};?/g, '');
+const signinSource = (await readFile(new URL('./signin/signin.js', import.meta.url), 'utf8'))
+  .replace(/^import .* from ['"].*routes\.js['"];?\r?$/m, '');
+const onboardingSource = (await readFile(new URL('./onboarding/onboarding.js', import.meta.url), 'utf8'))
+  .replace(/^import .* from ['"].*routes\.js['"];?\r?$/m, '');
 const AUTH = 'breadwinner_auth';
 const DEADLINE = 'breadwinner_auth_expires_at';
 const WINDOW = 30 * 24 * 60 * 60 * 1000;
@@ -32,7 +36,7 @@ function storage(initial = {}) {
   };
 }
 
-function setup({ local = {}, tab = {}, protectedPage = false, hash = '', result, getSession } = {}) {
+function setup({ local = {}, tab = {}, protectedPage = false, hash = '', result, getSession, photo = null, photoError = false } = {}) {
   const localStorage = storage(local);
   const sessionStorage = storage(tab);
   const events = new Map();
@@ -42,20 +46,33 @@ function setup({ local = {}, tab = {}, protectedPage = false, hash = '', result,
   let now = NOW;
   let authOptions;
   let listener;
+  const passwordUpdates = [];
+  const resetRequests = [];
   let currentResult = result ?? { data: { session: local[AUTH] || tab[AUTH] ? session() : null }, error: null };
+  const photos = new Map(photo ? [['user-1', photo]] : []);
+  const from = () => ({
+    select: () => ({ eq: (key, id) => ({ maybeSingle: async () => ({ data: photos.has(id) ? {photo:photos.get(id)} : null, error: null }) }) }),
+    upsert: async (row) => { if(photoError) return {error: {message:'Offline'}}; photos.set(row.user_id,row.photo); return {error:null}; },
+    delete: () => ({eq: async (key,id) => { if(photoError) return {error:{message:'Offline'}}; photos.delete(id); return {error:null}; }})
+  });
   const timers = new Map();
   let timerId = 0;
   const BW = {
-    STORAGE: { name: 'breadwinner_user_name', email: 'breadwinner_user_email' },
+    STORAGE: { name: 'breadwinner_user_name', email: 'breadwinner_user_email', photo: 'breadwinner_user_photo' },
     isSignedIn: () => Boolean(localStorage.getItem('breadwinner_session')),
     signIn: details => localStorage.setItem('breadwinner_session', JSON.stringify(details)),
     signOut: () => localStorage.removeItem('breadwinner_session'),
+    safeRemove: key => localStorage.removeItem(key),
+    safeGet: (key, fallback) => localStorage.getItem(key) ?? fallback,
     safeSet: (key, value) => localStorage.setItem(key, value)
   };
   const emit = (event, value) => listener(event, value);
   const auth = {
     onAuthStateChange: callback => { listener = callback; },
     getSession: async () => getSession ? getSession({ authOptions, emit }) : currentResult,
+    getUser: async () => ({ data: { user: currentResult.data?.session?.user || null }, error: currentResult.error }),
+    updateUser: async (attributes) => { passwordUpdates.push(attributes); return { data: { user }, error: null }; },
+    resetPasswordForEmail: async (email, options) => { resetRequests.push({ email, ...options }); return { error: null }; },
     signOut: async () => {
       authOptions.storage.removeItem(AUTH);
       currentResult = { data: { session: null }, error: null };
@@ -101,12 +118,77 @@ function setup({ local = {}, tab = {}, protectedPage = false, hash = '', result,
     CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
     setTimeout: (callback, delay) => { timers.set(++timerId, { callback, delay }); return timerId; },
     clearTimeout: id => timers.delete(id),
-    library: { createClient: (url, key, options) => { authOptions = options.auth; return { auth }; } }
+    library: { createClient: (url, key, options) => { authOptions = options.auth; return { auth, from }; } }
   });
   vm.runInContext(source, context);
-  return { BW, window, document, context, localStorage, sessionStorage, redirects, notices, classes, timers,
+  return { auth, passwordUpdates, resetRequests, photos, BW, window, document, context, localStorage, sessionStorage, redirects, notices, classes, timers,
     emit, get options() { return authOptions; }, setNow: value => { now = value; },
     setResult: value => { currentResult = value; } };
+}
+
+function openSignin(app) {
+  app.document.getElementById = () => null;
+  app.document.querySelector = () => null;
+  app.document.querySelectorAll = () => [];
+  vm.runInContext(signinSource, app.context);
+}
+
+function openOnboarding(app) {
+  const elements = new Map();
+  app.document.getElementById = id => {
+    if (['accountForm', 'password'].includes(id)) return null;
+    if (!elements.has(id)) elements.set(id, {
+      style: {}, children: [], setAttribute() {}, addEventListener() {}
+    });
+    return elements.get(id);
+  };
+  app.document.querySelectorAll = () => [];
+  vm.runInContext(onboardingSource, app.context);
+}
+
+for (const [page, openPage] of [['sign-in', openSignin], ['onboarding', openOnboarding]]) {
+test(`${page} redirects restored sessions to the dashboard`, async () => {
+  for (const credentials of [{ local: { [AUTH]: 'stored' } }, { tab: { [AUTH]: 'stored' } }]) {
+    const app = setup(credentials);
+    openPage(app);
+    await flush();
+    assert.deepEqual(app.redirects, [pageUrl('/home')]);
+  }
+});
+
+test(`${page} stays accessible without a session or when restoration fails`, async () => {
+  for (const options of [{}, { local: { breadwinner_session: 'stale' } }, {
+    local: { [AUTH]: 'stored' },
+    result: { data: { session: null }, error: { message: 'Failed to fetch', status: 0 } }
+  }]) {
+    const app = setup(options);
+    openPage(app);
+    await flush();
+    assert.deepEqual(app.redirects, []);
+  }
+});
+
+test(`${page} waits for slow session restoration before redirecting`, async () => {
+  let finish;
+  const app = setup({ getSession: () => new Promise(resolve => { finish = resolve; }) });
+  openPage(app);
+  await flush();
+  assert.deepEqual(app.redirects, []);
+  finish({ data: { session: session() }, error: null });
+  await flush();
+  assert.deepEqual(app.redirects, [pageUrl('/home')]);
+});
+
+test(`${page} rechecks sessions when restored with the back button`, async () => {
+  const app = setup();
+  openPage(app);
+  await flush();
+  assert.deepEqual(app.redirects, []);
+  app.setResult({ data: { session: session() }, error: null });
+  app.window.dispatchEvent({ type: 'pageshow', persisted: true });
+  await flush();
+  assert.deepEqual(app.redirects, [pageUrl('/home')]);
+});
 }
 
 test('restores real login without a legacy marker and unlocks protected pages', async () => {
@@ -279,4 +361,104 @@ test('navbar updates desktop/mobile together and offers retry after network fail
     assert.match(action.innerHTML, /Sign In/);
     assert.doesNotMatch(action.innerHTML, /Continue to Dashboard/);
   }
+});
+
+const cloudPhoto = 'data:image/jpeg;base64,YWJj';
+
+test('reset emails target the dedicated recovery page', async () => {
+  const app = setup();
+  await app.BW.cloud.sendPasswordReset(user.email);
+  assert.equal(app.resetRequests[0].redirectTo, 'https://breadwinner.test/resetlink/resetlink.html');
+});
+
+test('a normal login or forged recovery URL cannot authorize a password reset', async () => {
+  for (const hash of ['', '#type=recovery']) {
+    const app = setup({ hash, local: { [AUTH]: 'stored' } });
+    await assert.rejects(app.BW.cloud.setNewPassword('a long new password'), /invalid or expired/);
+    assert.equal(app.passwordUpdates.length, 0);
+  }
+});
+
+test('verified recovery allows one password update and clears credentials afterward', async () => {
+  const app = setup({ local: { [AUTH]: 'stored' } });
+  await app.BW.cloud.getUser();
+  app.emit('PASSWORD_RECOVERY', session());
+  assert.equal(await app.BW.cloud.verifyPasswordRecovery(), true);
+  await app.BW.cloud.setNewPassword('a long new password');
+  assert.equal(app.passwordUpdates.length, 1);
+  assert.equal(app.localStorage.getItem(AUTH), null);
+  assert.equal(app.sessionStorage.getItem(AUTH), null);
+  await assert.rejects(app.BW.cloud.setNewPassword('another long password'), /invalid or expired/);
+});
+
+test('recovery expires, rejects a changed user, and enforces password bounds', async () => {
+  const app = setup({ local: { [AUTH]: 'stored' } });
+  await app.BW.cloud.getUser();
+  app.emit('PASSWORD_RECOVERY', session());
+  for (const password of ['short', 'x'.repeat(129)]) {
+    await assert.rejects(app.BW.cloud.setNewPassword(password), /12 and 128/);
+  }
+  app.setNow(NOW + 15 * 60 * 1000);
+  await assert.rejects(app.BW.cloud.setNewPassword('a long new password'), /invalid or expired/);
+  app.setNow(NOW);
+  app.emit('PASSWORD_RECOVERY', session());
+  app.emit('SIGNED_IN', { ...session(), user: { ...user, id: 'other' } });
+  await assert.rejects(app.BW.cloud.setNewPassword('a long new password'), /invalid or expired/);
+  assert.equal(app.passwordUpdates.length, 0);
+});
+
+test('server rejection and overlapping updates cannot change a password', async () => {
+  const app = setup({ local: { [AUTH]: 'stored' } });
+  await app.BW.cloud.getUser();
+  app.emit('PASSWORD_RECOVERY', session());
+  app.setResult({ data: { session: null }, error: null });
+  await assert.rejects(app.BW.cloud.setNewPassword('a long new password'));
+  assert.equal(app.passwordUpdates.length, 0);
+  app.setResult({ data: { session: session() }, error: null });
+  const first = app.BW.cloud.setNewPassword('a long new password');
+  await assert.rejects(app.BW.cloud.setNewPassword('another long password'), /already in progress/);
+  await first;
+  assert.equal(app.passwordUpdates.length, 1);
+});
+
+test('the auth server must confirm the recovery user before an update', async () => {
+  const app = setup({ local: { [AUTH]: 'stored' } });
+  await app.BW.cloud.getUser();
+  app.emit('PASSWORD_RECOVERY', session());
+  app.auth.getUser = async () => ({ data: { user: null }, error: { message: 'Invalid token' } });
+  await assert.rejects(app.BW.cloud.setNewPassword('a long new password'), /Could not verify/);
+  assert.equal(app.passwordUpdates.length, 0);
+});
+test('cloud profile photos restore on a new browser without persisting a local photo', async () => {
+  const app = setup({ local: { [AUTH]: 'stored', breadwinner_user_photo:'old local photo' }, photo:cloudPhoto });
+  await app.BW.cloud.getUser(); await flush();
+  assert.equal(app.BW.profilePhoto,cloudPhoto);
+  assert.equal(app.localStorage.getItem('breadwinner_user_photo'),null);
+});
+test('photo upload and removal persist to the account and clear on sign-out', async () => {
+  const app=setup({local:{[AUTH]:'stored'}});
+  await app.BW.cloud.saveProfilePhoto(cloudPhoto);
+  assert.equal(app.photos.get('user-1'),cloudPhoto);
+  assert.equal(app.BW.profilePhoto,cloudPhoto);
+  assert.equal(app.localStorage.getItem('breadwinner_user_photo'),null);
+  await app.BW.cloud.saveProfilePhoto(null);
+  assert.equal(app.photos.has('user-1'),false);
+  assert.equal(app.BW.profilePhoto,'');
+  await app.BW.cloud.saveProfilePhoto(cloudPhoto);
+  await app.BW.cloud.signOut();
+  assert.equal(app.BW.profilePhoto,'');
+});
+test('failed cloud photo changes preserve the existing account photo', async () => {
+  const app=setup({local:{[AUTH]:'stored'},photo:cloudPhoto,photoError:true});
+  await app.BW.cloud.getUser(); await flush();
+  await assert.rejects(app.BW.cloud.saveProfilePhoto(null));
+  assert.equal(app.BW.profilePhoto,cloudPhoto);
+  assert.equal(app.photos.get('user-1'),cloudPhoto);
+});
+
+test('an existing local photo migrates only to its matching cloud account', async () => {
+  const app=setup({local:{[AUTH]:'stored',breadwinner_user_photo:cloudPhoto,breadwinner_user_email:user.email}});
+  await app.BW.cloud.getUser(); await flush();
+  assert.equal(app.photos.get(user.id),cloudPhoto);
+  assert.equal(app.localStorage.getItem('breadwinner_user_photo'),null);
 });

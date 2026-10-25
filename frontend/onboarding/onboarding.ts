@@ -7,6 +7,21 @@ import { pageUrl } from '../routes.js';
 (function () {
   'use strict';
 
+  // Existing accounts should continue to the dashboard instead of signing up again.
+  async function redirectIfSignedIn() {
+    try {
+      if (await window.BreadWinner.cloud.getSignedInState()) {
+        window.location.replace(pageUrl('/home'));
+      }
+    } catch (error) {
+      // An unavailable auth service leaves onboarding accessible.
+    }
+  }
+  redirectIfSignedIn();
+  window.addEventListener('pageshow', (event) => {
+    if (event.persisted) redirectIfSignedIn();
+  });
+
   const steps = Array.from(document.querySelectorAll('.step-panel'));
   const progressFill = document.getElementById('progressFill');
   const progressBar = document.getElementById('progressBar');

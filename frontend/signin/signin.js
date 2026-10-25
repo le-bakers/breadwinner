@@ -8,6 +8,19 @@ import { pageUrl } from '../routes.js';
     const BW = window.BreadWinner || {};
     const cloud = BW.cloud; // cloud.js: real accounts when Supabase keys are set, otherwise demo mode
     const HOME = pageUrl('/home');
+    // Wait for session restoration before deciding whether sign-in is needed.
+    async function redirectIfSignedIn() {
+        try {
+            if (await cloud.getSignedInState()) window.location.replace(HOME);
+        }
+        catch (error) {
+            // An unavailable auth service leaves the sign-in form accessible.
+        }
+    }
+    redirectIfSignedIn();
+    window.addEventListener('pageshow', (event) => {
+        if (event.persisted) redirectIfSignedIn();
+    });
     // One line above the Sign In button for "wrong password", "reset email sent", and so on
     const formMessage = document.getElementById('form-message');
     function showMessage(text, isError) {
@@ -108,7 +121,7 @@ import { pageUrl } from '../routes.js';
         const settingNewPassword = cloud.enabled && cloud.cameFromResetEmail;
         if (settingNewPassword) {
             document.querySelector('.signin-form-wrap h1').textContent = 'Choose a new password';
-            document.querySelector('.signin-sub').textContent = 'Type a new password for your account. You’ll stay signed in.';
+            document.querySelector('.signin-sub').textContent = 'Use 12–128 characters. Sign in again after saving your password.';
             [googleBtn, document.querySelector('.divider'), email.closest('.field-group'),
                 document.querySelector('.field-row'), document.querySelector('.signup-prompt')]
                 .forEach((part) => { if (part)
@@ -125,9 +138,9 @@ import { pageUrl } from '../routes.js';
             return valid;
         }
         function validatePassword() {
-            const valid = password.value.length >= 8;
+            const valid = settingNewPassword ? password.value.length >= 12 && password.value.length <= 128 : password.value.length >= 8;
             password.classList.toggle('invalid', !valid);
-            passwordError.textContent = valid ? '' : 'Password must be at least 8 characters.';
+            passwordError.textContent = valid ? '' : settingNewPassword ? 'Use between 12 and 128 characters.' : 'Password must be at least 8 characters.';
             passwordError.classList.toggle('show', !valid);
             return valid;
         }
@@ -149,7 +162,7 @@ import { pageUrl } from '../routes.js';
                     await cloud.setNewPassword(password.value);
                 else
                     await cloud.signIn(email.value.trim(), password.value, rememberBox.checked);
-                window.location.href = HOME;
+                window.location.href = settingNewPassword ? pageUrl('/signin') : HOME;
             }
             catch (error) {
                 showMessage(error.message, true);

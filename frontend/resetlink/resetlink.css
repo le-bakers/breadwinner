@@ -1,0 +1,41 @@
+.reset-header { padding: 32px clamp(24px, 5vw, 64px); }
+.reset-header a { display: inline-block; }
+.reset-panel {
+  width: min(100% - 40px, 460px);
+  margin: clamp(32px, 9vh, 96px) auto 48px;
+  padding: 32px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-md);
+}
+.reset-panel [hidden] { display: none !important; }
+.reset-panel h1 { font-size: clamp(26px, 5vw, 32px); line-height: 1.25; text-wrap: balance; }
+#resetDescription { margin-top: 12px; color: var(--text-secondary); }
+#resetStatus { margin-top: 16px; overflow-wrap: anywhere; }
+#resetStatus:empty { display: none; }
+#resetStatus.error { color: #b42318; }
+.reset-panel fieldset { margin: 24px 0 0; padding: 0; border: 0; min-width: 0; }
+.reset-panel label { display: block; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.reset-panel input[type="password"], .reset-panel input[type="text"] {
+  width: 100%; min-height: 48px; padding: 12px;
+  border: 1px solid var(--border); border-radius: 8px;
+  background: var(--bg); color: var(--text); font-size: 16px; caret-color: var(--accent-deep);
+}
+.reset-panel input[aria-invalid="true"] { border-color: #b42318; }
+.field-help { margin: 8px 0 24px; color: var(--text-secondary); font-size: 13px; }
+.reset-panel .show-password { display: flex; align-items: center; gap: 8px; margin: 16px 0 24px; font-weight: 400; min-height: 24px; }
+.show-password input { width: 18px; height: 18px; accent-color: var(--accent-deep); }
+.reset-panel button {
+  width: 100%; min-height: 48px; border: 0; border-radius: var(--radius-full);
+  background: var(--accent-deep); color: white; font-size: 15px; font-weight: 600;
+}
+.reset-panel button:hover { background: #166534; }
+.reset-panel button:disabled { opacity: .65; cursor: wait; }
+.reset-panel :focus-visible { outline-color: var(--accent-deep); }
+.reset-links { display: flex; flex-wrap: wrap; gap: 16px; margin-top: 24px; font-size: 14px; }
+.reset-links a { text-decoration: underline; text-underline-offset: 4px; }
+.reset-links a:hover { color: var(--accent-deep); }
+@media (max-width: 480px) {
+  .reset-header { padding: 24px; }
+  .reset-panel { margin-top: 32px; padding: 24px; }
+}

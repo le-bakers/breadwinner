@@ -16,9 +16,12 @@ import { pageUrl } from './routes.js';
     const LIBRARY = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
     const BW = window.BreadWinner = window.BreadWinner || {};
     const enabled = Boolean(SUPABASE_URL && SUPABASE_KEY);
-    // A password-reset email links back to the sign-in page with "type=recovery" in the address.
+    // Capture the recovery hint before Supabase consumes the callback URL.
     // Read it now, before Supabase reads the address and tidies it away.
     const cameFromResetEmail = window.location.hash.includes('type=recovery');
+    let recoveryUserId = null;
+    let recoveryDeadline = 0;
+    let passwordUpdatePending = false;
     /* ---------- "Remember me" ----------
        Ticked: stay signed in after the browser closes (localStorage).
        Not ticked: signed out when this tab closes (sessionStorage). */
@@ -32,6 +35,36 @@ import { pageUrl } from './routes.js';
     let callbackAuthentication = window.location.hash.includes('access_token=');
     let authenticating = false;
     let expiryTimer;
+    const legacyPhoto = BW.safeGet(BW.STORAGE.photo, '');
+    const legacyPhotoEmail = BW.safeGet(BW.STORAGE.email, '');
+    let photoOwner = null;
+    let photoRevision = 0;
+    function setProfilePhoto(photo) {
+        BW.profilePhoto = photo || '';
+        window.dispatchEvent(new CustomEvent('breadwinner:photo-changed', { detail: {} }));
+    }
+    async function readProfilePhoto(userId, email) {
+        const revision = ++photoRevision;
+        const { data, error } = await (await supabase()).from('profile_photos').select('photo').eq('user_id', userId).maybeSingle();
+        if (error)
+            fail(error);
+        let photo = data?.photo || '';
+        // Preserve an existing local photo when it belongs to this account.
+        // Leave the legacy copy intact if the migration/upload fails so it can retry.
+        if (!data && legacyPhoto && email && email === legacyPhotoEmail && BW.safeGet(BW.STORAGE.photo, '') === legacyPhoto) {
+            if (photoOwner !== userId || revision !== photoRevision)
+                return photo;
+            const { error: migrationError } = await (await supabase()).from('profile_photos').upsert({ user_id: userId, photo: legacyPhoto });
+            if (migrationError)
+                fail(migrationError);
+            photo = legacyPhoto;
+        }
+        if (photoOwner === userId && revision === photoRevision) {
+            BW.safeRemove(BW.STORAGE.photo);
+            setProfilePhoto(photo);
+        }
+        return photo;
+    }
     function publish(user, known = true) {
         authState = known ? Boolean(user) : null;
         if (known) {
@@ -39,6 +72,14 @@ import { pageUrl } from './routes.js';
                 rememberPerson(user);
             else
                 BW.signOut();
+            const userId = user?.id || null;
+            if (photoOwner !== userId) {
+                photoOwner = userId;
+                photoRevision++;
+                setProfilePhoto('');
+                if (userId)
+                    readProfilePhoto(userId, user.email).catch(() => { });
+            }
         }
         window.dispatchEvent(new CustomEvent('breadwinner:auth-changed', { detail: { signedIn: authState } }));
         clearTimeout(expiryTimer);
@@ -119,6 +160,16 @@ import { pageUrl } from './routes.js';
                     // Do not call async auth methods inside this callback: Supabase holds
                     // its session lock until the callback returns.
                     revision++;
+                    // A URL hint alone never authorizes a password change. Only the SDK's
+                    // verified recovery event opens this short, in-memory reset window.
+                    if (event === 'PASSWORD_RECOVERY' && session?.user) {
+                        recoveryUserId = session.user.id;
+                        recoveryDeadline = Date.now() + 15 * 60 * 1000;
+                    }
+                    else if (event === 'SIGNED_OUT' || (session?.user && session.user.id !== recoveryUserId)) {
+                        recoveryUserId = null;
+                        recoveryDeadline = 0;
+                    }
                     if (event === 'SIGNED_OUT') {
                         loginStore.removeItem(DEADLINE_KEY);
                         publish(null);
@@ -326,15 +377,80 @@ import { pageUrl } from './routes.js';
         },
         async sendPasswordReset(email) {
             const { error } = await (await supabase()).auth.resetPasswordForEmail(email, {
-                redirectTo: pageAddress('signin/signin.html')
+                redirectTo: pageAddress('resetlink/resetlink.html')
             });
             if (error)
                 fail(error);
         },
-        async setNewPassword(password) {
-            const { error } = await (await supabase()).auth.updateUser({ password });
+        async updateProfile(fullName) {
+            const { data, error } = await (await supabase()).auth.updateUser({ data: { full_name: fullName } });
             if (error)
                 fail(error);
+            rememberPerson(data.user);
+        },
+        async loadProfilePhoto() {
+            const user = await this.getUser();
+            if (!user)
+                throw new Error('Sign in to load your profile photo.');
+            return readProfilePhoto(user.id, user.email);
+        },
+        async saveProfilePhoto(photo) {
+            const user = await this.getUser();
+            if (!user)
+                throw new Error('Sign in to change your profile photo.');
+            if (photo && (!/^data:image\/jpeg;base64,[A-Za-z0-9+/=]+$/.test(photo) || photo.length > 150000)) {
+                throw new Error('Choose a smaller profile photo.');
+            }
+            // Invalidate any older read before it can replace a newly uploaded photo.
+            photoRevision++;
+            const table = (await supabase()).from('profile_photos');
+            const { error } = photo
+                ? await table.upsert({ user_id: user.id, photo })
+                : await table.delete().eq('user_id', user.id);
+            if (error)
+                fail(error);
+            photoRevision++;
+            if (photoOwner === user.id) {
+                BW.safeRemove(BW.STORAGE.photo);
+                setProfilePhoto(photo);
+            }
+        },
+        async verifyPasswordRecovery() {
+            const client = await supabase();
+            // Wait for callback processing, including PASSWORD_RECOVERY, to finish.
+            const { data: sessionData, error: sessionError } = await client.auth.getSession();
+            if (sessionError || !recoveryUserId || Date.now() >= recoveryDeadline || sessionData?.session?.user?.id !== recoveryUserId) {
+                throw new Error('This reset link is invalid or expired. Request a new link from sign in.');
+            }
+            const { data, error } = await client.auth.getUser();
+            if (error || data?.user?.id !== recoveryUserId) {
+                throw new Error('Could not verify this reset link. Open a new link from your email.');
+            }
+            return true;
+        },
+        async setNewPassword(password) {
+            if (passwordUpdatePending)
+                throw new Error('A password update is already in progress.');
+            if (typeof password !== 'string' || password.length < 12 || password.length > 128) {
+                throw new Error('Use between 12 and 128 characters for your password.');
+            }
+            passwordUpdatePending = true;
+            try {
+                await this.verifyPasswordRecovery();
+                const { error } = await (await supabase()).auth.updateUser({ password });
+                if (error)
+                    fail(error);
+                recoveryUserId = null;
+                recoveryDeadline = 0;
+                // Password saved: forget recovery credentials even if sign-out is offline.
+                try {
+                    await this.signOut();
+                }
+                catch (e) { /* local credentials cleared in finally */ }
+            }
+            finally {
+                passwordUpdatePending = false;
+            }
         },
         async signOut() {
             try {

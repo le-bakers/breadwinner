@@ -67,7 +67,7 @@ import { displayMetrics } from './metrics.js';
   }
 
 
-  const dateFormatter = new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+  const dateFormatter = { format: (date) => window.BreadWinner.formatDate(date) };
   const money = (n) => '$' + n.toFixed(2);
 
   // The dashboard numbers are added up from the saved receipts, so they are always real.

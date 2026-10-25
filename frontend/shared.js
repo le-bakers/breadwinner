@@ -202,10 +202,12 @@ window.BreadWinner = window.BreadWinner || {};
     }
     /* ---------- Formatting helpers (respect current Settings) ---------- */
     function formatDate(dateInput) {
-        const d = dateInput instanceof Date ? dateInput : new Date(dateInput);
+        const d = dateInput instanceof Date ? dateInput : new Date(/^\d{4}-\d{2}-\d{2}$/.test(String(dateInput)) ? dateInput + 'T00:00:00' : dateInput);
+        if (Number.isNaN(d.getTime()))
+            return 'Unknown date';
         const { dateFormat } = getSettings();
         if (dateFormat === 'ISO')
-            return d.toISOString().split('T')[0];
+            return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
         if (dateFormat === 'DMY')
             return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(d);
         return new Intl.DateTimeFormat('en-US', { month: 'short', day: 'numeric', year: 'numeric' }).format(d); // MDY default
@@ -266,9 +268,9 @@ window.BreadWinner = window.BreadWinner || {};
     /* ---------- Avatar identity (shared across pages) ---------- */
     // Apply the default avatar background to every avatar element — the navbar
     // profile pill on home/profile/settings and the large profile preview.
-    (function applyAvatarIdentity() {
+    BW.renderAvatarIdentity = function () {
         const bg = AVATAR_BG;
-        const photo = BW.safeGet(BW.STORAGE.photo, '');
+        const photo = BW.profilePhoto || '';
         document.querySelectorAll('.avatar-circle, .avatar-xl').forEach((el) => {
             if (photo) {
                 el.classList.add('avatar-photo');
@@ -295,5 +297,8 @@ window.BreadWinner = window.BreadWinner || {};
             if (!photo)
                 el.textContent = initials;
         });
-    })();
+    };
+    BW.renderAvatarIdentity();
+    window.addEventListener('breadwinner:photo-changed', BW.renderAvatarIdentity);
+    window.addEventListener('breadwinner:auth-changed', BW.renderAvatarIdentity);
 })(window.BreadWinner);

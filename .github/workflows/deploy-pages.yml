@@ -33,6 +33,14 @@ jobs:
           cp frontend/index/index.js _site/index.js
           cp frontend/index/index.css _site/index.css
           sed -i 's#\.\./##g' _site/index.html _site/index.js
+          # The error page is served at the missing URL, including nested paths.
+          # Anchor its assets and home link to the GitHub Pages project root.
+          if [[ "${GITHUB_REPOSITORY#*/}" == *.github.io ]]; then
+            pages_base="/"
+          else
+            pages_base="/${GITHUB_REPOSITORY#*/}/"
+          fi
+          sed -i "s#<base href=\"/\">#<base href=\"${pages_base}\">#" _site/404.html
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site

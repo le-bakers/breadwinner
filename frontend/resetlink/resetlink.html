@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="referrer" content="no-referrer">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Reset password | BreadWinner</title>
+  <link rel="icon" href="../images/breadwinner_icon.png">
+  <link rel="stylesheet" href="../shared.css">
+  <link rel="stylesheet" href="../resetlink/resetlink.css">
+</head>
+<body>
+  <header class="reset-header">
+    <a href="../index/index.html" aria-label="BreadWinner home">
+      <img src="../images/breadwinner_logo_black.png" alt="BreadWinner" width="170">
+    </a>
+  </header>
+  <main class="reset-panel" aria-labelledby="resetTitle">
+    <h1 id="resetTitle" tabindex="-1">Reset your password</h1>
+    <p id="resetDescription">Checking your reset link…</p>
+    <p id="resetStatus" role="status" aria-live="polite" aria-atomic="true"></p>
+    <form id="resetForm" hidden>
+      <fieldset id="resetFields" disabled>
+        <label for="newPassword">New password</label>
+        <input id="newPassword" name="password" type="password" autocomplete="new-password" minlength="12" maxlength="128" aria-describedby="passwordHelp" required>
+        <p id="passwordHelp" class="field-help">Use 12–128 characters. Choose a password you don’t use elsewhere.</p>
+        <label for="confirmPassword">Confirm new password</label>
+        <input id="confirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="12" maxlength="128" required>
+        <label class="show-password"><input id="showPassword" type="checkbox"> Show passwords</label>
+        <button id="savePassword" type="submit">Save new password</button>
+      </fieldset>
+    </form>
+    <nav class="reset-links" aria-label="Account navigation">
+      <a id="signinLink" href="../signin/signin.html">Back to sign in</a>
+      <a id="settingsLink" href="../settings/settings.html" hidden>Back to settings</a>
+    </nav>
+    <noscript><p>Enable JavaScript to reset your password securely.</p></noscript>
+  </main>
+  <script type="module" src="../resetlink/resetlink.js"></script>
+</body>
+</html>

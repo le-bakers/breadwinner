@@ -20,8 +20,10 @@ import { pageUrl } from '../routes.js';
         const s = api.get();
         document.querySelectorAll('#themeSegmented button').forEach((btn) => {
             btn.classList.toggle('active', btn.dataset.themeValue === s.theme);
+            btn.setAttribute('aria-pressed', String(btn.dataset.themeValue === s.theme));
         });
         document.getElementById('reduceMotionToggle').checked = s.reduceMotion;
+        document.getElementById('dateFormatSelect').value = s.dateFormat;
     }
     /* ---------- Appearance: theme ---------- */
     document.querySelectorAll('#themeSegmented button').forEach((btn) => {
@@ -36,14 +38,56 @@ import { pageUrl } from '../routes.js';
     document.getElementById('reduceMotionToggle').addEventListener('change', (e) => {
         api.update('reduceMotion', e.target.checked);
     });
+    document.getElementById('dateFormatSelect').addEventListener('change', (e) => {
+        api.update('dateFormat', e.target.value);
+        if (BW.toast)
+            BW.toast('Date format saved');
+    });
+    window.addEventListener('storage', renderFromSettings);
+    const resetPasswordBtn = document.getElementById('passwordResetBtn');
+    const passwordStatus = document.getElementById('passwordResetStatus');
+    resetPasswordBtn.disabled = !BW.cloud?.enabled;
+    if (!BW.cloud?.enabled)
+        passwordStatus.textContent = 'Password reset is available for cloud accounts.';
+    resetPasswordBtn.addEventListener('click', async () => {
+        if (resetPasswordBtn.disabled)
+            return;
+        resetPasswordBtn.disabled = true;
+        passwordStatus.textContent = 'Sending reset link…';
+        try {
+            const user = await BW.cloud.getUser();
+            if (!user?.email)
+                throw new Error('Sign in again to reset your password.');
+            await BW.cloud.sendPasswordReset(user.email);
+            passwordStatus.textContent = 'Reset link requested. Check your account email, including spam, for next steps.';
+            window.location.href = pageUrl('/resetlink?sent=1');
+        }
+        catch (error) {
+            passwordStatus.textContent = error.message || 'Could not send a reset link. Try again.';
+        }
+        finally {
+            resetPasswordBtn.disabled = false;
+        }
+    });
+    function clearBrowserData() {
+        [localStorage, sessionStorage].forEach((store) => {
+            Object.keys(store).filter((key) => key.startsWith('breadwinner_')).forEach((key) => store.removeItem(key));
+        });
+    }
     /* ---------- Export data ---------- */
     const exportBtn = document.getElementById('exportDataBtn');
     if (exportBtn) {
         exportBtn.addEventListener('click', async () => {
-            const data = {};
+            if (exportBtn.disabled)
+                return;
+            exportBtn.disabled = true;
+            const status = document.getElementById('exportStatus');
+            status.textContent = 'Preparing your download…';
             try {
+                const data = {};
+                const exportKeys = ['breadwinner_user_name', 'breadwinner_user_email', 'breadwinner_member_since', 'breadwinner_settings', 'breadwinner_receipts'];
                 Object.keys(localStorage)
-                    .filter((k) => k.startsWith('breadwinner_') && k !== 'breadwinner_auth') // never put the login key in a file
+                    .filter((k) => exportKeys.includes(k))
                     .forEach((k) => {
                     const raw = localStorage.getItem(k);
                     try {
@@ -53,30 +97,30 @@ import { pageUrl } from '../routes.js';
                         data[k] = raw;
                     }
                 });
-            }
-            catch (e) { /* storage unavailable */ }
-            // Signed in with an account: the receipts are in the database, not on this device
-            if (BW.cloud.enabled) {
-                try {
+                // Signed in with an account: the receipts are in the database, not on this device
+                if (BW.cloud?.enabled) {
                     data.receipts = await BW.cloud.loadReceipts();
+                    data.profilePhoto = await BW.cloud.loadProfilePhoto();
                 }
-                catch (error) {
-                    if (BW.toast)
-                        BW.toast('Could not fetch your receipts: ' + error.message);
-                    return;
-                }
+                const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = 'breadwinner-data.json';
+                document.body.appendChild(a);
+                a.click();
+                a.remove();
+                URL.revokeObjectURL(url);
+                if (BW.toast)
+                    BW.toast('Data exported');
+                status.textContent = 'Download prepared. Store the file securely.';
             }
-            const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = 'breadwinner-data.json';
-            document.body.appendChild(a);
-            a.click();
-            a.remove();
-            URL.revokeObjectURL(url);
-            if (BW.toast)
-                BW.toast('Data exported');
+            catch (error) {
+                status.textContent = 'Could not export your data. ' + (error.message || 'Try again.');
+            }
+            finally {
+                exportBtn.disabled = false;
+            }
         });
     }
     /* ---------- Reset settings (keeps identity data) ---------- */
@@ -102,13 +146,19 @@ import { pageUrl } from '../routes.js';
         if (e.target.id === 'clearDataModal')
             clearModal.close();
     });
-    document.getElementById('clearDataConfirm').addEventListener('click', () => {
+    document.getElementById('clearDataConfirm').addEventListener('click', async (e) => {
+        e.target.disabled = true;
         try {
-            Object.keys(localStorage)
-                .filter((k) => k.startsWith('breadwinner_'))
-                .forEach((k) => localStorage.removeItem(k));
+            if (BW.cloud?.enabled)
+                await BW.cloud.signOut();
+            clearBrowserData();
         }
-        catch (e) { /* storage unavailable */ }
+        catch (error) {
+            if (BW.toast)
+                BW.toast('Could not clear all device data. Try again.');
+            e.target.disabled = false;
+            return;
+        }
         clearModal.close();
         window.location.href = pageUrl('/signin');
     });
@@ -120,7 +170,10 @@ import { pageUrl } from '../routes.js';
         if (e.target.id === 'deleteAccountModal')
             deleteAccountModal.close();
     });
-    document.getElementById('deleteAccountConfirm').addEventListener('click', async () => {
+    document.getElementById('deleteAccountConfirm').addEventListener('click', async (e) => {
+        if (e.target.disabled)
+            return;
+        e.target.disabled = true;
         // Signed in with an account: delete it and every saved receipt from the database first
         if (BW.cloud.enabled) {
             try {
@@ -130,13 +183,12 @@ import { pageUrl } from '../routes.js';
                 deleteAccountModal.close();
                 if (BW.toast)
                     BW.toast('Account not deleted: ' + error.message);
+                e.target.disabled = false;
                 return;
             }
         }
         try {
-            Object.keys(localStorage)
-                .filter((k) => k.startsWith('breadwinner_'))
-                .forEach((k) => localStorage.removeItem(k));
+            clearBrowserData();
         }
         catch (e) { /* storage unavailable */ }
         if (BW.signOut)
@@ -156,10 +208,12 @@ import { pageUrl } from '../routes.js';
         window.location.href = pageUrl('/signin');
     });
     // Say truthfully where the data lives
-    if (BW.cloud.enabled) {
-        const privacyNote = document.querySelector('#privacy .section-card-header p');
-        if (privacyNote)
-            privacyNote.textContent = 'Your receipts are saved to your private account. Only you can see them.';
+    if (BW.cloud?.enabled) {
+        document.getElementById('storageNote').textContent = 'Receipts and your profile photo are saved to your cloud account. Profile details and display preferences are also stored in this browser. Clearing this device does not delete your cloud data.';
+    }
+    else {
+        document.querySelector('#clearDataBtn').closest('.form-row').querySelector('.form-row-text span').textContent = 'Remove profile details, preferences, and local receipts from this browser. Export a copy first; this cannot be undone.';
+        document.getElementById('deleteAccountBtn').closest('.form-row').hidden = true;
     }
     renderFromSettings();
 })();
@@ -210,9 +264,8 @@ import { pageUrl } from '../routes.js';
     const summaryName = document.getElementById('summaryName');
     const summaryEmail = document.getElementById('summaryEmail');
     const avatarPreview = document.getElementById('avatarPreview');
-    const memberSinceEl = document.getElementById('memberSince');
-    const themeStatusEl = document.getElementById('themeStatus');
-    const editableFields = [fullNameInput, emailInput];
+    const editableFields = [fullNameInput];
+    emailInput.readOnly = true;
     let snapshot = null; // values captured when Edit is clicked, restored on Cancel
     /* ---------- Render read-only summary + overview from real stored data only ---------- */
     function renderSummary() {
@@ -220,12 +273,8 @@ import { pageUrl } from '../routes.js';
         const email = get(STORAGE.email, '');
         summaryName.textContent = name || 'Your Name';
         summaryEmail.textContent = email || 'No email on file';
-        if (avatarPreview && !get(STORAGE.photo, ""))
+        if (avatarPreview && !BW.profilePhoto)
             avatarPreview.textContent = getInitials(name);
-        if (BW.Settings && themeStatusEl) {
-            const s = BW.Settings.getSettings();
-            themeStatusEl.textContent = s.theme.charAt(0).toUpperCase() + s.theme.slice(1);
-        }
     }
     function loadFieldsFromStorage() {
         fullNameInput.value = get(STORAGE.name, '');
@@ -235,8 +284,7 @@ import { pageUrl } from '../routes.js';
     const avatarUploadBtn = document.getElementById('avatarUploadBtn');
     const avatarUploadInput = document.getElementById('avatarUploadInput');
     const removePhotoBtn = document.getElementById('removePhotoBtn');
-    // Center-crop to a square and downscale to a small JPEG so the data URL
-    // fits comfortably in localStorage.
+    // Center-crop and downscale before uploading to the private cloud profile.
     function resizeImage(file, size) {
         return new Promise((resolve, reject) => {
             const url = URL.createObjectURL(file);
@@ -272,7 +320,7 @@ import { pageUrl } from '../routes.js';
         }
     }
     function refreshAvatarPhoto() {
-        const photo = get(STORAGE.photo, '');
+        const photo = BW.profilePhoto || '';
         applyPhotoToAvatar(avatarPreview, photo);
         applyPhotoToAvatar(document.querySelector('.avatar-circle'), photo);
         if (removePhotoBtn)
@@ -286,20 +334,28 @@ import { pageUrl } from '../routes.js';
                 BW.toast('Please choose an image file');
             return;
         }
+        if (avatarUploadBtn.disabled)
+            return;
+        avatarUploadBtn.disabled = true;
+        removePhotoBtn.disabled = true;
+        const status = document.getElementById('profileSaveStatus');
+        status.textContent = 'Uploading profile photo…';
         try {
             const dataUrl = await resizeImage(file, 256);
-            if (!BW.safeSet(STORAGE.photo, dataUrl)) {
-                if (BW.toast)
-                    BW.toast('Photo could not be stored');
-                return;
-            }
+            if (!BW.cloud?.enabled)
+                throw new Error('Sign in to a cloud account to save a profile photo.');
+            await BW.cloud.saveProfilePhoto(dataUrl);
             refreshAvatarPhoto();
+            status.textContent = 'Profile photo saved.';
             if (BW.toast)
                 BW.toast('Profile picture updated');
         }
         catch (err) {
-            if (BW.toast)
-                BW.toast('Could not read that image');
+            status.textContent = 'Photo not saved. ' + (err.message || 'Try again.');
+        }
+        finally {
+            avatarUploadBtn.disabled = false;
+            removePhotoBtn.disabled = false;
         }
     }
     if (avatarUploadBtn && avatarUploadInput) {
@@ -311,14 +367,30 @@ import { pageUrl } from '../routes.js';
         });
     }
     if (removePhotoBtn) {
-        removePhotoBtn.addEventListener('click', () => {
-            BW.safeRemove(STORAGE.photo);
-            refreshAvatarPhoto();
-            if (BW.toast)
-                BW.toast('Profile picture removed');
+        removePhotoBtn.addEventListener('click', async () => {
+            if (removePhotoBtn.disabled)
+                return;
+            removePhotoBtn.disabled = true;
+            avatarUploadBtn.disabled = true;
+            const status = document.getElementById('profileSaveStatus');
+            status.textContent = 'Removing profile photo…';
+            try {
+                await BW.cloud.saveProfilePhoto(null);
+                refreshAvatarPhoto();
+                status.textContent = 'Profile photo removed.';
+                avatarUploadBtn.focus();
+            }
+            catch (error) {
+                status.textContent = 'Photo not removed. ' + (error.message || 'Try again.');
+            }
+            finally {
+                removePhotoBtn.disabled = false;
+                avatarUploadBtn.disabled = false;
+            }
         });
     }
     refreshAvatarPhoto();
+    window.addEventListener('breadwinner:photo-changed', refreshAvatarPhoto);
     /* ---------- Edit / Save / Cancel ---------- */
     function enterEditMode() {
         snapshot = {
@@ -327,6 +399,8 @@ import { pageUrl } from '../routes.js';
         };
         editableFields.forEach((el) => { el.disabled = false; });
         profileForm.classList.add('editing');
+        profileForm.hidden = false;
+        emailInput.disabled = false;
         updateSaveState();
         editBtn.hidden = true;
         fullNameInput.focus();
@@ -334,6 +408,8 @@ import { pageUrl } from '../routes.js';
     function exitEditMode() {
         editableFields.forEach((el) => { el.disabled = true; });
         profileForm.classList.remove('editing');
+        profileForm.hidden = true;
+        emailInput.disabled = true;
         editBtn.hidden = false;
         fullNameError.textContent = '';
         fullNameError.classList.remove('show');
@@ -341,6 +417,7 @@ import { pageUrl } from '../routes.js';
         emailError.classList.remove('show');
         fullNameInput.classList.remove('invalid');
         emailInput.classList.remove('invalid');
+        editBtn.focus();
     }
     function isDirty() {
         if (!snapshot)
@@ -379,18 +456,12 @@ import { pageUrl } from '../routes.js';
         }
         return valid;
     }
-    /* ---------- Membership stamp: recorded on first visit, never re-fabricated ---------- */
-    if (memberSinceEl) {
-        let stamp = get(STORAGE.memberSince, '');
-        if (!stamp) {
-            stamp = new Date().toISOString();
-            set(STORAGE.memberSince, stamp);
-        }
-        memberSinceEl.textContent = BW.formatDate
-            ? BW.formatDate(stamp)
-            : new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(new Date(stamp));
-    }
     /* ---------- Wire up events ---------- */
+    window.addEventListener('breadwinner:auth-changed', () => {
+        renderSummary();
+        if (!profileForm.classList.contains('editing'))
+            loadFieldsFromStorage();
+    });
     editableFields.forEach((el) => el.addEventListener('input', updateSaveState));
     if (editBtn)
         editBtn.addEventListener('click', enterEditMode);
@@ -404,16 +475,34 @@ import { pageUrl } from '../routes.js';
         });
     }
     if (profileForm) {
-        profileForm.addEventListener('submit', (e) => {
+        profileForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (saveBtn.disabled)
+                return;
             if (!validate())
                 return;
-            set(STORAGE.name, fullNameInput.value.trim());
-            set(STORAGE.email, emailInput.value.trim());
-            renderSummary();
-            exitEditMode();
-            if (BW.toast)
-                BW.toast('Profile saved');
+            saveBtn.disabled = true;
+            cancelBtn.disabled = true;
+            const status = document.getElementById('profileSaveStatus');
+            status.textContent = 'Saving profile…';
+            try {
+                const name = fullNameInput.value.trim();
+                if (BW.cloud?.enabled)
+                    await BW.cloud.updateProfile(name);
+                set(STORAGE.name, name);
+                renderSummary();
+                exitEditMode();
+                if (BW.toast)
+                    BW.toast('Profile saved');
+                status.textContent = 'Profile saved.';
+            }
+            catch (error) {
+                status.textContent = 'Could not save your profile. ' + (error.message || 'Try again.');
+                updateSaveState();
+            }
+            finally {
+                cancelBtn.disabled = false;
+            }
         });
     }
     /* ---------- Keep the top-nav avatar in sync with the stored name ---------- */
