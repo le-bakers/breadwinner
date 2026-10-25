@@ -155,6 +155,18 @@ import { displayMetrics } from './metrics.js';
                 dialog.querySelector('img').src = receipt.imageUrl;
                 dialog.showModal();
             });
+            // No photo yet (for example a manual receipt): this button lets the user add one
+            const addPhotoButton = frag.querySelector('.receipt-photo-add');
+            addPhotoButton.addEventListener('click', () => {
+                const picker = document.createElement('input');
+                picker.type = 'file';
+                picker.accept = 'image/*';
+                picker.addEventListener('change', () => {
+                    if (picker.files && picker.files[0])
+                        attachPhoto(receipt, picker.files[0]);
+                });
+                picker.click();
+            });
         }
         ROW_PARTS.set(receipt, { row, expand });
         const view = { gfFirst: false, hideOthers: false };
@@ -987,6 +999,7 @@ import { displayMetrics } from './metrics.js';
     const fabWrapper = document.getElementById('fabWrapper');
     const fabOptionCamera = document.getElementById('fabOptionCamera');
     const fabOptionUpload = document.getElementById('fabOptionUpload');
+    const fabOptionManual = document.getElementById('fabOptionManual');
     const fileInput = document.getElementById('fileInput');
     const cameraOverlay = document.getElementById('cameraOverlay');
     const cameraVideo = document.getElementById('cameraVideo');
@@ -1344,11 +1357,37 @@ import { displayMetrics } from './metrics.js';
         else
             toast(found + '. None looked gluten-free. Open the receipt to check.');
     }
-    function addReceiptToHistory(imageUrl, items, subtotal, processing = false) {
+    // Adds a photo to a receipt that has none. The photo is only kept, not scanned: the items stay as typed.
+    async function attachPhoto(receipt, file) {
+        let thumbnail = null;
+        if (file.size > MAX_PHOTO_BYTES) {
+            toast('That photo is bigger than 10 MB. Try a smaller one.');
+            return;
+        }
+        try {
+            thumbnail = await makeThumbnail(file);
+        }
+        catch (error) {
+            toast('That file could not be opened as a photo. Choose a JPEG, PNG or WebP picture.');
+            return;
+        }
+        receipt.imageUrl = cloud.enabled ? URL.createObjectURL(thumbnail) : await blobToDataUrl(thumbnail);
+        if (cloud.enabled)
+            receipt.photoBlob = thumbnail;
+        saveReceipts(receipt);
+        // Rebuild this receipt's row so the photo shows, keeping it open
+        const parts = ROW_PARTS.get(receipt);
+        const wasOpen = parts && parts.row.classList.contains('open');
+        applyFilters();
+        const fresh = ROW_PARTS.get(receipt);
+        if (wasOpen && fresh)
+            toggleRow(fresh.row, fresh.expand);
+        toast('Photo added');
+    }
+    function addReceiptToHistory(imageUrl, items, subtotal, processing = false, storeName = 'Captured Receipt') {
         const now = new Date();
         // Today's date where the user is (toISOString would give the date in London)
         const dateStr = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-        const storeName = 'Captured Receipt';
         // gf: the server's guess (true/false) that this is a gluten-free product. The user can flip it.
         // gfReason: why it guessed so. plainName: a plain-English reading of the receipt's short name.
         // regularTerm: what to search for to price the regular version.
@@ -1407,19 +1446,20 @@ import { displayMetrics } from './metrics.js';
         document.body.style.overflow = '';
     }
     function setFabOptionsOpen(open) {
-        if (!fabWrapper || !photoBtn || !fabOptionCamera || !fabOptionUpload)
+        if (!fabWrapper || !photoBtn || !fabOptionCamera || !fabOptionUpload || !fabOptionManual)
             return;
         fabWrapper.classList.toggle('is-options-open', open);
         document.getElementById('mobileBottomNav')?.classList.toggle('is-scan-open', open);
         photoBtn.setAttribute('aria-expanded', String(open));
-        fabOptionCamera.setAttribute('aria-hidden', String(!open));
-        fabOptionUpload.setAttribute('aria-hidden', String(!open));
-        fabOptionCamera.tabIndex = open ? 0 : -1;
-        fabOptionUpload.tabIndex = open ? 0 : -1;
+        [fabOptionCamera, fabOptionUpload, fabOptionManual].forEach((option) => {
+            option.setAttribute('aria-hidden', String(!open));
+            option.tabIndex = open ? 0 : -1;
+        });
     }
-    if (photoBtn && fabWrapper && fabOptionCamera && fabOptionUpload && cameraOverlay) {
+    if (photoBtn && fabWrapper && fabOptionCamera && fabOptionUpload && fabOptionManual && cameraOverlay) {
         fabOptionCamera.hidden = false;
         fabOptionUpload.hidden = false;
+        fabOptionManual.hidden = false;
         setFabOptionsOpen(false);
         // On wide screens the floating button slides away while you scroll down, so it
         // never sits on top of item buttons. Scrolling up or reaching the bottom brings it back.
@@ -1463,6 +1503,19 @@ import { displayMetrics } from './metrics.js';
             closeCamera();
             if (fileInput)
                 fileInput.click();
+        });
+        // Handle "Enter manually": a blank receipt, opened so the user can type in items
+        fabOptionManual.addEventListener('click', (e) => {
+            e.stopPropagation();
+            setFabOptionsOpen(false);
+            closeCamera();
+            const receipt = addReceiptToHistory(null, [], null, false, 'Manual Receipt');
+            const parts = ROW_PARTS.get(receipt);
+            if (parts) {
+                toggleRow(parts.row, parts.expand);
+                parts.row.scrollIntoView({ block: 'center' });
+            }
+            toast('Blank receipt added. Add its items below.');
         });
         cameraClose.addEventListener('click', () => {
             closeCamera();

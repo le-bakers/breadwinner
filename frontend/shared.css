@@ -838,6 +838,9 @@ body:has(.msn-nav) { padding-top: 74px; }
 }
 
 @media (max-width: 860px) {
+  /* Phone bar shows icons only (each link keeps its aria-label for screen readers) */
+  .bottom-nav-label { display: none; }
+
   .mobile-bottom-nav {
     position: fixed;
     inset-inline: 16px;

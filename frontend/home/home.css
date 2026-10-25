@@ -1140,6 +1140,8 @@ body[data-receipt-period="current-month"] .fab { box-shadow: var(--shadow-md); }
 .receipt-photo-button .expand-receipt-img { display: block; border: 0; border-radius: 0; box-shadow: none; }
 .receipt-photo-empty { display: grid; place-items: center; min-height: 150px; padding: 20px; border-radius: 10px; background: var(--bg); font-size: 13px; color: var(--text-secondary); }
 .receipt-photo-hint { margin-top: 10px; font-size: 12px; color: var(--text-secondary); }
+.receipt-photo-add { display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; width: 100%; border: 1px dashed var(--border); font-family: inherit; font-weight: 600; cursor: pointer; }
+.receipt-photo-add:hover { color: var(--primary-hover); border-color: var(--primary); }
 .expand-items { min-width: 0; }
 .rename-field { max-width: none; margin-bottom: 24px; }
 .rename-field span { font-size: 12px; font-weight: 500; text-transform: none; letter-spacing: 0; }
@@ -1293,7 +1295,7 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
 @media (max-width: 860px) {
   /* Reserve a fourth slot in the navigation footprint for the existing scan action. */
   #mobileBottomNav { padding-right: 70px; border-radius: 35px; transition: padding-top 240ms var(--ease-out), background 180ms; }
-  #mobileBottomNav.is-scan-open { padding-top: 130px; background: var(--card); border-color: var(--border); }
+  #mobileBottomNav.is-scan-open { padding-top: 184px; background: var(--card); border-color: var(--border); }
   .dashboard-home ~ .fab-wrapper {
     bottom: calc(19px + env(safe-area-inset-bottom, 0px));
     right: max(23px, calc((100vw - 340px) / 2 + 7px));
@@ -1319,8 +1321,9 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
     transform: translate(-50%, 8px);
     transition-delay: 0s;
   }
-  .dashboard-home ~ .fab-wrapper #fabOptionCamera { bottom: calc(134px + env(safe-area-inset-bottom, 0px)); }
-  .dashboard-home ~ .fab-wrapper #fabOptionUpload { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  .dashboard-home ~ .fab-wrapper #fabOptionCamera { bottom: calc(188px + env(safe-area-inset-bottom, 0px)); }
+  .dashboard-home ~ .fab-wrapper #fabOptionUpload { bottom: calc(134px + env(safe-area-inset-bottom, 0px)); }
+  .dashboard-home ~ .fab-wrapper #fabOptionManual { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
   .dashboard-home ~ .fab-wrapper.is-options-open .fab-option { transform: translate(-50%, 0); transition-delay: 0s; }
   .dashboard-home ~ .fab-wrapper .fab-option:hover { background: color-mix(in srgb, var(--primary) 10%, var(--card)); }
   .dashboard-home ~ .fab-wrapper .fab-option .fab-label { display: block; max-width: none; font-size: 13px; }

@@ -131,6 +131,12 @@
 
 <span class="fab-label">Upload a photo</span>
   </button>
+
+  <!-- Manual option: a blank receipt to fill in by hand -->
+  <button class="fab-option" id="fabOptionManual" aria-label="Enter manually" hidden>
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M4 20h4L19 9l-4-4L4 16v4zM13.5 6.5l4 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    <span class="fab-label">Enter manually</span>
+  </button>
 </div>
 
 <!-- Hidden file input for upload -->
@@ -300,7 +306,10 @@
       <aside class="receipt-source">
         <h3>Original receipt</h3>
         <button class="receipt-photo-button" type="button" aria-label="Enlarge receipt photo" hidden><img class="expand-receipt-img" alt="Scanned receipt"></button>
-        <p class="receipt-photo-empty">No photo saved</p>
+        <button class="receipt-photo-empty receipt-photo-add" type="button">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2v11zM12 10a3 3 0 100 6 3 3 0 000-6z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+          Add a photo of the receipt
+        </button>
         <p class="receipt-photo-hint" hidden>Select photo to enlarge</p>
       </aside>
       <div class="expand-items">
