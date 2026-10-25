@@ -230,7 +230,7 @@ On Home at mobile widths (860px and below), the existing scan action docks wholl
 
 Home has one dominant deduction and three smaller metrics below; avoid repeating explanatory copy. Rows expose **Review**, changing to **Close** when open, alongside deduction, status, and metadata. The expanded workspace retains receipt photo preview, renaming, item classification, paid-price editing, removal/addition, and comparison controls. The photo opens a larger dialog.
 
-**Find at Kroger** and **Compare with Kroger** suggest regular alternatives. Suggestions require approval before affecting deduction. Preserve capture, upload, comparison, export, filtering, storage, and theme functionality. Home and History share the same four-column row, editor, and photo-dialog templates through receipt-workspace styling. The gradient summary remains Home-specific, while calendar-year/month grouping remains History-specific. Inherited camera styling is recorded, not redesigned here.
+**Find at Kroger** and **Compare with Kroger** suggest regular alternatives. Suggestions require approval before affecting deduction. Preserve capture, upload, comparison, export, filtering, storage, and theme functionality. Home and History share the same four-column row, editor, and photo-dialog templates through receipt-workspace styling. The gradient summary remains Home-specific, while calendar-year/month grouping remains History-specific. Camera panels, controls, photo preview and permission/error screens follow the active theme through shared surface, text and border tokens. The live-video surround stays dark; white guide text sits on a dark scrim over the feed. Camera accents use deep green in light mode and mint in dark mode. Capture, retake, upload and confirmation behavior is preserved.
 
 ### History Year and Month Disclosures
 
@@ -250,4 +250,4 @@ History uses native disclosure controls with chevrons, visible focus, and preser
 - Don't turn the Home composition into a sitewide restyle requirement.
 - Don't repeat the same explanation across the greeting, summary, and receipt workspace.
 - Don't replace explicit review and price editing with unlabeled icon-only discovery.
-- Don't redesign inherited camera styling as part of these receipt workspace extensions.
+- Do keep camera chrome, preview and error states consistent with the active light/dark theme.
