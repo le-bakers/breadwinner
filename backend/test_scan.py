@@ -512,6 +512,52 @@ def test_scan_rejects_an_empty_file():
     assert response.status_code == 400
 
 
+def picture_bytes(kind="PNG", size=(40, 40)):
+    buffer = io.BytesIO()
+    Image.new("RGB", size, "white").save(buffer, format=kind)
+    return buffer.getvalue()
+
+
+def test_scan_rejects_a_file_over_the_size_limit(monkeypatch):
+    asked = []
+    monkeypatch.setattr(server, "read_items", lambda image_bytes: asked.append(1))
+    monkeypatch.setattr(server, "MAX_PHOTO_BYTES", 1000)
+
+    response = client.post("/scan", files={"file": ("big.png", b"x" * 1001)})
+    assert response.status_code == 413
+    assert asked == []
+
+
+def test_scan_rejects_a_picture_that_is_not_jpeg_png_or_webp():
+    response = client.post("/scan", files={"file": ("receipt.gif", picture_bytes("GIF"))})
+    assert response.status_code == 415
+
+
+def test_scan_rejects_a_picture_with_too_many_pixels(monkeypatch):
+    monkeypatch.setattr(server, "MAX_PHOTO_PIXELS", 100)
+
+    response = client.post("/scan", files={"file": ("wide.png", picture_bytes("PNG", (50, 50)))})
+    assert response.status_code == 413
+
+
+def test_scan_rejects_a_cut_off_picture_before_reading_it(monkeypatch):
+    asked = []
+    monkeypatch.setattr(server, "read_items", lambda image_bytes: asked.append(1))
+    whole = picture_bytes("PNG", (200, 200))
+
+    response = client.post("/scan", files={"file": ("cut.png", whole[: len(whole) // 2])})
+    assert response.status_code == 422
+    assert asked == []
+
+
+def test_scan_accepts_a_jpeg_and_a_webp(monkeypatch):
+    monkeypatch.setattr(server, "read_items", lambda image_bytes: ("local", [], None))
+
+    for kind in ("JPEG", "WEBP"):
+        response = client.post("/scan", files={"file": ("receipt", picture_bytes(kind))})
+        assert response.status_code == 200
+
+
 # ---------- gemini (pretend replies only, nothing is sent to Google) ----------
 
 class PretendReply:

@@ -50,11 +50,27 @@ function setup({ local = {}, tab = {}, protectedPage = false, hash = '', result,
   const resetRequests = [];
   let currentResult = result ?? { data: { session: local[AUTH] || tab[AUTH] ? session() : null }, error: null };
   const photos = new Map(photo ? [['user-1', photo]] : []);
-  const from = () => ({
+  const profileTable = {
     select: () => ({ eq: (key, id) => ({ maybeSingle: async () => ({ data: photos.has(id) ? {photo:photos.get(id)} : null, error: null }) }) }),
     upsert: async (row) => { if(photoError) return {error: {message:'Offline'}}; photos.set(row.user_id,row.photo); return {error:null}; },
     delete: () => ({eq: async (key,id) => { if(photoError) return {error:{message:'Offline'}}; photos.delete(id); return {error:null}; }})
-  });
+  };
+  // The receipts table and the receipt-photos bucket, kept in memory
+  const rows = new Map();   // receipt id -> row
+  const files = new Map();  // storage path -> blob
+  const receiptTable = {
+    // Like the real upsert, a column that is left out of the row keeps its old value
+    upsert: async (row) => { rows.set(row.id, { ...rows.get(row.id), ...row }); return { error: null }; },
+    select: () => ({ order: () => ({ order: async () => ({ data: [...rows.values()], error: null }) }) }),
+    delete: () => ({ eq: async (key, id) => { rows.delete(id); return { error: null }; } })
+  };
+  const bucket = {
+    upload: async (path, blob) => { files.set(path, blob); return { error: null }; },
+    remove: async (paths) => ({ data: paths.filter(path => files.delete(path)).map(name => ({ name })), error: null }),
+    list: async (folder) => ({ data: [...files.keys()].filter(path => path.startsWith(folder + '/')).map(path => ({ name: path.slice(folder.length + 1) })), error: null }),
+    createSignedUrls: async (paths) => ({ data: paths.map(path => ({ path, signedUrl: 'https://files.test/' + path })), error: null })
+  };
+  const from = (table) => table === 'receipts' ? receiptTable : profileTable;
   const timers = new Map();
   let timerId = 0;
   const BW = {
@@ -118,10 +134,11 @@ function setup({ local = {}, tab = {}, protectedPage = false, hash = '', result,
     CustomEvent: class { constructor(type, options) { this.type = type; this.detail = options.detail; } },
     setTimeout: (callback, delay) => { timers.set(++timerId, { callback, delay }); return timerId; },
     clearTimeout: id => timers.delete(id),
-    library: { createClient: (url, key, options) => { authOptions = options.auth; return { auth, from }; } }
+    fetch,
+    library: { createClient: (url, key, options) => { authOptions = options.auth; return { auth, from, storage: { from: () => bucket }, rpc: async () => ({ error: null }) }; } }
   });
   vm.runInContext(source, context);
-  return { auth, passwordUpdates, resetRequests, photos, BW, window, document, context, localStorage, sessionStorage, redirects, notices, classes, timers,
+  return { auth, passwordUpdates, resetRequests, photos, rows, files, BW, window, document, context, localStorage, sessionStorage, redirects, notices, classes, timers,
     emit, get options() { return authOptions; }, setNow: value => { now = value; },
     setResult: value => { currentResult = value; } };
 }
@@ -461,4 +478,63 @@ test('an existing local photo migrates only to its matching cloud account', asyn
   await app.BW.cloud.getUser(); await flush();
   assert.equal(app.photos.get(user.id),cloudPhoto);
   assert.equal(app.localStorage.getItem('breadwinner_user_photo'),null);
+});
+
+/* ---------- Receipt photos are files, not database text ---------- */
+const jpeg = (bytes = 50000) => new Blob([new Uint8Array(bytes)], { type: 'image/jpeg' });
+const newReceipt = (extra = {}) => ({ id: 'receipt-1', name: 'Captured Receipt', date: '2026-10-25', subtotal: null, lines: [], overcharge: 0, ...extra });
+
+test('a new receipt photo is saved as a file and the database row only holds its path', async () => {
+  const app = setup({ local: { [AUTH]: 'stored' } });
+  const receipt = newReceipt({ photoBlob: jpeg(), imageUrl: 'blob:preview' });
+  await app.BW.cloud.saveReceipt(receipt);
+  assert.deepEqual([...app.files.keys()], ['user-1/receipt-1.jpg']);
+  assert.equal(app.rows.get('receipt-1').photo, 'user-1/receipt-1.jpg');
+  assert.equal(receipt.photoBlob, null);
+  await app.BW.cloud.saveReceipt(receipt);  // a later save (renaming, an approval) must not lose the photo
+  assert.equal(app.rows.get('receipt-1').photo, 'user-1/receipt-1.jpg');
+});
+
+test('a photo that is too big or not a JPEG is refused but the receipt is still saved', async () => {
+  const app = setup({ local: { [AUTH]: 'stored' } });
+  const tooBig = newReceipt({ photoBlob: jpeg(500001) });
+  await assert.rejects(app.BW.cloud.saveReceipt(tooBig), /receipt was saved, but its photo was not/);
+  const notJpeg = newReceipt({ id: 'receipt-2', photoBlob: new Blob(['GIF89a'], { type: 'image/gif' }) });
+  await assert.rejects(app.BW.cloud.saveReceipt(notJpeg), /receipt was saved, but its photo was not/);
+  assert.equal(app.files.size, 0);
+  assert.equal(app.rows.has('receipt-1'), true);
+  assert.equal(app.rows.has('receipt-2'), true);
+  assert.equal('photo' in app.rows.get('receipt-1'), false);
+});
+
+test('loading receipts gives each photo a temporary viewing link, and keeps old data: photos working', async () => {
+  const app = setup({ local: { [AUTH]: 'stored' } });
+  app.rows.set('a', { id: 'a', store_name: 'A', receipt_date: '2026-10-25', subtotal: null, photo: 'user-1/a.jpg', lines: [] });
+  app.rows.set('b', { id: 'b', store_name: 'B', receipt_date: '2026-10-24', subtotal: null, photo: 'data:image/jpeg;base64,AAAA', lines: [] });
+  app.rows.set('c', { id: 'c', store_name: 'C', receipt_date: '2026-10-23', subtotal: null, photo: null, lines: [] });
+  const [a, b, c] = await app.BW.cloud.loadReceipts();
+  assert.equal(a.imageUrl, 'https://files.test/user-1/a.jpg');
+  assert.equal(b.imageUrl, 'data:image/jpeg;base64,AAAA');
+  assert.equal(c.imageUrl, null);
+});
+
+test('an old receipt with the whole picture in the database is moved to a file when saved', async () => {
+  const app = setup({ local: { [AUTH]: 'stored' } });
+  const oldPicture = 'data:image/jpeg;base64,' + Buffer.alloc(300).toString('base64');
+  app.rows.set('old', { id: 'old', photo: oldPicture });
+  const receipt = newReceipt({ id: 'old', photoPath: oldPicture, imageUrl: oldPicture });
+  await app.BW.cloud.saveReceipt(receipt);
+  assert.equal(app.rows.get('old').photo, 'user-1/old.jpg');
+  assert.equal(app.files.get('user-1/old.jpg').type, 'image/jpeg');
+});
+
+test('deleting a receipt deletes its photo file, and deleting the account deletes every photo file', async () => {
+  const app = setup({ local: { [AUTH]: 'stored' } });
+  await app.BW.cloud.saveReceipt(newReceipt({ photoBlob: jpeg() }));
+  await app.BW.cloud.saveReceipt(newReceipt({ id: 'receipt-2', photoBlob: jpeg() }));
+  const first = newReceipt({ photoPath: 'user-1/receipt-1.jpg' });
+  await app.BW.cloud.deleteReceipt(first);
+  assert.deepEqual([...app.files.keys()], ['user-1/receipt-2.jpg']);
+  await app.BW.cloud.deleteAccount();
+  assert.equal(app.files.size, 0);
 });

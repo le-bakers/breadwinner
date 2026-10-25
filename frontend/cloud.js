@@ -299,16 +299,26 @@ import { pageUrl } from './routes.js';
         return null;
     }
     /* ---------- Receipts: website shape <-> database row ---------- */
+    // Receipt photos are small JPEG files in a private Supabase Storage bucket (see backend/database.sql).
+    // The database row only holds the file's path ("<user id>/<receipt id>.jpg"), never the picture.
+    // Receipts saved before 2026-10-25 hold the picture itself as a "data:" address; they are moved to a file the next time they are saved.
+    const PHOTO_BUCKET = 'receipt-photos';
+    const MAX_PHOTO_BYTES = 500000; // same limit as the bucket; a real thumbnail is about 50 KB
+    const PHOTO_LINK_SECONDS = 6 * 3600; // how long a viewing link for a photo works
+    const isOldPhoto = (photo) => typeof photo === 'string' && photo.startsWith('data:');
     function toRow(receipt) {
-        return {
+        const row = {
             id: receipt.id,
             store_name: receipt.name,
             receipt_date: receipt.date, // "2026-10-18"
             subtotal: receipt.subtotal, // number or null
             extra_cost: receipt.overcharge || 0, // the gluten-free extra cost on this receipt
-            photo: receipt.imageUrl || null, // small JPEG as a data: address
             lines: receipt.lines
         };
+        // Leaving "photo" out keeps whatever the database already has
+        if (receipt.photoPath && !isOldPhoto(receipt.photoPath))
+            row.photo = receipt.photoPath;
+        return row;
     }
     function fromRow(row) {
         return {
@@ -316,9 +326,45 @@ import { pageUrl } from './routes.js';
             name: row.store_name,
             date: row.receipt_date,
             subtotal: row.subtotal === null ? null : Number(row.subtotal),
-            imageUrl: row.photo,
+            photoPath: row.photo,
+            imageUrl: isOldPhoto(row.photo) ? row.photo : null, // loadReceipts fills in a viewing link for files
             lines: row.lines
         };
+    }
+    // Uploads the receipt's new photo (receipt.photoBlob), or moves an old "data:" photo to a file, and sets receipt.photoPath
+    async function uploadPhoto(client, receipt) {
+        let blob = receipt.photoBlob;
+        if (!blob && isOldPhoto(receipt.photoPath))
+            blob = await (await fetch(receipt.photoPath)).blob();
+        if (!blob)
+            return;
+        if (blob.type !== 'image/jpeg' || blob.size > MAX_PHOTO_BYTES)
+            throw new Error('the photo is too big or is not a JPEG');
+        const user = await BW.cloud.getUser();
+        if (!user)
+            throw new Error('you are signed out');
+        const path = user.id + '/' + receipt.id + '.jpg';
+        const { error } = await client.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: 'image/jpeg', upsert: true });
+        if (error)
+            throw new Error(error.message);
+        receipt.photoPath = path;
+        receipt.photoBlob = null;
+    }
+    // Deletes every photo file of the signed-in person (the database cascade can't reach Storage)
+    async function deleteAllPhotos(client, userId) {
+        const files = client.storage.from(PHOTO_BUCKET);
+        for (let round = 0; round < 100; round++) {
+            const { data: found, error } = await files.list(userId, { limit: 100 });
+            if (error)
+                fail(error);
+            if (!found.length)
+                return;
+            const { data: removed, error: removeError } = await files.remove(found.map((file) => userId + '/' + file.name));
+            if (removeError)
+                fail(removeError);
+            if (!removed.length)
+                throw new Error('Could not delete your receipt photos. Try again.');
+        }
     }
     // Saves go out one at a time, so a slow older save can never overwrite a newer one
     let saveLine = Promise.resolve();
@@ -508,28 +554,57 @@ import { pageUrl } from './routes.js';
                 .order('created_at', { ascending: false });
             if (error)
                 fail(error);
-            return data.map(fromRow);
+            const receipts = data.map(fromRow);
+            // Photos are private files, so each one gets a temporary viewing link. A failure here just means no photos are shown.
+            const paths = receipts.map((receipt) => receipt.photoPath).filter((path) => path && !isOldPhoto(path));
+            if (paths.length) {
+                const { data: links } = await (await supabase()).storage.from(PHOTO_BUCKET).createSignedUrls(paths, PHOTO_LINK_SECONDS);
+                const linkFor = new Map((links || []).filter((link) => link.signedUrl).map((link) => [link.path, link.signedUrl]));
+                receipts.forEach((receipt) => { if (linkFor.has(receipt.photoPath))
+                    receipt.imageUrl = linkFor.get(receipt.photoPath); });
+            }
+            return receipts;
         },
         // Adds the receipt, or updates it if it was saved before (same id)
         saveReceipt(receipt) {
             if (!receipt.id)
                 receipt.id = crypto.randomUUID();
             return oneAtATime(async () => {
-                const { error } = await (await supabase()).from('receipts').upsert(toRow(receipt));
+                const client = await supabase();
+                // A photo that won't upload must not lose the receipt's items, so the receipt is saved first and the problem reported after
+                let photoProblem = '';
+                try {
+                    await uploadPhoto(client, receipt);
+                }
+                catch (error) {
+                    photoProblem = error.message;
+                }
+                const { error } = await client.from('receipts').upsert(toRow(receipt));
                 if (error)
                     fail(error);
+                if (photoProblem)
+                    throw new Error('The receipt was saved, but its photo was not: ' + photoProblem + '.');
             });
         },
         deleteReceipt(receipt) {
             return oneAtATime(async () => {
-                const { error } = await (await supabase()).from('receipts').delete().eq('id', receipt.id);
+                const client = await supabase();
+                const { error } = await client.from('receipts').delete().eq('id', receipt.id);
                 if (error)
                     fail(error);
+                // If this fails the receipt is already gone; "Delete my account" removes any photo left behind
+                if (receipt.photoPath && !isOldPhoto(receipt.photoPath)) {
+                    await client.storage.from(PHOTO_BUCKET).remove([receipt.photoPath]).catch(() => { });
+                }
             });
         },
-        // Deletes the account and every receipt in it (see delete_my_account in backend/database.sql)
+        // Deletes the account, every receipt in it and every receipt photo (see delete_my_account in backend/database.sql)
         async deleteAccount() {
-            const { error } = await (await supabase()).rpc('delete_my_account');
+            const client = await supabase();
+            const user = await this.getUser();
+            if (user)
+                await deleteAllPhotos(client, user.id);
+            const { error } = await client.rpc('delete_my_account');
             if (error)
                 fail(error);
             await this.signOut();

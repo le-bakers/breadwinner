@@ -1,8 +1,10 @@
+import io
 import os
 
 import requests
 from fastapi import FastAPI, HTTPException, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
+from PIL import Image
 
 import gemini
 import gf_detect
@@ -169,13 +171,41 @@ def pick_regular(products, gf_size):
     return products[0]
 
 
+MAX_PHOTO_BYTES = 10 * 1024 * 1024  # 10 MB. Phone photos are about 2-8 MB
+MAX_PHOTO_PIXELS = 50_000_000       # 50 megapixels. Phones take 12-48; more than this is a trick or a mistake
+PHOTO_FORMATS = ("JPEG", "PNG", "WEBP")
+
+
+def check_photo(image_bytes):
+    """Stops a file that is too big, is not a photo, or is damaged, before any reader sees it."""
+    if len(image_bytes) > MAX_PHOTO_BYTES:
+        raise HTTPException(status_code=413, detail="That photo is too big. The limit is 10 MB.")
+
+    try:
+        image = Image.open(io.BytesIO(image_bytes))  # only reads the file's header, so it is fast
+        file_type = image.format
+        too_many_pixels = image.width * image.height > MAX_PHOTO_PIXELS
+        if file_type in PHOTO_FORMATS and not too_many_pixels:
+            image.load()  # reads every pixel, which fails on a cut-off or damaged file
+    except Exception:
+        raise HTTPException(status_code=422, detail="Could not read that file as a receipt photo.")
+
+    if file_type not in PHOTO_FORMATS:
+        raise HTTPException(status_code=415, detail="Use a JPEG, PNG or WebP photo.")
+    if too_many_pixels:
+        raise HTTPException(status_code=413, detail="That photo has too many pixels. Use a smaller one.")
+
+
 @app.post("/scan")
 def scan(file: UploadFile):
     # The photo is read, turned into text, and thrown away. Nothing is saved on the server.
-    image_bytes = file.file.read()
+    # Reading one byte past the limit is enough to know it is too big, without loading a huge file.
+    image_bytes = file.file.read(MAX_PHOTO_BYTES + 1)
 
     if not image_bytes:
         raise HTTPException(status_code=400, detail="The uploaded file was empty.")
+
+    check_photo(image_bytes)
 
     try:
         engine, items, subtotal = read_items(image_bytes)

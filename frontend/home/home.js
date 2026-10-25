@@ -1233,27 +1233,58 @@ import { displayMetrics } from './metrics.js';
         if (!window.BreadWinner.scannerAwake)
             toast('Waking up the scanner. This can take up to a minute…');
         const response = await fetch(API_BASE + '/scan', { method: 'POST', body: form });
-        if (!response.ok)
-            throw new Error('Scan failed: ' + response.status);
+        if (!response.ok) {
+            // The server explains a refused photo in plain words (too big, wrong kind of file, damaged)
+            const reply = await response.json().catch(() => ({}));
+            const error = new Error('Scan failed: ' + response.status);
+            error.reason = response.status < 500 && typeof reply.detail === 'string' ? reply.detail : '';
+            throw error;
+        }
         return response.json(); // { engine, items, subtotal }
     }
-    // Browser storage only holds about 5 MB, so keep a small copy of the photo, not the original
+    // The biggest photo the scanner accepts (the server has the same limit)
+    const MAX_PHOTO_BYTES = 10 * 1024 * 1024;
+    // A small JPEG copy (800 pixels on the longer side, about 50 KB) is what gets saved with the receipt, not the original.
+    // Decoding the picture is also the check that the file really is a photo: a damaged or non-image file throws here.
     async function makeThumbnail(blob) {
-        try {
-            const bitmap = await createImageBitmap(blob);
-            const scale = Math.min(1, 800 / Math.max(bitmap.width, bitmap.height));
-            const canvas = document.createElement('canvas');
-            canvas.width = Math.round(bitmap.width * scale);
-            canvas.height = Math.round(bitmap.height * scale);
-            canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-            return canvas.toDataURL('image/jpeg', 0.7);
-        }
-        catch (error) {
-            return blobToDataUrl(blob);
-        }
+        const bitmap = await createImageBitmap(blob);
+        const scale = Math.min(1, 800 / Math.max(bitmap.width, bitmap.height));
+        const canvas = document.createElement('canvas');
+        canvas.width = Math.round(bitmap.width * scale);
+        canvas.height = Math.round(bitmap.height * scale);
+        canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        bitmap.close();
+        return new Promise((resolve, reject) => {
+            canvas.toBlob((jpeg) => (jpeg ? resolve(jpeg) : reject(new Error('Could not shrink the photo'))), 'image/jpeg', 0.7);
+        });
     }
     async function processReceipt(blob) {
-        const receipt = addReceiptToHistory('', [], null, true);
+        // Refuse a photo that is too big or can't be opened before anything is saved or sent
+        let thumbnail = null;
+        let photoProblem = '';
+        if (blob.size > MAX_PHOTO_BYTES)
+            photoProblem = 'That photo is bigger than 10 MB. Try a smaller one.';
+        else {
+            try {
+                thumbnail = await makeThumbnail(blob);
+            }
+            catch (error) {
+                photoProblem = 'That file could not be opened as a photo. Choose a JPEG, PNG or WebP picture.';
+            }
+        }
+        if (photoProblem) {
+            if (window.BreadWinner.dismissToast)
+                window.BreadWinner.dismissToast();
+            toast(photoProblem);
+            if (cameraStatus)
+                cameraStatus.textContent = 'Try another photo';
+            return;
+        }
+        // Signed in: the photo becomes a file in the account (cloud.js uploads photoBlob). Demo mode: it stays in this browser as a "data:" address.
+        const photoUrl = cloud.enabled ? URL.createObjectURL(thumbnail) : await blobToDataUrl(thumbnail);
+        const receipt = addReceiptToHistory(photoUrl, [], null, true);
+        if (cloud.enabled)
+            receipt.photoBlob = thumbnail;
         let items = [];
         let subtotal = null;
         let scanProblem = '';
@@ -1266,10 +1297,11 @@ import { displayMetrics } from './metrics.js';
             // fetch throws a TypeError when nothing answers at API_BASE (the Python server is off)
             if (error instanceof TypeError)
                 scanProblem = 'Photo saved, but the scanner server is not running, so no items were read.';
+            else if (error.reason)
+                scanProblem = 'Photo saved, but the scanner said: ' + error.reason;
             else
                 scanProblem = 'Photo saved, but that file could not be read as a receipt.';
         }
-        receipt.imageUrl = await makeThumbnail(blob);
         receipt.processing = false;
         receipt.lines = items.map((item) => ({
             name: item.name,

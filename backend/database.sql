@@ -18,7 +18,7 @@ create table if not exists public.receipts (
   receipt_date date not null,                                        -- the day of the purchase
   subtotal     numeric(10, 2) check (subtotal >= 0),                 -- printed on the receipt, or empty
   extra_cost   numeric(10, 2) not null default 0 check (extra_cost >= 0),  -- the gluten-free extra cost on this receipt
-  photo        text check (length(photo) < 300000),                  -- small photo of the receipt (about 50 KB)
+  photo        text check (length(photo) <= 200),                    -- where the receipt's small photo file is kept (section 7), e.g. "<user id>/<receipt id>.jpg"
   lines        jsonb not null default '[]' check (jsonb_typeof(lines) = 'array'),  -- the items
   created_at   timestamptz not null default now(),
   updated_at   timestamptz not null default now()
@@ -112,3 +112,34 @@ create policy "read own profile photo" on public.profile_photos for select to au
 create policy "add own profile photo" on public.profile_photos for insert to authenticated with check (user_id = auth.uid());
 create policy "change own profile photo" on public.profile_photos for update to authenticated using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "delete own profile photo" on public.profile_photos for delete to authenticated using (user_id = auth.uid());
+
+
+-- ============ 7. Receipt photos (files, not database rows) ============
+-- The photo itself is a small JPEG file in Supabase Storage. The receipts table only remembers its path.
+-- This keeps the database small, and a huge or broken upload can't fill it.
+-- The bucket is private (public = false): a photo opens only through a temporary link made for its owner.
+-- The bucket itself refuses anything over 500 KB or anything that isn't a JPEG (a real photo here is about 50 KB).
+-- The same check as section 1, but photo paths are short. "not valid" = old receipts that still hold a whole
+-- picture in "photo" are left alone; the website moves each one to a file the next time it is saved.
+alter table public.receipts drop constraint if exists receipts_photo_check;
+alter table public.receipts add constraint receipts_photo_check check (length(photo) <= 200) not valid;
+
+insert into storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
+values ('receipt-photos', 'receipt-photos', false, 500000, array['image/jpeg'])
+on conflict (id) do update
+  set public = false, file_size_limit = 500000, allowed_mime_types = array['image/jpeg'];
+
+-- Files live in a folder named after their owner's id, so "my folder" is what the rules below check.
+drop policy if exists "read own receipt photos" on storage.objects;
+drop policy if exists "add own receipt photos" on storage.objects;
+drop policy if exists "change own receipt photos" on storage.objects;
+drop policy if exists "delete own receipt photos" on storage.objects;
+create policy "read own receipt photos" on storage.objects for select to authenticated
+  using (bucket_id = 'receipt-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "add own receipt photos" on storage.objects for insert to authenticated
+  with check (bucket_id = 'receipt-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "change own receipt photos" on storage.objects for update to authenticated
+  using (bucket_id = 'receipt-photos' and (storage.foldername(name))[1] = auth.uid()::text)
+  with check (bucket_id = 'receipt-photos' and (storage.foldername(name))[1] = auth.uid()::text);
+create policy "delete own receipt photos" on storage.objects for delete to authenticated
+  using (bucket_id = 'receipt-photos' and (storage.foldername(name))[1] = auth.uid()::text);
