@@ -1245,7 +1245,19 @@ import { displayMetrics } from './metrics.js';
         // The wake-up knock in shared.ts hasn't been answered yet, so this scan will wait for the server to wake
         if (!window.BreadWinner.scannerAwake)
             toast('Waking up the scanner. This can take up to a minute…');
-        const response = await fetch(API_BASE + '/scan', { method: 'POST', body: form });
+        let response;
+        try {
+            response = await fetch(API_BASE + '/scan', { method: 'POST', body: form });
+        }
+        catch (error) {
+            response = null;
+        }
+        // A free Render server that is waking up or restarting drops the first try (no answer, or 502/503/504). Try once more.
+        if (!response || [502, 503, 504].includes(response.status)) {
+            toast('The scanner had a hiccup. Trying again…');
+            await new Promise((resolve) => setTimeout(resolve, 3000));
+            response = await fetch(API_BASE + '/scan', { method: 'POST', body: form });
+        }
         if (!response.ok) {
             // The server explains a refused photo in plain words (too big, wrong kind of file, damaged)
             const reply = await response.json().catch(() => ({}));
@@ -1326,6 +1338,7 @@ import { displayMetrics } from './metrics.js';
             regularTerm: item.regular_term || null,
             unsure: item.unsure === true
         }));
+        receipt.lines.forEach(rememberGf);
         receipt.subtotal = subtotal;
         tally(receipt);
         saveReceipts(receipt);
@@ -1356,6 +1369,19 @@ import { displayMetrics } from './metrics.js';
                 + (suggested ? 'approve the suggested prices.' : 'compare prices.'));
         else
             toast(found + '. None looked gluten-free. Open the receipt to check.');
+    }
+    // Receipts print the same short name for a brand's regular and gluten-free versions (like "BARILLA"),
+    // so the scanner's guess can change from one scan to the next. If this person already confirmed the
+    // same printed name at the same price as gluten-free on an earlier receipt, use that instead.
+    function rememberGf(line) {
+        if (line.gf)
+            return;
+        const confirmed = RECEIPTS.some((receipt) => receipt.lines && receipt.lines.some((old) => old !== line && old.gf === true && (old.compare || old.gfReason === 'Marked gluten-free by you')
+            && old.name.toLowerCase() === line.name.toLowerCase() && old.price === line.price));
+        if (!confirmed)
+            return;
+        line.gf = true;
+        line.gfReason = 'You marked this gluten-free on an earlier receipt';
     }
     // Adds a photo to a receipt that has none. The photo is only kept, not scanned: the items stay as typed.
     async function attachPhoto(receipt, file) {

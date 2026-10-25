@@ -41,7 +41,9 @@ For each product give:
 
 - plain_name: your best guess at what the product is, in plain English, like
   "Udi's gluten-free white bread". It only helps the shopper recognize the line.
-  Use "" if you cannot tell.
+  Use the section heading the line is printed under (like GROCERY or HEALTH AND BEAUTY) and short forms
+  in the name (like SNCK for snack) as clues. If letters are faded or missing, do not pick a famous brand
+  that only looks similar. Use "" if you cannot tell.
 - gluten_free: true only for a specialty gluten-free product, made to replace a food that normally
   contains wheat (gluten-free bread, pasta, flour, crackers, cookies, cereal, pizza and so on).
   Use false for foods that never contain gluten anyway (fruit, milk, eggs, meat, rice),
