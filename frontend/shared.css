@@ -845,7 +845,7 @@ body:has(.msn-nav) { padding-top: 74px; }
 
   @supports ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
     .mobile-bottom-nav {
-      background: color-mix(in srgb, var(--card) 72%, transparent);
+      background: color-mix(in srgb, var(--card) 64%, transparent);
       border-color: color-mix(in srgb, var(--card) 65%, var(--border));
       -webkit-backdrop-filter: blur(20px) saturate(130%);
       backdrop-filter: blur(20px) saturate(130%);
@@ -853,7 +853,7 @@ body:has(.msn-nav) { padding-top: 74px; }
     }
 
     :root[data-theme="dark"] .mobile-bottom-nav {
-      background: color-mix(in srgb, var(--card) 78%, transparent);
+      background: color-mix(in srgb, var(--card) 70%, transparent);
       border-color: color-mix(in srgb, var(--border) 75%, transparent);
       box-shadow: 0 8px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.07);
     }
