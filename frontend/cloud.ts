@@ -209,6 +209,23 @@ import { pageUrl } from './routes.js';
     try { await client.auth.signOut({ scope: 'local' }); } catch (e) { /* already forgotten locally */ }
   }
 
+  // Google creates an account for anyone who signs in. The sign-in page only allows existing ones:
+  // if this login just made a brand-new account, delete it and send them back with "account not found".
+  const GOOGLE_INTENT_KEY = 'breadwinner_google_signin';
+  const NOTICE_KEY = 'breadwinner_signin_notice';
+  async function rejectNewGoogleAccount(client, user) {
+    let intent;
+    try { intent = localStorage.getItem(GOOGLE_INTENT_KEY); } catch (e) { return false; }
+    if (!intent) return false;
+    try { localStorage.removeItem(GOOGLE_INTENT_KEY); } catch (e) { /* storage unavailable */ }
+    const justCreated = Math.abs(new Date(user.last_sign_in_at) - new Date(user.created_at)) < 60 * 1000;
+    if (!justCreated) return false;
+    await client.rpc('delete_my_account');
+    try { sessionStorage.setItem(NOTICE_KEY, 'Account not found. Create an account first.'); } catch (e) { /* storage unavailable */ }
+    await forgetSession(client);
+    return true;
+  }
+
   async function resolveUser() {
     const client = await supabase();
     const before = revision;
@@ -225,6 +242,7 @@ import { pageUrl } from './routes.js';
     if (session && !(session.expires_at * 1000 > Date.now())) {
       throw new Error('Your session could not be refreshed. Check your connection and try again.');
     }
+    if (session && await rejectNewGoogleAccount(client, session.user)) return null;
     if (session) {
       // Migrate existing remembered sessions without extending on future refreshes.
       if (localStorage.getItem(AUTH_KEY) && !loginStore.getItem(DEADLINE_KEY)) startWindow();
@@ -329,6 +347,7 @@ import { pageUrl } from './routes.js';
     // Leaves for Google's page, then comes back signed in on the dashboard
     async signInWithGoogle(keep) {
       setRemember(keep);
+      try { localStorage.setItem(GOOGLE_INTENT_KEY, 'yes'); } catch (e) { /* storage unavailable */ }
       const { error } = await (await supabase()).auth.signInWithOAuth({
         provider: 'google',
         options: { redirectTo: pageAddress('home/home.html') }

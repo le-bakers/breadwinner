@@ -11,7 +11,8 @@ import { pageUrl } from '../routes.js';
     // Wait for session restoration before deciding whether sign-in is needed.
     async function redirectIfSignedIn() {
         try {
-            if (await cloud.getSignedInState()) window.location.replace(HOME);
+            if (await cloud.getSignedInState())
+                window.location.replace(HOME);
         }
         catch (error) {
             // An unavailable auth service leaves the sign-in form accessible.
@@ -19,7 +20,8 @@ import { pageUrl } from '../routes.js';
     }
     redirectIfSignedIn();
     window.addEventListener('pageshow', (event) => {
-        if (event.persisted) redirectIfSignedIn();
+        if (event.persisted)
+            redirectIfSignedIn();
     });
     // One line above the Sign In button for "wrong password", "reset email sent", and so on
     const formMessage = document.getElementById('form-message');
@@ -28,6 +30,15 @@ import { pageUrl } from '../routes.js';
         formMessage.classList.toggle('error', Boolean(isError));
         formMessage.hidden = !text;
     }
+    // Sent back here after Google login made a brand-new account (cloud.ts deletes it)
+    try {
+        const notice = sessionStorage.getItem('breadwinner_signin_notice');
+        if (notice) {
+            sessionStorage.removeItem('breadwinner_signin_notice');
+            showMessage(notice, true);
+        }
+    }
+    catch (error) { /* storage unavailable */ }
     // Demo mode (no database connected yet): any sign-in goes straight to the dashboard
     function demoSignIn(method, email) {
         BW.signIn({ method, email: email || '' });

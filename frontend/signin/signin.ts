@@ -32,6 +32,15 @@ import { pageUrl } from '../routes.js';
     formMessage.hidden = !text;
   }
 
+  // Sent back here after Google login made a brand-new account (cloud.ts deletes it)
+  try {
+    const notice = sessionStorage.getItem('breadwinner_signin_notice');
+    if (notice) {
+      sessionStorage.removeItem('breadwinner_signin_notice');
+      showMessage(notice, true);
+    }
+  } catch (error) { /* storage unavailable */ }
+
   // Demo mode (no database connected yet): any sign-in goes straight to the dashboard
   function demoSignIn(method, email) {
     BW.signIn({ method, email: email || '' });
