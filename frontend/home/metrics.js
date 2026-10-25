@@ -85,7 +85,8 @@ function paint(metric, amount, elapsed, remainingTime = 500, immediate = false) 
       slot.velocity = (slot.velocity - frequency * step) * decay;
       if (slot.phase > slot.goal) { slot.phase = slot.goal; slot.velocity = 0; }
     }
-    slot.reel.style.transform = 'translateY(' + (-(slot.phase % 10) * 1.12) + 'em)';
+    // Eleven equal cells: percentage travel follows their actual rendered height.
+    slot.reel.style.transform = 'translateY(' + (-(slot.phase % 10) * 100 / 11) + '%)';
     if (fragment) fragment.appendChild(slot.element);
     slots.set(key, slot);
   }

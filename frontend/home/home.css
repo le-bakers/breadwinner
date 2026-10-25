@@ -47,7 +47,7 @@
 .summary-stat-label { font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
 
 /* The outer line, symbols, and digit windows remain fixed during rotation. */
-.metric-visual { display: flex; align-items: center; height: 1.12em; white-space: nowrap; line-height: 1.12; }
+.metric-visual { display: flex; align-items: center; height: 1.12em; white-space: nowrap; line-height: 1.12; letter-spacing: 0; font-variant-numeric: lining-nums tabular-nums; font-kerning: none; }
 .metric-digit { display: block; flex: 0 0 auto; width: 1ch; height: 1.12em; overflow: hidden; }
 .metric-reel { display: block; width: 100%; text-align: center; }
 .metric-reel > span { display: block; height: 1.12em; line-height: 1.12; }
@@ -398,6 +398,20 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
 .badge-compare { background: #15803D; color: #fff; }
 .badge-compare:hover { background: #166534; }
 .badge-tax { background: var(--accent-light); color: #15803D; }
+.item-badges button.badge-tax {
+  display: block;
+  box-sizing: border-box;
+  flex: 0 1 auto;
+  width: fit-content;
+  max-width: 100%;
+  min-width: 0;
+  height: auto;
+  min-height: 44px;
+  padding: 10px 12px;
+  line-height: 1.5;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 .badge-tax:hover { background: #BBF7D0; }
 /* Colors: green = approved and counted, yellow = still needs the user's review */
 .badge-approve { background: #FDE68A; color: #78350F; }
@@ -1229,6 +1243,35 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
   .item-price.item-edit-btn { grid-column: 2; grid-row: 2; justify-content: flex-start; width: fit-content; padding-left: 0; }
   .item-badges { grid-column: 2 / -1; grid-row: 3; justify-content: flex-start; padding-left: 0; }
   button.badge { min-height: 44px; }
+  /* Size Home's amount backgrounds from their content, with balanced touch padding. */
+  .dashboard-home .item-price.item-edit-btn {
+    grid-column: 2 / -1;
+    justify-self: start;
+    justify-content: center;
+    width: max-content;
+    max-width: 100%;
+    min-height: 44px;
+    height: auto;
+    padding: 8px 10px;
+    text-align: center;
+  }
+  .dashboard-home .item-badges { min-width: 0; align-items: flex-start; gap: 8px; }
+  .dashboard-home .item-badges .badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    max-width: 100%;
+    padding: 8px 12px;
+    line-height: 1.35;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+  .dashboard-home .item-badges button.badge-tax {
+    display: block;
+    height: auto;
+    padding: 10px 12px;
+    line-height: 1.5;
+  }
   .suggest-bar { padding: 14px; }
   .suggest-form { width: 100%; flex-wrap: nowrap; }
   .suggest-form label { flex: 1; min-width: 0; }
