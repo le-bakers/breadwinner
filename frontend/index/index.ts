@@ -21,7 +21,7 @@
     const steps = Array.from(track.querySelectorAll('.how-step'));
     const controls = steps.map(step => step.querySelector('.how-step-control'));
     const details = steps.map(step => step.querySelector('.how-detail'));
-    const images = steps.map(step => step.querySelector('.how-demo-image'));
+    const images = steps.map(step => step.querySelector('.how-it-works-image'));
     const nav = document.querySelector('.msn-nav');
     const motion = window.matchMedia('(prefers-reduced-motion: reduce)');
     let active = -1;
