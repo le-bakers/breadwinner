@@ -164,12 +164,7 @@
 }
 .timeline-row.reverse .timeline-media { order: 2; }
 .timeline-row.reverse .timeline-copy { order: 1; }
-.timeline-media {
-  border-radius: var(--radius-lg);
-  overflow: hidden;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--border);
-}
+
 .timeline-media img { width: 100%; height: auto; display: block; }
 .step-num {
   display: inline-block;
