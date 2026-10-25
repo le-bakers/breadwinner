@@ -49,19 +49,6 @@
 .history-month > .receipt-table { margin-top: 4px; }
 .receipt-workspace .history-month .receipt-row-head { border-bottom: 1px solid var(--border); }
 
-@media (max-width: 860px) {
-  /* Reserve a fourth slot in the navigation footprint for the existing scan action. */
-  #historyBottomNav { padding-right: 70px; }
-  .dashboard-history ~ .fab-wrapper {
-    bottom: calc(19px + env(safe-area-inset-bottom, 0px));
-    right: max(23px, calc((100vw - 340px) / 2 + 7px));
-    z-index: 96;
-  }
-  .dashboard-history ~ .fab-wrapper .fab { width: 54px; min-width: 54px; height: 54px; padding: 0; justify-content: center; box-shadow: none; }
-  .dashboard-history ~ .fab-wrapper .fab > .fab-label { display: none; }
-  .dashboard-history ~ .fab-wrapper .fab-option { width: auto; min-width: 180px; padding: 0 16px; }
-  .dashboard-history ~ .fab-wrapper .fab-option .fab-label { display: block; max-width: none; font-size: 13px; }
-}
 @media (max-width: 700px) {
   .history-group > summary { flex-wrap: wrap; gap: 12px; padding: 18px 16px; }
   .history-group-stats { flex-basis: 100%; margin-left: 24px; grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr)); gap: 12px; text-align: left; }

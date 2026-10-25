@@ -1238,3 +1238,42 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
   :is(.dashboard-home:has(.receipt-expand.open), .dashboard-history:has(.history-year[open] .history-month[open] .receipt-expand.open)) ~ .mobile-bottom-nav { display: none; }
   .receipt-review-done { display: flex; justify-content: center; width: 100%; min-height: 44px; margin-top: 24px; }
 }
+
+@media (max-width: 860px) {
+  /* Reserve a fourth slot in the navigation footprint for the existing scan action. */
+  #mobileBottomNav { padding-right: 70px; transition: padding-top 240ms var(--ease-out), border-radius 240ms var(--ease-out), background 180ms; }
+  #mobileBottomNav.is-scan-open { padding-top: 130px; border-radius: 28px; background: var(--card); border-color: var(--border); }
+  .dashboard-home ~ .fab-wrapper {
+    bottom: calc(19px + env(safe-area-inset-bottom, 0px));
+    right: max(23px, calc((100vw - 340px) / 2 + 7px));
+    z-index: 96;
+    pointer-events: none;
+  }
+  .dashboard-home ~ .fab-wrapper .fab { width: 54px; min-width: 54px; height: 54px; padding: 0; justify-content: center; box-shadow: none; pointer-events: auto; }
+  .dashboard-home ~ .fab-wrapper .fab > .fab-label { display: none; }
+  .dashboard-home ~ .fab-wrapper .fab-option {
+    position: fixed;
+    left: 50%;
+    width: min(316px, calc(100vw - 56px));
+    min-width: 0;
+    min-height: 48px;
+    height: 48px;
+    padding: 0 16px;
+    justify-content: flex-start;
+    border-radius: 12px;
+    color: var(--text);
+    background: var(--bg);
+    border-color: var(--border);
+    box-shadow: none;
+    transform: translate(-50%, 8px);
+    transition-delay: 0s;
+  }
+  .dashboard-home ~ .fab-wrapper #fabOptionCamera { bottom: calc(134px + env(safe-area-inset-bottom, 0px)); }
+  .dashboard-home ~ .fab-wrapper #fabOptionUpload { bottom: calc(80px + env(safe-area-inset-bottom, 0px)); }
+  .dashboard-home ~ .fab-wrapper.is-options-open .fab-option { transform: translate(-50%, 0); transition-delay: 0s; }
+  .dashboard-home ~ .fab-wrapper .fab-option:hover { background: color-mix(in srgb, var(--primary) 10%, var(--card)); }
+  .dashboard-home ~ .fab-wrapper .fab-option .fab-label { display: block; max-width: none; font-size: 13px; }
+}
+@media (max-width: 860px) and (prefers-reduced-motion: reduce) {
+  #mobileBottomNav { transition: none; }
+}

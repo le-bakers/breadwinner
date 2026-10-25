@@ -61,7 +61,7 @@ window.BreadWinner.receiptHistory = {
       empty.className = 'receipt-empty';
       empty.textContent = document.getElementById('receiptSearch').value.trim()
         ? 'No receipts match your search.'
-        : 'No receipts yet. Add a receipt to start your history.';
+        : 'No saved receipts yet.';
       table.appendChild(empty);
       return;
     }

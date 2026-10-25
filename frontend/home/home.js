@@ -1378,6 +1378,7 @@ import { displayMetrics } from './metrics.js';
         if (!fabWrapper || !photoBtn || !fabOptionCamera || !fabOptionUpload)
             return;
         fabWrapper.classList.toggle('is-options-open', open);
+        document.getElementById('mobileBottomNav')?.classList.toggle('is-scan-open', open);
         photoBtn.setAttribute('aria-expanded', String(open));
         fabOptionCamera.setAttribute('aria-hidden', String(!open));
         fabOptionUpload.setAttribute('aria-hidden', String(!open));
@@ -1391,6 +1392,17 @@ import { displayMetrics } from './metrics.js';
         photoBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             setFabOptionsOpen(!fabWrapper.classList.contains('is-options-open'));
+        });
+        document.addEventListener('click', (e) => {
+            if (fabWrapper.classList.contains('is-options-open') && !fabWrapper.contains(e.target)) {
+                setFabOptionsOpen(false);
+            }
+        });
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && fabWrapper.classList.contains('is-options-open')) {
+                setFabOptionsOpen(false);
+                photoBtn.focus();
+            }
         });
         // Handle "Take a picture" option click
         fabOptionCamera.addEventListener('click', (e) => {
