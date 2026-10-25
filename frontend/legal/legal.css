@@ -15,7 +15,7 @@
   display: grid;
   grid-template-columns: 260px 1fr;
   gap: 56px;
-  padding: 56px 0 120px;
+  padding-block: 56px 120px;
   align-items: start;
 }
 
@@ -200,7 +200,7 @@
   .legal-hero { padding: 48px 0 32px; }
   .legal-hero h1 { font-size: 34px; line-height: 1.15; }
   .legal-hero p.updated { font-size: 13px; line-height: 1.5; }
-  .legal-layout { min-width: 0; grid-template-columns: minmax(0, 1fr); padding: 32px 0 80px; gap: 28px; }
+  .legal-layout { min-width: 0; grid-template-columns: minmax(0, 1fr); padding-block: 32px 80px; gap: 28px; }
   .legal-toc { width: 100%; min-width: 0; padding: 16px; }
   .legal-toc ol { padding-left: 0; }
   .legal-doc section { margin-bottom: 38px; }
