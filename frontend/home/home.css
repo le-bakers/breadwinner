@@ -231,16 +231,6 @@
 .status-processed { background: var(--accent-light); color: #15803D; }
 .status-review { background: #FEF9C3; color: #A16207; }
 
-.row-expand-btn {
-  width: 30px; height: 30px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--card);
-  display: flex; align-items: center; justify-content: center;
-  transition: transform 0.35s var(--ease-out), border-color 0.2s;
-}
-.receipt-row.open .row-expand-btn { transform: rotate(180deg); border-color: var(--primary); }
-
 .cell-actions { display: flex; align-items: center; gap: 8px; }
 .row-delete-btn {
   width: 30px; height: 30px;
@@ -554,7 +544,7 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
   .receipt-row-head span:not(:first-child) { display: none; }
   .cell-date, .cell-items, .cell-gf { display: none; }
   /* Bigger buttons so they are easy to tap with a thumb */
-  .row-expand-btn, .row-delete-btn { width: 40px; height: 40px; }
+  .row-delete-btn { width: 40px; height: 40px; }
 
   /* Scale the expanded receipt dropdown to the table borders on mobile */
   .receipt-expand .expand-inner {
@@ -1121,9 +1111,6 @@ body[data-receipt-period="current-month"] .fab { box-shadow: var(--shadow-md); }
 .receipt-workspace .cell-actions { justify-content: flex-end; }
 .receipt-workspace .status-pill { padding: 4px 9px; font-size: 12px; white-space: nowrap; }
 .receipt-workspace .status-processed { background: color-mix(in srgb, var(--primary) 10%, var(--card)); color: var(--workspace-green); }
-.receipt-workspace .row-expand-btn { width: auto; min-width: 88px; height: 40px; gap: 8px; padding: 0 12px; border-radius: 10px; color: var(--text); font: inherit; font-weight: 500; }
-.receipt-workspace .receipt-row.open .row-expand-btn { transform: none; border-color: var(--border); background: var(--card); }
-.receipt-workspace .receipt-row.open .row-expand-btn svg { transform: rotate(180deg); }
 .receipt-workspace .row-delete-btn { width: 40px; height: 40px; border: 0; background: transparent; }
 .receipt-workspace .receipt-row:not(.receipt-row-head):hover, .receipt-workspace .receipt-row:not(.receipt-row-head).open { background: color-mix(in srgb, var(--primary) 4%, var(--bg)); }
 .receipt-workspace .receipt-row:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: -2px; }
@@ -1136,10 +1123,9 @@ body[data-receipt-period="current-month"] .fab { box-shadow: var(--shadow-md); }
 .receipt-source h3, .receipt-items-heading h3 { font-family: var(--font-body); font-size: 14px; font-weight: 600; letter-spacing: 0; }
 .receipt-source h3 { margin-bottom: 16px; }
 .receipt-photo-button { display: block; width: 100%; max-height: 400px; overflow: hidden; padding: 12px; border: 0; border-radius: 10px; background: var(--bg); cursor: zoom-in; }
-.receipt-photo-button[hidden], .receipt-photo-empty[hidden], .receipt-photo-hint[hidden] { display: none; }
+.receipt-photo-button[hidden], .receipt-photo-empty[hidden] { display: none; }
 .receipt-photo-button .expand-receipt-img { display: block; border: 0; border-radius: 0; box-shadow: none; }
 .receipt-photo-empty { display: grid; place-items: center; min-height: 150px; padding: 20px; border-radius: 10px; background: var(--bg); font-size: 13px; color: var(--text-secondary); }
-.receipt-photo-hint { margin-top: 10px; font-size: 12px; color: var(--text-secondary); }
 .receipt-photo-add { display: flex; flex-direction: column; gap: 8px; align-items: center; justify-content: center; width: 100%; border: 1px dashed var(--border); font-family: inherit; font-weight: 600; cursor: pointer; }
 .receipt-photo-add:hover { color: var(--primary-hover); border-color: var(--primary); }
 .expand-items { min-width: 0; }
@@ -1147,7 +1133,6 @@ body[data-receipt-period="current-month"] .fab { box-shadow: var(--shadow-md); }
 .rename-field span { font-size: 12px; font-weight: 500; text-transform: none; letter-spacing: 0; }
 .rename-input { width: 100%; border-radius: 8px; padding: 10px 12px; background: var(--card); font-size: 14px; }
 .receipt-items-heading { display: flex; flex-wrap: wrap; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 16px; }
-.receipt-items-heading > span { font-size: 12px; color: var(--text-secondary); }
 .list-tools { gap: 8px 20px; margin: 0 0 12px; }
 .list-tools label { min-height: 36px; font-size: 12px; }
 .suggest-bar { padding: 16px; margin-bottom: 16px; background: color-mix(in srgb, var(--primary) 7%, var(--card)); border-radius: 10px; }
@@ -1190,7 +1175,7 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
 .receipt-photo-dialog-header { display: flex; align-items: center; justify-content: space-between; gap: 16px; margin-bottom: 16px; }
 .receipt-photo-dialog-header h2 { font-size: 18px; }
 .receipt-photo-dialog > img { display: block; width: 100%; height: auto; }
-.receipt-photo-button:focus-visible, .row-expand-btn:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 3px; }
+.receipt-photo-button:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 3px; }
 .receipt-workspace .receipt-expand { border-radius: 0 0 12px 12px; }
 .receipt-review-done { display: none; }
 
@@ -1206,7 +1191,6 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
   .receipt-source { display: grid; grid-template-columns: 96px minmax(0, 1fr); align-items: start; gap: 6px 16px; }
   .receipt-source h3 { grid-column: 2; margin: 0; }
   .receipt-photo-button, .receipt-photo-empty { grid-column: 1; grid-row: 1 / span 2; max-height: 120px; min-height: 0; }
-  .receipt-photo-hint { grid-column: 2; margin: 0; }
 }
 @media (max-width: 560px) {
   .receipt-workspace { padding-top: 24px; }
@@ -1230,7 +1214,6 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
   .receipt-workspace .cell-overcharge { grid-column: 2; grid-row: 1; font-size: 15px; }
   .receipt-workspace .receipt-row .cell-status { display: block; grid-column: 1; grid-row: 2; }
   .receipt-workspace .cell-actions { grid-column: 2; grid-row: 2; gap: 4px; }
-  .receipt-workspace .row-expand-btn { min-width: 78px; min-height: 44px; border: 0; background: transparent; padding: 0 8px; font-size: 12px; }
   .receipt-workspace .row-delete-btn { width: 44px; height: 44px; }
   .receipt-workspace .status-pill { padding: 3px 8px; font-size: 11px; }
   .receipt-expand .expand-inner { padding: 0 14px; }

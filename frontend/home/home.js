@@ -107,12 +107,11 @@ import { displayMetrics } from './metrics.js';
         const expand = frag.querySelector('.receipt-expand');
         expand.id = 'receipt-details-' + (++receiptSequence);
         expand.setAttribute('aria-label', receipt.name + ' details');
-        row.querySelector('.row-expand-btn').setAttribute('aria-controls', expand.id);
-        row.querySelector('.row-expand-btn').setAttribute('aria-expanded', 'false');
+        row.setAttribute('aria-controls', expand.id);
+        row.setAttribute('aria-expanded', 'false');
         if (receipt.processing) {
             row.classList.add('receipt-row-processing');
             row.setAttribute('aria-label', 'Reading receipt');
-            row.querySelector('.row-expand-btn').hidden = true;
             row.querySelector('.row-delete-btn').hidden = true;
             expand.hidden = true;
             frag.querySelector('.cell-name-text').textContent = receipt.name;
@@ -149,7 +148,6 @@ import { displayMetrics } from './metrics.js';
         if (photoButton) {
             photoButton.hidden = !receipt.imageUrl;
             frag.querySelector('.receipt-photo-empty').hidden = !!receipt.imageUrl;
-            frag.querySelector('.receipt-photo-hint').hidden = !receipt.imageUrl;
             photoButton.addEventListener('click', () => {
                 const dialog = document.getElementById('receiptPhotoDialog');
                 dialog.querySelector('img').src = receipt.imageUrl;
@@ -192,7 +190,7 @@ import { displayMetrics } from './metrics.js';
         if (doneButton)
             doneButton.addEventListener('click', () => {
                 toggleRow(row, expand);
-                row.querySelector('.row-expand-btn').focus();
+                row.focus();
             });
         row.addEventListener('click', () => toggleRow(row, expand));
         row.addEventListener('keydown', (e) => {
@@ -779,12 +777,7 @@ import { displayMetrics } from './metrics.js';
         const isOpen = row.classList.toggle('open');
         expand.classList.toggle('open', isOpen);
         expand.inert = !isOpen;
-        const btn = row.querySelector('.row-expand-btn');
-        btn.setAttribute('aria-label', isOpen ? 'Collapse receipt details' : 'Expand receipt details');
-        btn.setAttribute('aria-expanded', String(isOpen));
-        const reviewLabel = btn.querySelector('.row-review-label');
-        if (reviewLabel)
-            reviewLabel.textContent = isOpen ? 'Close' : 'Review';
+        row.setAttribute('aria-expanded', String(isOpen));
     }
     function render(list) {
         if (window.BreadWinner.receiptHistory) {

@@ -224,10 +224,6 @@
     <span class="cell-overcharge"></span>
     <span class="cell-status"></span>
     <span class="cell-actions">
-      <button class="row-expand-btn" type="button" aria-label="Expand receipt details" aria-expanded="false">
-        <span class="row-review-label">Review</span>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none"><path d="M6 9l6 6 6-6" stroke="#6B7280" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-      </button>
       <button class="row-delete-btn" type="button" aria-label="Delete receipt">
         <svg width="15" height="15" viewBox="0 0 24 24" fill="none"><path d="M3 6h18M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2m3 0l-1 14a2 2 0 01-2 2H7a2 2 0 01-2-2L4 6h16z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
       </button>
@@ -239,14 +235,13 @@
         <h3>Original receipt</h3>
         <button class="receipt-photo-button" type="button" aria-label="Enlarge receipt photo" hidden><img class="expand-receipt-img" alt="Scanned receipt"></button>
         <p class="receipt-photo-empty">No photo saved</p>
-        <p class="receipt-photo-hint" hidden>Select photo to enlarge</p>
       </aside>
       <div class="expand-items">
         <label class="rename-field">
           <span>Receipt name</span>
           <input class="rename-input" type="text" maxlength="60" autocomplete="off" placeholder="Captured Receipt">
         </label>
-        <div class="receipt-items-heading"><h3>Scanned items</h3><span>Changes save automatically</span></div>
+        <div class="receipt-items-heading"><h3>Scanned items</h3></div>
         <p class="items-check" role="status" hidden></p>
         <!-- Suggested comparisons waiting for the user (filled in by home.js) -->
         <div class="suggest-bar" hidden></div>
