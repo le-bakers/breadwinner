@@ -209,7 +209,8 @@
   .legal-doc p, .legal-doc ul li { font-size: 14px; line-height: 1.7; }
   .legal-callout { padding: 15px; gap: 10px; }
   .legal-table { display: block; overflow-x: auto; white-space: normal; }
-  .legal-table th, .legal-table td { min-width: 150px; padding: 10px 12px; }
+  .legal-table { font-size: 13px; }
+  .legal-table th, .legal-table td { padding: 10px 8px; overflow-wrap: anywhere; }
   .legal-contact-card { align-items: stretch; padding: 20px; }
   .legal-contact-card .btn { width: 100%; white-space: normal; text-align: center; }
   .back-to-top { right: 16px; bottom: 82px; }
