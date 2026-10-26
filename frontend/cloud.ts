@@ -23,6 +23,11 @@ import { pageUrl } from './routes.js';
   // Capture the recovery hint before Supabase consumes the callback URL.
   // Read it now, before Supabase reads the address and tidies it away.
   const cameFromResetEmail = window.location.hash.includes('type=recovery');
+  // If Supabase sent the reset link to another page (for example its Site URL,
+  // when the reset page is missing from its Redirect URLs list), move the link,
+  // unread, to the reset page so the new-password form still opens.
+  const forwardingReset = cameFromResetEmail && !window.location.pathname.includes('resetlink');
+  if (forwardingReset) window.location.replace(pageUrl('/resetlink') + window.location.hash);
   let recoveryUserId = null;
   let recoveryDeadline = 0;
   let passwordUpdatePending = false;
@@ -168,7 +173,7 @@ import { pageUrl } from './routes.js';
     }
     return connection;
   }
-  if (enabled) supabase().catch(() => publish(null, false));
+  if (enabled && !forwardingReset) supabase().catch(() => publish(null, false));
 
   // Turns Supabase's error into a sentence for the user, and stops the action
   function fail(error) {

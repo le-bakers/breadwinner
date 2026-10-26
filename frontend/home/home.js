@@ -982,7 +982,7 @@ import { displayMetrics } from './metrics.js';
         }
     }
     function flashShutter() {
-        if (!cameraFlash || document.documentElement.getAttribute('data-reduce-motion') === 'true')
+        if (!cameraFlash || window.matchMedia('(prefers-reduced-motion: reduce)').matches)
             return;
         cameraFlash.hidden = false;
         void cameraFlash.offsetWidth;

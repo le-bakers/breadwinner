@@ -131,8 +131,7 @@ window.BreadWinner = window.BreadWinner || {};
       matchConfirmations: false
     },
     currency: 'USD',             // USD | EUR | GBP | CAD | AUD
-    dateFormat: 'MDY',           // MDY | DMY | ISO
-    reduceMotion: false
+    dateFormat: 'MDY'            // MDY | DMY | ISO
   };
   const AVATAR_BG = 'linear-gradient(135deg,#22C55E,#16A34A)';
   const CURRENCY_SYMBOLS = { USD: '$', EUR: '\u20AC', GBP: '\u00A3', CAD: 'CA$', AUD: 'AU$' };
@@ -172,11 +171,6 @@ window.BreadWinner = window.BreadWinner || {};
     window.dispatchEvent(new CustomEvent('breadwinner:settings-changed', { detail: { key: keyPath, value: value } }));
   }
 
-  function resetSettings() {
-    saveSettings(JSON.parse(JSON.stringify(SETTINGS_DEFAULTS)));
-    applySettings();
-  }
-
   function applySettings() {
     const s = getSettings();
     const root = document.documentElement;
@@ -193,8 +187,6 @@ window.BreadWinner = window.BreadWinner || {};
       const directory = currentSrc.slice(0, currentSrc.lastIndexOf('/') + 1);
       img.setAttribute('src', directory + navLogoName);
     });
-
-    root.setAttribute('data-reduce-motion', s.reduceMotion ? 'true' : 'false');
   }
   /* ---------- Formatting helpers (respect current Settings) ---------- */
   function formatDate(dateInput) {
@@ -229,7 +221,6 @@ window.BreadWinner = window.BreadWinner || {};
     getSettings: getSettings,
     saveSettings: saveSettings,
     updateSetting: updateSetting,
-    resetSettings: resetSettings,
     applySettings: applySettings
   };
   BW.applySitewideSettings = applySettings; // back-compat alias

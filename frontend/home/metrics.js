@@ -3,6 +3,8 @@ const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD
 const integer = new Intl.NumberFormat('en-US', { maximumFractionDigits: 0 });
 let active = null;
 const rendered = new WeakMap();
+const COUNT_TIME = 1100; // ms the number spends counting up
+const LANDING_TIME = 300; // ms for each digit wheel to glide to a stop afterwards
 const formatted = metric => (metric.format === 'money' ? money : integer).format(metric.value);
 function finish(job) {
     if (job.frame !== null)
@@ -58,7 +60,7 @@ function paint(metric, amount, elapsed, remainingTime = 500, immediate = false) 
             slot.velocity = 0;
             slot.landing = null;
         }
-        else if (remainingTime <= 200) {
+        else if (remainingTime <= LANDING_TIME) {
             if (!slot.landing) {
                 const seconds = remainingTime / 1000;
                 slot.landing = {
@@ -68,7 +70,7 @@ function paint(metric, amount, elapsed, remainingTime = 500, immediate = false) 
                     tangent: Math.min(Math.max(0, slot.velocity * seconds), 3 * (slot.goal - slot.phase))
                 };
             }
-            // Match the incoming velocity, then decelerate to zero at 500 ms.
+            // Match the incoming velocity, then decelerate to zero at the end.
             const landing = slot.landing;
             const t = landing.remainingTime ? 1 - remainingTime / landing.remainingTime : 1;
             const t2 = t * t;
@@ -153,7 +155,7 @@ export function displayMetrics(entries, animateOnLoad = false) {
         paint(metric, 0, 0, 500, true);
     }
     const started = performance.now();
-    const duration = 500;
+    const duration = COUNT_TIME + LANDING_TIME;
     let previous = started;
     function tick(now) {
         if (active !== job)
@@ -165,11 +167,10 @@ export function displayMetrics(entries, animateOnLoad = false) {
         const elapsed = Math.max(0, now - previous);
         previous = now;
         const progress = Math.max(0, Math.min((now - started) / duration, 1));
-        // Reserve the final 40% for the wheels to land smoothly on their targets.
-        const countProgress = Math.min(progress / 0.6, 1);
-        // Ease into rotation from rest, then ease out before the final landing.
-        const eased = countProgress * countProgress * countProgress
-            * (countProgress * (countProgress * 6 - 15) + 10);
+        // The count finishes first; the last LANDING_TIME lets the wheels settle.
+        const countProgress = Math.max(0, Math.min((now - started) / COUNT_TIME, 1));
+        // Start fast, then slow down more and more as the number nears its total.
+        const eased = (1 - Math.pow(2, -8 * countProgress)) / (1 - Math.pow(2, -8));
         for (const metric of metrics) {
             const scale = metric.format === 'money' ? 100 : 1;
             let amount = Math.round(metric.value * eased * scale) / scale;

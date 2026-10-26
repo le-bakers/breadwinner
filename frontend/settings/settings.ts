@@ -7,14 +7,13 @@ import { pageUrl } from '../routes.js';
   'use strict';
 
   const BW = window.BreadWinner || {};
-  const Settings = BW.Settings; // getSettings, saveSettings, updateSetting, resetSettings, applySettings
+  const Settings = BW.Settings; // getSettings, saveSettings, updateSetting, applySettings
   if (!Settings) return;
 
   // Alias inner function so we can reference it before the object literal is assigned.
   const api = {
     get: Settings.getSettings,
-    update: Settings.updateSetting,
-    reset: Settings.resetSettings
+    update: Settings.updateSetting
   };
 
   /* ---------- Render all controls from current settings ---------- */
@@ -26,7 +25,6 @@ import { pageUrl } from '../routes.js';
       btn.setAttribute('aria-pressed', String(btn.dataset.themeValue === s.theme));
     });
 
-    document.getElementById('reduceMotionToggle').checked = s.reduceMotion;
     document.getElementById('dateFormatSelect').value = s.dateFormat;
   }
 
@@ -39,10 +37,7 @@ import { pageUrl } from '../routes.js';
     });
   });
 
-  /* ---------- Accessibility ---------- */
-  document.getElementById('reduceMotionToggle').addEventListener('change', (e) => {
-    api.update('reduceMotion', e.target.checked);
-  });
+  /* ---------- Date format ---------- */
   document.getElementById('dateFormatSelect').addEventListener('change', (e) => {
     api.update('dateFormat', e.target.value);
     if (BW.toast) BW.toast('Date format saved');
@@ -113,20 +108,6 @@ import { pageUrl } from '../routes.js';
       } finally { exportBtn.disabled = false; }
     });
   }
-
-  /* ---------- Reset settings (keeps identity data) ---------- */
-  const resetModal = BW.confirmModal(document.getElementById('resetSettingsModal'));
-  document.getElementById('resetSettingsBtn').addEventListener('click', () => resetModal.open());
-  document.getElementById('resetSettingsCancel').addEventListener('click', () => resetModal.close());
-  document.getElementById('resetSettingsModal').addEventListener('click', (e) => {
-    if (e.target.id === 'resetSettingsModal') resetModal.close();
-  });
-  document.getElementById('resetSettingsConfirm').addEventListener('click', () => {
-    api.reset();
-    renderFromSettings();
-    resetModal.close();
-    if (BW.toast) BW.toast('Settings reset to defaults');
-  });
 
   /* ---------- Clear all local data (danger zone) ---------- */
   const clearModal = BW.confirmModal(document.getElementById('clearDataModal'));

@@ -129,7 +129,6 @@
 @media (max-width: 1080px) {
   .settings-layout { grid-template-columns: 180px minmax(0, 1fr); gap: 24px; }
   .settings-page .form-row { align-items: flex-start; flex-direction: column; gap: 12px; }
-  .settings-page .motion-row { flex-direction: row; align-items: center; }
 }
 @media (max-width: 760px) {
   .settings-layout { grid-template-columns: minmax(0, 1fr); gap: 20px; }

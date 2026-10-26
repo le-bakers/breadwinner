@@ -36,7 +36,7 @@ function storage(initial = {}) {
   };
 }
 
-function setup({ local = {}, tab = {}, protectedPage = false, hash = '', result, getSession, photo = null, photoError = false } = {}) {
+function setup({ local = {}, tab = {}, protectedPage = false, hash = '', pathname = '/resetlink/resetlink.html', result, getSession, photo = null, photoError = false } = {}) {
   const localStorage = storage(local);
   const sessionStorage = storage(tab);
   const events = new Map();
@@ -113,7 +113,7 @@ function setup({ local = {}, tab = {}, protectedPage = false, hash = '', result,
   }
   const window = {
     BreadWinner: BW,
-    location: { hash, replace: url => redirects.push(url), reload() {} },
+    location: { hash, pathname, replace: url => redirects.push(url), reload() {} },
     addEventListener(name, callback) {
       if (!events.has(name)) events.set(name, []);
       events.get(name).push(callback);
@@ -394,6 +394,13 @@ test('a normal login or forged recovery URL cannot authorize a password reset', 
     await assert.rejects(app.BW.cloud.setNewPassword('a long new password'), /invalid or expired/);
     assert.equal(app.passwordUpdates.length, 0);
   }
+});
+
+test('a reset link that lands on another page is forwarded, unread, to the reset page', () => {
+  const app = setup({ hash: '#access_token=t&type=recovery', pathname: '/home' });
+  assert.deepEqual(app.redirects, [pageUrl('/resetlink') + '#access_token=t&type=recovery']);
+  const normal = setup({ hash: '#access_token=t', pathname: '/home' });
+  assert.deepEqual(normal.redirects, []);
 });
 
 test('verified recovery allows one password update and clears credentials afterward', async () => {

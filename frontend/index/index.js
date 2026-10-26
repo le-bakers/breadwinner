@@ -28,7 +28,7 @@
         let frame = 0;
         let needsMeasure = true;
         let signature = '';
-        const reduceMotion = () => motion.matches || document.documentElement.dataset.reduceMotion === 'true';
+        const reduceMotion = () => motion.matches;
         const geometrySignature = () => [window.innerWidth, window.innerHeight,
             nav ? nav.getBoundingClientRect().height : 0,
             ...controls.map(button => button.offsetWidth + ':' + button.offsetHeight)].join('|');
@@ -58,8 +58,10 @@
                 images[i].classList.toggle('is-active', current);
                 images[i].setAttribute('aria-hidden', String(!current));
                 if (images[i].tagName === 'VIDEO') {
-                    if (current) images[i].play().catch(() => {});
-                    else images[i].pause();
+                    if (current)
+                        images[i].play().catch(() => { });
+                    else
+                        images[i].pause();
                 }
             });
         }
@@ -100,7 +102,8 @@
                 track.classList.remove('is-enhanced');
                 images.forEach((image, i) => {
                     steps[i].appendChild(image);
-                    if (image.tagName === 'VIDEO') image.play().catch(() => {});
+                    if (image.tagName === 'VIDEO')
+                        image.play().catch(() => { });
                     image.classList.remove('is-active', 'is-previous');
                     image.removeAttribute('aria-hidden');
                     steps[i].classList.remove('is-active');
@@ -158,7 +161,7 @@
             observer.observe(track);
         }
         // Settings can change live, including text sizing applied by the browser/user.
-        new MutationObserver(() => schedule(true)).observe(document.documentElement, { attributes: true, attributeFilter: ['data-reduce-motion', 'style', 'class'] });
+        new MutationObserver(() => schedule(true)).observe(document.documentElement, { attributes: true, attributeFilter: ['style', 'class'] });
         measure();
         needsMeasure = false;
     }

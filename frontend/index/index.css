@@ -293,7 +293,6 @@
   .how-track.is-ready .how-it-works-image { transition: opacity 300ms ease; }
   .how-track.is-ready .how-it-works-image.is-previous { transition: none; }
 }
-:root[data-reduce-motion="true"] .how-track * { transition: none !important; }
 
 @media (max-width: 819px) {
   .how-it-works { scroll-margin-top: 78px; }

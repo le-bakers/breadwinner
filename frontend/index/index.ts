@@ -32,7 +32,7 @@
     let needsMeasure = true;
     let signature = '';
 
-    const reduceMotion = () => motion.matches || document.documentElement.dataset.reduceMotion === 'true';
+    const reduceMotion = () => motion.matches;
     const geometrySignature = () => [window.innerWidth, window.innerHeight,
       nav ? nav.getBoundingClientRect().height : 0,
       ...controls.map(button => button.offsetWidth + ':' + button.offsetHeight)].join('|');
@@ -156,7 +156,7 @@
     }
     // Settings can change live, including text sizing applied by the browser/user.
     new MutationObserver(() => schedule(true)).observe(document.documentElement,
-      { attributes: true, attributeFilter: ['data-reduce-motion', 'style', 'class'] });
+      { attributes: true, attributeFilter: ['style', 'class'] });
     measure();
     needsMeasure = false;
   }

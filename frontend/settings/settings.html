@@ -96,9 +96,7 @@
                 System
               </button>
             </div></div></div>
-          <div class="form-row motion-row"><div class="form-row-text"><strong><label for="reduceMotionToggle">Reduce motion</label></strong><span>Limit animations and transitions. Your device preference is also respected.</span></div><div class="form-row-control"><label class="switch"><input type="checkbox" id="reduceMotionToggle" role="switch"><span class="switch-track" aria-hidden="true"></span></label></div></div>
           <div class="form-row"><div class="form-row-text"><strong><label for="dateFormatSelect">Date format</label></strong><span>Choose how receipt dates appear on your dashboard and in receipt history.</span></div><div class="form-row-control"><select class="select" id="dateFormatSelect"><option value="MDY">Month first (Oct 24, 2026)</option><option value="DMY">Day first (24 Oct 2026)</option><option value="ISO">Year first (2026-10-24)</option></select></div></div>
-          <div class="form-row"><div class="form-row-text"><strong>Reset preferences</strong><span>Restore the default theme, date format, and motion settings. Keep your profile and receipts.</span></div><div class="form-row-control"><button type="button" class="btn btn-secondary btn-sm" id="resetSettingsBtn">Reset preferences</button></div></div>
         </section>
         <section class="section-card" id="privacy" aria-labelledby="privacyHeading">
           <div class="section-card-header"><div><h2 id="privacyHeading">Data &amp; privacy</h2><p>Manage your saved information and download a copy.</p></div></div>
@@ -117,21 +115,6 @@
     </div>
   </div>
 </main>
-<!-- ============ CONFIRM RESET SETTINGS MODAL ============ -->
-<div class="modal-overlay" id="resetSettingsModal" hidden>
-  <div class="modal-card">
-    <span class="modal-icon" style="background:#EFF6FF;color:#2563EB">
-      <svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M1 4v6h6M23 20v-6h-6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><path d="M20.49 9A9 9 0 005.64 5.64L1 10m22 4l-4.64 4.36A9 9 0 013.51 15" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </span>
-    <h3>Reset settings to defaults?</h3>
-    <p>Theme, date format, and motion preferences return to their defaults. Your profile and receipts are kept.</p>
-    <div class="modal-actions">
-      <button type="button" class="btn btn-secondary" id="resetSettingsCancel">Cancel</button>
-      <button type="button" class="btn btn-primary" id="resetSettingsConfirm">Reset Settings</button>
-    </div>
-  </div>
-</div>
-
 <!-- ============ CONFIRM CLEAR DATA MODAL ============ -->
 <div class="modal-overlay" id="clearDataModal" hidden>
   <div class="modal-card">

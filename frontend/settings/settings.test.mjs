@@ -13,21 +13,20 @@ function setup({ failExport = false, failDelete = false } = {}) {
   const localStorage = { breadwinner_auth: 'SECRET', breadwinner_session: 'SESSION', breadwinner_user_name: 'Person', breadwinner_settings: '{"theme":"dark"}', unrelated: 'keep' };
   const sessionStorage = { breadwinner_auth: 'TAB SECRET', unrelated: 'keep' };
   for (const store of [localStorage,sessionStorage]) Object.defineProperties(store,{ getItem: { value(key) { return this[key]; } }, removeItem: { value(key) { delete this[key]; } } });
-  const settings = { theme:'light', dateFormat:'MDY', reduceMotion:false };
+  const settings = { theme:'light', dateFormat:'MDY' };
   let download, signouts=0;
   const document = { getElementById:element, querySelectorAll() { return theme; }, querySelector:element, body:{appendChild(){}}, createElement() { return { click(){}, remove(){} }; } };
   const cloud = { enabled:true, async getUser() { return {email:'person@example.com'}; }, async sendPasswordReset() {}, async loadProfilePhoto() { return "cloud-photo"; }, async loadReceipts() { if(failExport) throw Error('Offline'); return [{id:'receipt'}]; }, async signOut() { signouts++; }, async deleteAccount() { if(failDelete) throw Error('Offline'); } };
-  const BW = { cloud, Settings: {getSettings:()=>settings, updateSetting:(key,value)=>settings[key]=value, resetSettings(){}}, confirmModal:()=>({open(){},close(){}}) };
+  const BW = { cloud, Settings: {getSettings:()=>settings, updateSetting:(key,value)=>settings[key]=value}, confirmModal:()=>({open(){},close(){}}) };
   const window = { BreadWinner:BW, location:{}, addEventListener(){} };
   vm.runInNewContext(source, { window, document, localStorage, sessionStorage, pageUrl: x=>x, Blob: class { constructor(parts) { download=JSON.parse(parts[0]); } }, URL:{ createObjectURL:()=> 'blob:test', revokeObjectURL(){} } });
   return { element, theme, settings, localStorage, sessionStorage, window, download:()=>download, signouts:()=>signouts };
 }
-test('theme, motion, and date controls persist preferences and expose pressed state', async()=> {
+test('theme and date controls persist preferences and expose pressed state', async()=> {
   const s=setup(); s.theme[1].click();
   assert.equal(s.settings.theme,'dark'); assert.equal(s.theme[1]['aria-pressed'],'true');
-  s.element('reduceMotionToggle').change({target:{checked:true}});
   s.element('dateFormatSelect').change({target:{value:'ISO'}});
-  assert.equal(s.settings.reduceMotion,true); assert.equal(s.settings.dateFormat,'ISO');
+  assert.equal(s.settings.dateFormat,'ISO');
 });
 
 test('sending a reset email opens the confirmation page', async () => {
