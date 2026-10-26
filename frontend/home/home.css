@@ -1292,6 +1292,60 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
   .receipt-review-done { display: flex; justify-content: center; width: 100%; min-height: 44px; margin-top: 24px; }
 }
 
+@media (min-width: 861px) {
+  /* Grow the desktop add control upward into one continuous options panel. */
+  .dashboard-home ~ .fab-wrapper {
+    width: 190px;
+    height: 58px;
+    overflow: hidden;
+    border-radius: 29px;
+    background: var(--primary);
+    box-shadow: var(--shadow-md);
+    transition: width 240ms var(--ease-out), height 240ms var(--ease-out),
+      background 180ms, transform 0.3s var(--ease-out), opacity 0.2s;
+  }
+  .dashboard-home ~ .fab-wrapper.is-options-open {
+    width: 240px;
+    height: 244px;
+    background: var(--card);
+  }
+  .dashboard-home ~ .fab-wrapper .fab {
+    position: absolute;
+    inset: auto 0 0;
+    width: 100%;
+    justify-content: center;
+    background: transparent;
+    box-shadow: none;
+  }
+  .dashboard-home ~ .fab-wrapper .fab-icon path { stroke: currentColor; }
+  .dashboard-home ~ .fab-wrapper.is-options-open .fab { color: var(--primary); }
+  .dashboard-home ~ .fab-wrapper .fab:hover { background: var(--primary-hover); }
+  .dashboard-home ~ .fab-wrapper.is-options-open .fab:hover { background: var(--accent-light); }
+  .dashboard-home ~ .fab-wrapper .fab-option {
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    height: 48px;
+    min-height: 48px;
+    padding: 0 16px;
+    border: 0;
+    border-radius: 12px;
+    box-shadow: none;
+    transform: translateY(8px);
+    transition-delay: 0s;
+  }
+  .dashboard-home ~ .fab-wrapper #fabOptionCamera { bottom: 178px; }
+  .dashboard-home ~ .fab-wrapper #fabOptionUpload { bottom: 124px; }
+  .dashboard-home ~ .fab-wrapper #fabOptionManual { bottom: 70px; }
+  .dashboard-home ~ .fab-wrapper.is-options-open .fab-option { transform: translateY(0); }
+}
+@media (min-width: 861px) and (prefers-reduced-motion: reduce) {
+  .dashboard-home ~ .fab-wrapper,
+  .dashboard-home ~ .fab-wrapper .fab,
+  .dashboard-home ~ .fab-wrapper .fab-option,
+  .dashboard-home ~ .fab-wrapper .fab-icon { transition: none; }
+}
+
 @media (max-width: 860px) {
   /* Reserve a fourth slot in the navigation footprint for the existing scan action. */
   #mobileBottomNav { padding-right: 70px; border-radius: 35px; transition: padding-top 240ms var(--ease-out), background 180ms; }
