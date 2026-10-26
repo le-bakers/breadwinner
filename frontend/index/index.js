@@ -57,6 +57,10 @@
                 images[i].classList.toggle('is-previous', i === previous && !current);
                 images[i].classList.toggle('is-active', current);
                 images[i].setAttribute('aria-hidden', String(!current));
+                if (images[i].tagName === 'VIDEO') {
+                    if (current) images[i].play().catch(() => {});
+                    else images[i].pause();
+                }
             });
         }
         function render(force = false) {
@@ -96,6 +100,7 @@
                 track.classList.remove('is-enhanced');
                 images.forEach((image, i) => {
                     steps[i].appendChild(image);
+                    if (image.tagName === 'VIDEO') image.play().catch(() => {});
                     image.classList.remove('is-active', 'is-previous');
                     image.removeAttribute('aria-hidden');
                     steps[i].classList.remove('is-active');
