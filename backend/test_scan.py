@@ -375,15 +375,62 @@ def test_suggest_fills_in_the_whole_bread_comparison(monkeypatch):
     }
 
 
-def test_suggest_does_not_guess_a_size_when_no_kroger_price_matches_the_receipt(monkeypatch):
+def test_suggest_uses_a_same_named_kroger_product_even_at_a_different_price(monkeypatch):
+    # Same bread, this store just charges more for it. "GF" counts as "gluten free".
     use_pretend_kroger(monkeypatch, {
         "white bread": [product("Kroger White Bread", "20 oz", 3.49)],
-        "Udi's gluten-free white bread": [product("Udi's GF White Bread", "14 oz", 7.29)],
+        "Udi's gluten-free white bread": [product("Udi's® GF White Bread", "14 oz", 7.29)],
+    })
+    result = client.get("/suggest", params={**BREAD_LINE, "gf_size_guess": "24 oz"}).json()
+    assert result["gf_size"] == "14 oz"  # real store data wins over the reader's guess
+    assert result["sizes_comparable"] is True
+
+
+def test_suggest_name_match_skips_products_with_the_words_in_a_different_order(monkeypatch):
+    # Real Kroger names (2026-10-25). The chickpea one has every word, but it is a different product.
+    use_pretend_kroger(monkeypatch, {
+        "spaghetti": [product("Harris Teeter Spaghetti Pasta", "16 oz", 1.69)],
+        "Barilla gluten-free spaghetti": [
+            product("Barilla Gluten Free Spaghetti Non-GMO Project Certified Pasta", "12 oz", 3.39),
+            product("Barilla Chickpea Spaghetti Naturally Gluten Free Non-GMO Pasta", "8.8 oz", 3.19),
+        ],
+    })
+    line = {"zip": "45202", "term": "spaghetti", "gf_name": "Barilla gluten-free spaghetti", "gf_price": 2.99}
+    assert client.get("/suggest", params=line).json()["gf_size"] == "12 oz"
+
+
+def test_suggest_does_not_use_a_name_match_that_comes_in_two_sizes(monkeypatch):
+    use_pretend_kroger(monkeypatch, {
+        "white bread": [product("Kroger White Bread", "20 oz", 3.49)],
+        "Udi's gluten-free white bread": [product("Udi's GF White Bread", "14 oz", 7.29),
+                                          product("Udi's GF White Bread Family Size", "24 oz", 9.99)],
+    })
+    assert client.get("/suggest", params=BREAD_LINE).json()["gf_size"] == ""
+
+
+def test_suggest_does_not_guess_a_size_when_no_kroger_price_or_name_matches(monkeypatch):
+    use_pretend_kroger(monkeypatch, {
+        "white bread": [product("Kroger White Bread", "20 oz", 3.49)],
+        "Udi's gluten-free white bread": [product("Udi's GF Bagels", "14 oz", 7.29)],
     })
     result = client.get("/suggest", params=BREAD_LINE).json()
     assert result["gf_size"] == ""
     assert result["deduction"] == 3.00
     assert result["sizes_comparable"] is False and len(result["warnings"]) == 1
+
+
+def test_suggest_uses_the_readers_size_guess_when_kroger_has_no_matching_price(monkeypatch):
+    # Barilla gluten-free spaghetti is 12 oz. Comparing it with a 16 oz box at full price was wrong.
+    use_pretend_kroger(monkeypatch, {"spaghetti": [product("Harris Teeter Spaghetti Pasta", "16 oz", 1.69)]})
+    line = {"zip": "45202", "term": "spaghetti", "gf_name": "Barilla gluten-free spaghetti", "gf_price": 3.49}
+
+    result = client.get("/suggest", params={**line, "gf_size_guess": "12 oz"}).json()
+    assert result["gf_size"] == "12 oz"
+    assert result["scaled_regular_price"] == 1.27  # $1.69 x 12/16
+    assert result["sizes_comparable"] is True
+
+    # A guess the math can't read is ignored, so nothing changes from before
+    assert client.get("/suggest", params={**line, "gf_size_guess": "1 box"}).json()["gf_size"] == ""
 
 
 def test_suggest_matches_a_sale_price_and_a_line_for_two_packages(monkeypatch):
@@ -575,10 +622,10 @@ def gemini_answer(items, subtotal=0):
     return PretendReply(200, {"candidates": [{"content": {"parts": [{"text": text}]}}]})
 
 
-def cleaned(name, price, upc=None, plain_name=None, gf=False, regular_term=None, quantity=1):
+def cleaned(name, price, upc=None, plain_name=None, gf=False, regular_term=None, quantity=1, package_size=None):
     """One item the way gemini.py hands it on."""
     return {"name": name, "price": price, "quantity": quantity, "upc": upc, "unsure": False,
-            "plain_name": plain_name, "gf": gf, "regular_term": regular_term}
+            "plain_name": plain_name, "gf": gf, "regular_term": regular_term, "package_size": package_size}
 
 
 OUT_OF_REQUESTS = PretendReply(429, {"error": {"message": "You exceeded your current quota."}})
@@ -606,9 +653,10 @@ def photo_bytes(width, height):
 def test_gemini_answer_is_cleaned_up(monkeypatch):
     use_pretend_gemini(monkeypatch, [gemini_answer([
         {"name": " UDIS GF WHT BREAD ", "price": 6.489, "upc": "0069899781101", "quantity": 2,
-         "plain_name": " Udi's gluten-free white bread ", "gluten_free": True, "regular_version": "white bread"},
+         "plain_name": " Udi's gluten-free white bread ", "gluten_free": True, "regular_version": "white bread",
+         "package_size": " 14 oz "},
         {"name": "BANANAS", "price": 1.12, "upc": "", "plain_name": "", "gluten_free": False, "regular_version": "",
-         "quantity": 0},  # a quantity that makes no sense counts as 1
+         "quantity": 0, "package_size": "3 lb"},  # only gluten-free items keep a size  # a quantity that makes no sense counts as 1
         {"name": "EGGS", "price": 2.79, "upc": "not a barcode", "gluten_free": "yes"},  # sloppy answer
         {"name": "", "price": 2.00, "upc": None},          # no name
         {"name": "FREE SAMPLE", "price": 0, "upc": None},  # no price
@@ -618,7 +666,7 @@ def test_gemini_answer_is_cleaned_up(monkeypatch):
     items, subtotal = gemini.read_receipt(photo_bytes(40, 80))
     assert items == [
         cleaned("UDIS GF WHT BREAD", 6.49, upc="0069899781101", quantity=2,
-                plain_name="Udi's gluten-free white bread", gf=True, regular_term="white bread"),
+                plain_name="Udi's gluten-free white bread", gf=True, regular_term="white bread", package_size="14 oz"),
         cleaned("BANANAS", 1.12),
         cleaned("EGGS", 2.79),
     ]
@@ -701,9 +749,10 @@ def test_scan_uses_gemini_when_it_is_switched_on(monkeypatch):
     assert response.json() == {"engine": "gemini", "subtotal": 7.61, "items": [
         {"name": "UDIS WHT BRD", "price": 6.49, "quantity": 1, "upc": None, "unsure": False,
          "plain_name": "Udi's white bread",
-         "gf": True, "gf_reason": "Udi's is a gluten-free brand", "regular_term": "white sandwich bread"},
+         "gf": True, "gf_reason": "Udi's is a gluten-free brand", "regular_term": "white sandwich bread",
+         "package_size": None},
         {"name": "BANANAS", "price": 1.12, "quantity": 1, "upc": None, "unsure": False, "plain_name": "Bananas",
-         "gf": False, "gf_reason": None, "regular_term": None},
+         "gf": False, "gf_reason": None, "regular_term": None, "package_size": None},
     ]}
 
 

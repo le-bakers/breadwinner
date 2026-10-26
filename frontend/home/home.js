@@ -452,6 +452,7 @@ import { displayMetrics } from './metrics.js';
                 // The helper name and search word described the old text
                 delete line.plainName;
                 delete line.regularTerm;
+                delete line.sizeGuess;
             }
             line.price = rounded;
             line.unsure = false; // the user has looked at this line
@@ -535,7 +536,7 @@ import { displayMetrics } from './metrics.js';
         if (draft.from === 'memory')
             text += '. Same as you chose on ' + dateFormatter.format(new Date(draft.date + 'T00:00'));
         else if (draft.sizeGuessed)
-            text += '. Your package size (' + draft.gfSize + ') is from Kroger’s listing, so check it';
+            text += '. Your package size (' + draft.gfSize + ') is our best guess, so check it';
         else if (!draft.sizesComparable)
             text += '. Press Change to add your package size for a fairer number';
         return text + '.';
@@ -1336,6 +1337,7 @@ import { displayMetrics } from './metrics.js';
             gfReason: item.gf_reason || null,
             plainName: item.plain_name || null,
             regularTerm: item.regular_term || null,
+            sizeGuess: item.package_size || null,
             unsure: item.unsure === true
         }));
         receipt.lines.forEach(rememberGf);
@@ -1417,6 +1419,7 @@ import { displayMetrics } from './metrics.js';
         // gf: the server's guess (true/false) that this is a gluten-free product. The user can flip it.
         // gfReason: why it guessed so. plainName: a plain-English reading of the receipt's short name.
         // regularTerm: what to search for to price the regular version.
+        // sizeGuess: the reader's guess at the size of one package ("12 oz"), only for gluten-free lines
         // unsure: true means the scanner was not confident about that line
         // quantity: how many packages the line is for ("2 @ 3.99" is 2)
         const lines = items.map((item) => ({
@@ -1427,6 +1430,7 @@ import { displayMetrics } from './metrics.js';
             gfReason: item.gf_reason || null,
             plainName: item.plain_name || null,
             regularTerm: item.regular_term || null,
+            sizeGuess: item.package_size || null,
             unsure: item.unsure === true
         }));
         const newReceipt = {

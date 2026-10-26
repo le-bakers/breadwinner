@@ -6,6 +6,7 @@ import base64
 import requests
 from PIL import Image, ImageOps
 from dotenv import load_dotenv
+import unit_price
 
 load_dotenv()
 
@@ -50,6 +51,10 @@ For each product give:
   and false whenever you are not sure.
 - regular_version: when gluten_free is true, a short grocery search for the ordinary version of
   the same food, like "white bread" or "penne pasta", with no brand name. Otherwise "".
+- package_size: when gluten_free is true, the size of one package, like "12 oz" or "6 ct".
+  Use the size printed on the receipt if there is one. Otherwise use the size this exact brand and
+  product is normally sold in, but only when you are sure (Barilla gluten-free spaghetti is "12 oz").
+  Use "" if you are not sure. A wrong size gives a wrong number, so never guess from similar products.
 
 Do not list subtotal, total, tax, payment, change, coupon, discount, savings or loyalty lines.
 If a product's name and price are printed on two lines, join them into one product.
@@ -75,8 +80,10 @@ ANSWER_SHAPE = {
                     "plain_name": {"type": "string"},
                     "gluten_free": {"type": "boolean"},
                     "regular_version": {"type": "string"},
+                    "package_size": {"type": "string"},
                 },
-                "required": ["name", "price", "quantity", "upc", "plain_name", "gluten_free", "regular_version"],
+                "required": ["name", "price", "quantity", "upc", "plain_name", "gluten_free", "regular_version",
+                             "package_size"],
             },
         },
         "subtotal": {"type": "number"},
@@ -91,7 +98,7 @@ class GeminiUnavailable(Exception):
 
 def read_receipt(image_bytes):
     """Send a receipt photo to Gemini and get back (items, subtotal).
-    Each item is {"name", "price", "quantity", "upc", "unsure", "plain_name", "gf", "regular_term"}.
+    Each item is {"name", "price", "quantity", "upc", "unsure", "plain_name", "gf", "regular_term", "package_size"}.
     The subtotal is None when the receipt has none to check the items against.
     Raises GeminiUnavailable when no model could do it, so the caller can use the local reader."""
     if not API_KEY:
@@ -229,6 +236,8 @@ def clean_items(raw_items):
             # These two are Gemini's guesses. gf_detect.py double-checks them and the user confirms.
             "gf": raw.get("gluten_free") is True,
             "regular_term": short_text(raw.get("regular_version")),
+            # A guess too: the website shows it as one, and the user can change it
+            "package_size": clean_size(raw.get("package_size")) if raw.get("gluten_free") is True else None,
         })
 
     return items
@@ -239,6 +248,14 @@ def short_text(value):
     if not isinstance(value, str):
         return None
     return value.strip()[:60] or None
+
+
+def clean_size(value):
+    """A package size the deduction math can read ("12 oz"), or None for anything else."""
+    text = short_text(value)
+    if text and unit_price.parse_size(text):
+        return text
+    return None
 
 
 def clean_subtotal(value):

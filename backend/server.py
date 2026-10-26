@@ -1,5 +1,6 @@
 import io
 import os
+import re
 
 import requests
 from fastapi import FastAPI, HTTPException, UploadFile
@@ -108,10 +109,11 @@ def deduction(gf_price: float, gf_size: str = "", quantity: int = 1,
 
 
 @app.get("/suggest")
-def suggest(zip: str, term: str, gf_price: float, gf_name: str = "", quantity: int = 1):
+def suggest(zip: str, term: str, gf_price: float, gf_name: str = "", quantity: int = 1, gf_size_guess: str = ""):
     """A first guess at the comparison for one gluten-free receipt line, so the user only has to
     approve it or change it. The website never counts a suggestion until the user approves it.
-    term is what to search for to find the regular version, gf_name is the gluten-free item itself."""
+    term is what to search for to find the regular version, gf_name is the gluten-free item itself.
+    gf_size_guess is the package size the receipt reader guessed, used when Kroger can't tell us."""
     if not (zip.isdigit() and len(zip) == 5):
         raise HTTPException(status_code=422, detail="Type a 5-digit zip code.")
     if not LOWEST_PRICE <= gf_price <= HIGHEST_PRICE:
@@ -138,7 +140,14 @@ def suggest(zip: str, term: str, gf_price: float, gf_name: str = "", quantity: i
     if not regular_products:
         return {"regular": None}  # nothing to suggest, so the user compares this one by hand
 
+    # Kroger's listing at the exact receipt price is the surest size, then a Kroger listing with the same
+    # name (stores charge different prices for the same box). The reader's guess comes last,
+    # because comparing a 12 oz box with a 16 oz box at full price gives a wrong number.
     gf_size = size_of_same_priced_product(gf_products, gf_price / quantity)
+    if not gf_size:
+        gf_size = size_of_same_named_product(gf_products, gf_name)
+    if not gf_size and unit_price.parse_size(gf_size_guess):
+        gf_size = gf_size_guess.strip()
     regular = pick_regular(regular_products, gf_size)
 
     result = deduction(gf_price, gf_size, quantity, regular["price"], regular["size"] or "")
@@ -156,6 +165,46 @@ def size_of_same_priced_product(products, price_for_one):
             if kroger_price and product["size"] and abs(kroger_price - price_for_one) < 0.005:
                 return product["size"]
     return ""
+
+
+def size_of_same_named_product(products, gf_name):
+    """The package size Kroger lists for a product whose name has every word of the item's name, in the
+    same order, even when the price is different. (The order matters: "Barilla Chickpea Spaghetti, Gluten
+    Free" is a different product from "Barilla Gluten Free Spaghetti".) If those products come in more
+    than one size, we can't tell which one was bought, so no guess."""
+    wanted = words_in(gf_name)
+    if len(wanted) < 2:  # one word, like "pasta", matches too many products
+        return ""
+
+    sizes = []
+    for product in products:
+        if has_words_in_order(words_in(product["name"]), wanted) and unit_price.parse_size(product["size"]):
+            sizes.append(product["size"])
+
+    if len(set(size.lower().strip() for size in sizes)) == 1:
+        return sizes[0]
+    return ""
+
+
+def has_words_in_order(words, wanted):
+    """True when every word in wanted shows up in words, in the same order (other words can sit between)."""
+    position = 0
+    for word in words:
+        if position < len(wanted) and word == wanted[position]:
+            position += 1
+    return position == len(wanted)
+
+
+def words_in(name):
+    """The words of a product name, so "Udi's® GF Bread" and "Udis gluten-free bread" can be compared."""
+    name = (name or "").lower().replace("'", "").replace("’", "")
+    words = []
+    for word in re.findall(r"[a-z0-9]+", name):
+        if word == "gf":
+            words += ["gluten", "free"]  # stores shorten "gluten free" to "GF"
+        else:
+            words.append(word)
+    return words
 
 
 def pick_regular(products, gf_size):

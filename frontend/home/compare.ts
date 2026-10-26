@@ -51,7 +51,7 @@
     el('compareItemName').textContent = line.plainName || line.name;
     el('compareItemPrice').textContent = money(line.price);
 
-    gfSizeInput.value = saved.gfSize || '';
+    gfSizeInput.value = saved.gfSize || line.sizeGuess || '';
     quantityInput.value = saved.quantity || line.quantity || 1;
     termInput.value = saved.term || line.regularTerm || '';
     try { zipInput.value = localStorage.getItem(ZIP_STORAGE_KEY) || ''; } catch (e) { zipInput.value = ''; }

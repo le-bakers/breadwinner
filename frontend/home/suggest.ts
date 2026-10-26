@@ -59,7 +59,8 @@
       term: line.regularTerm || line.plainName || line.name,  // an item the user ticked may have no search term yet
       gf_name: line.plainName || line.name,
       gf_price: line.price,
-      quantity: quantity
+      quantity: quantity,
+      gf_size_guess: line.sizeGuess || ''  // used when Kroger's listing can't tell us the size
     });
 
     let response;
@@ -82,7 +83,7 @@
         from: 'kroger',
         source: 'kroger',
         gfSize: answer.gf_size,
-        sizeGuessed: Boolean(answer.gf_size),  // the size came from Kroger's listing, not from the user
+        sizeGuessed: Boolean(answer.gf_size),  // the size came from Kroger's listing or the reader, not from the user
         quantity: quantity,
         term: params.get('term'),
         regularName: answer.regular.name,
