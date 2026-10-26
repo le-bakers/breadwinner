@@ -436,9 +436,9 @@ body:has(.msn-nav) { padding-top: 74px; }
   border-radius: 50%;
   border: 1px solid var(--border);
   display: flex; align-items: center; justify-content: center;
-  transition: border-color 0.2s, color 0.2s, transform 0.2s;
+  transition: border-color 0.2s, color 0.2s;
 }
-.footer-social a:hover { border-color: var(--primary); color: var(--primary-hover); transform: translateY(-2px); }
+.footer-social a:hover { border-color: var(--primary); color: var(--primary-hover); }
 
 /* ---------- Mobile foundation ---------- */
 @media (max-width: 560px) {

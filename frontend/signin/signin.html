@@ -94,37 +94,75 @@
       <div class="carousel-track" id="carouselTrack">
 
         <article class="carousel-slide" aria-hidden="false">
-          <div class="slide-icon">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M12 3V21M7 7H15.5C17 7 18 8 18 9.5C18 11 17 12 15.5 12H8.5C7 12 6 13 6 14.5C6 16 7 17 8.5 17H17" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <div class="fact-visual fact-prices" role="img" aria-label="Gluten-free substitutes cost 80% to over 200% more than conventional options.">
+            <span class="visual-eyebrow">The gluten-free premium</span>
+            <strong class="visual-number">80–200%<span>+</span></strong>
+            <span class="visual-caption">higher prices</span>
+            <div class="price-comparison" aria-hidden="true">
+              <div><span>Conventional</span><i class="price-bar price-bar-regular"></i></div>
+              <div><span>Gluten-free</span><i class="price-bar price-bar-gf"></i></div>
+            </div>
           </div>
-          <video class="slide-illustration" src="../images/demo_crunch_it.mp4" aria-label="Tax deduction grouping demonstration" autoplay muted loop playsinline></video>
           <h2>Fact</h2>
           <p>Gluten-free substitute items typically cost 80% to over 200% more than conventional options.</p>
         </article>
 
         <article class="carousel-slide" aria-hidden="true">
-          <div class="slide-icon">
-            <svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="3" stroke="#fff" stroke-width="1.8"/><path d="M8 2v4M16 2v4M4 10h16" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <div class="fact-visual" role="img" aria-label="A shield and wheat represent the immune response to gluten in celiac disease.">
+            <span class="visual-eyebrow">Understanding celiac</span>
+            <svg class="immune-visual" viewBox="0 0 280 160" fill="none" aria-hidden="true">
+              <circle cx="140" cy="80" r="68" stroke="currentColor" stroke-opacity=".15" stroke-dasharray="4 8"/>
+              <path d="M140 20 192 40V83C192 113 164 134 140 144 116 134 88 113 88 83V40Z" fill="currentColor" fill-opacity=".1" stroke="currentColor" stroke-width="2"/>
+              <g stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M140 117V61M140 72C121 72 121 53 121 53S140 53 140 72ZM140 90C121 90 121 71 121 71S140 71 140 90ZM140 72C159 72 159 53 159 53S140 53 140 72ZM140 90C159 90 159 71 159 71S140 71 140 90ZM140 58C127 46 140 33 140 33S153 46 140 58Z"/>
+                <path d="M51 67V83M43 75H59M224 100V116M216 108H232" opacity=".65"/>
+              </g>
+              <circle cx="223" cy="47" r="5" fill="currentColor" fill-opacity=".5"/>
+              <circle cx="61" cy="121" r="4" fill="currentColor" fill-opacity=".5"/>
+            </svg>
+            <span class="visual-caption">An autoimmune response to gluten</span>
           </div>
-          <video class="slide-illustration" src="../images/demo_scan_it.mp4" aria-label="Receipt scanning demonstration" autoplay muted loop playsinline></video>
           <h2>Fact</h2>
           <p>Celiac disease is an autoimmune disease, not simply a food allergy or intolerance.</p>
         </article>
 
         <article class="carousel-slide" aria-hidden="true">
-          <div class="slide-icon">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 4H20V20H4V4Z" stroke="#fff" stroke-width="1.8" stroke-linejoin="round"/><path d="M8 9H16M8 13H16M8 17H12" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <div class="fact-visual" role="img" aria-label="One highlighted dot among 100 represents the estimated worldwide prevalence of celiac disease.">
+            <span class="visual-eyebrow">A worldwide community</span>
+            <svg class="prevalence-visual" viewBox="0 0 220 124" aria-hidden="true">
+              <defs>
+                <pattern id="prevalence-dots" width="22" height="12" patternUnits="userSpaceOnUse">
+                  <circle cx="11" cy="6" r="3.5" fill="currentColor" opacity=".25"/>
+                </pattern>
+              </defs>
+              <rect width="220" height="120" fill="url(#prevalence-dots)"/>
+              <circle cx="11" cy="6" r="5" fill="#FDE68A"/>
+            </svg>
+            <span class="visual-ratio">~1 in 100</span>
+            <span class="visual-caption">people worldwide</span>
           </div>
-          <video class="slide-illustration" src="../images/demo_read_it.mp4" aria-label="Gluten-free item identification demonstration" autoplay muted loop playsinline></video>
           <h2>Fact</h2>
           <p>~1 in 100 people worldwide are estimated to have celiac disease.</p>
         </article>
 
         <article class="carousel-slide" aria-hidden="true">
-          <div class="slide-icon">
-            <svg viewBox="0 0 24 24" fill="none"><path d="M4 20V10M12 20V4M20 20V14" stroke="#fff" stroke-width="1.8" stroke-linecap="round"/></svg>
+          <div class="fact-visual" role="img" aria-label="More than 2.5 million Americans may be living with undiagnosed celiac disease.">
+            <span class="visual-eyebrow">Behind the numbers</span>
+            <svg class="people-visual" viewBox="0 0 280 90" fill="none" aria-hidden="true">
+              <g stroke="currentColor" stroke-width="2" opacity=".3">
+                <circle cx="40" cy="28" r="11"/><path d="M17 78V66C17 41 63 41 63 66V78"/>
+                <circle cx="90" cy="28" r="11"/><path d="M67 78V66C67 41 113 41 113 66V78"/>
+                <circle cx="190" cy="28" r="11"/><path d="M167 78V66C167 41 213 41 213 66V78"/>
+                <circle cx="240" cy="28" r="11"/><path d="M217 78V66C217 41 263 41 263 66V78"/>
+              </g>
+              <g stroke="#FDE68A" stroke-width="2.5" stroke-linecap="round">
+                <circle cx="140" cy="20" r="13"/><path d="M116 78V60C116 35 164 35 164 60V78"/>
+                <path d="M136 55C136 49 145 49 145 55 145 59 140 59 140 63M140 69V70"/>
+              </g>
+            </svg>
+            <strong class="visual-number">2.5M+</strong>
+            <span class="visual-caption">Americans may be undiagnosed</span>
           </div>
-          <video class="slide-illustration" src="../images/demo_see_it.mp4" aria-label="Reports and spending statistics demonstration" autoplay muted loop playsinline></video>
           <h2>Fact</h2>
           <p>2.5 million+ Americans may have celiac disease without knowing it.</p>
         </article>
