@@ -16,18 +16,6 @@ import { pageUrl } from './routes.js';
     const LIBRARY = 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.117.2/+esm';
     const BW = window.BreadWinner = window.BreadWinner || {};
     const enabled = Boolean(SUPABASE_URL && SUPABASE_KEY);
-    // Capture the recovery hint before Supabase consumes the callback URL.
-    // Read it now, before Supabase reads the address and tidies it away.
-    const cameFromResetEmail = window.location.hash.includes('type=recovery');
-    // If Supabase sent the reset link to another page (for example its Site URL,
-    // when the reset page is missing from its Redirect URLs list), move the link,
-    // unread, to the reset page so the new-password form still opens.
-    const forwardingReset = cameFromResetEmail && !window.location.pathname.includes('resetlink');
-    if (forwardingReset)
-        window.location.replace(pageUrl('/resetlink') + window.location.hash);
-    let recoveryUserId = null;
-    let recoveryDeadline = 0;
-    let passwordUpdatePending = false;
     /* ---------- "Remember me" ----------
        Ticked: stay signed in after the browser closes (localStorage).
        Not ticked: signed out when this tab closes (sessionStorage). */
@@ -159,23 +147,13 @@ import { pageUrl } from './routes.js';
                         persistSession: true,
                         autoRefreshToken: true,
                         flowType: 'implicit',
-                        detectSessionInUrl: true // finishes Google sign-in and reset links when the page opens
+                        detectSessionInUrl: true // finishes Google sign-in when the page opens
                     }
                 });
                 client.auth.onAuthStateChange((event, session) => {
                     // Do not call async auth methods inside this callback: Supabase holds
                     // its session lock until the callback returns.
                     revision++;
-                    // A URL hint alone never authorizes a password change. Only the SDK's
-                    // verified recovery event opens this short, in-memory reset window.
-                    if (event === 'PASSWORD_RECOVERY' && session?.user) {
-                        recoveryUserId = session.user.id;
-                        recoveryDeadline = Date.now() + 15 * 60 * 1000;
-                    }
-                    else if (event === 'SIGNED_OUT' || (session?.user && session.user.id !== recoveryUserId)) {
-                        recoveryUserId = null;
-                        recoveryDeadline = 0;
-                    }
                     if (event === 'SIGNED_OUT') {
                         loginStore.removeItem(DEADLINE_KEY);
                         publish(null);
@@ -194,7 +172,7 @@ import { pageUrl } from './routes.js';
         }
         return connection;
     }
-    if (enabled && !forwardingReset)
+    if (enabled)
         supabase().catch(() => publish(null, false));
     // Turns Supabase's error into a sentence for the user, and stops the action
     function fail(error) {
@@ -381,7 +359,6 @@ import { pageUrl } from './routes.js';
     }
     BW.cloud = {
         enabled,
-        cameFromResetEmail,
         get signedIn() { return authState; },
         async getSignedInState() {
             if (!enabled)
@@ -462,13 +439,6 @@ import { pageUrl } from './routes.js';
             if (error)
                 fail(error);
         },
-        async sendPasswordReset(email) {
-            const { error } = await (await supabase()).auth.resetPasswordForEmail(email, {
-                redirectTo: pageAddress('resetlink/resetlink.html')
-            });
-            if (error)
-                fail(error);
-        },
         async updateProfile(fullName) {
             const { data, error } = await (await supabase()).auth.updateUser({ data: { full_name: fullName } });
             if (error)
@@ -500,43 +470,6 @@ import { pageUrl } from './routes.js';
             if (photoOwner === user.id) {
                 BW.safeRemove(BW.STORAGE.photo);
                 setProfilePhoto(photo);
-            }
-        },
-        async verifyPasswordRecovery() {
-            const client = await supabase();
-            // Wait for callback processing, including PASSWORD_RECOVERY, to finish.
-            const { data: sessionData, error: sessionError } = await client.auth.getSession();
-            if (sessionError || !recoveryUserId || Date.now() >= recoveryDeadline || sessionData?.session?.user?.id !== recoveryUserId) {
-                throw new Error('This reset link is invalid or expired. Request a new link from sign in.');
-            }
-            const { data, error } = await client.auth.getUser();
-            if (error || data?.user?.id !== recoveryUserId) {
-                throw new Error('Could not verify this reset link. Open a new link from your email.');
-            }
-            return true;
-        },
-        async setNewPassword(password) {
-            if (passwordUpdatePending)
-                throw new Error('A password update is already in progress.');
-            if (typeof password !== 'string' || password.length < 12 || password.length > 128) {
-                throw new Error('Use between 12 and 128 characters for your password.');
-            }
-            passwordUpdatePending = true;
-            try {
-                await this.verifyPasswordRecovery();
-                const { error } = await (await supabase()).auth.updateUser({ password });
-                if (error)
-                    fail(error);
-                recoveryUserId = null;
-                recoveryDeadline = 0;
-                // Password saved: forget recovery credentials even if sign-out is offline.
-                try {
-                    await this.signOut();
-                }
-                catch (e) { /* local credentials cleared in finally */ }
-            }
-            finally {
-                passwordUpdatePending = false;
             }
         },
         async signOut() {

@@ -24,7 +24,7 @@ import { pageUrl } from '../routes.js';
     if (event.persisted) redirectIfSignedIn();
   });
 
-  // One line above the Sign In button for "wrong password", "reset email sent", and so on
+  // One line above the Sign In button for "wrong password" and so on
   const formMessage = document.getElementById('form-message');
   function showMessage(text, isError) {
     formMessage.textContent = text;
@@ -137,19 +137,6 @@ import { pageUrl } from '../routes.js';
 
     const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-    // Arrived from the link in a "reset your password" email: this page becomes "choose a new password"
-    const settingNewPassword = cloud.enabled && cloud.cameFromResetEmail;
-    if (settingNewPassword) {
-      document.querySelector('.signin-form-wrap h1').textContent = 'Choose a new password';
-      document.querySelector('.signin-sub').textContent = 'Use 12–128 characters. Sign in again after saving your password.';
-      [googleBtn, document.querySelector('.divider'), email.closest('.field-group'),
-        document.querySelector('.field-row'), document.querySelector('.signup-prompt')]
-        .forEach((part) => { if (part) part.hidden = true; });
-      document.querySelector('label[for="password"]').textContent = 'New password';
-      password.setAttribute('autocomplete', 'new-password');
-      submitText.textContent = 'Save new password';
-    }
-
     function validateEmail() {
       const valid = emailPattern.test(email.value.trim());
       email.classList.toggle('invalid', !valid);
@@ -159,9 +146,9 @@ import { pageUrl } from '../routes.js';
     }
 
     function validatePassword() {
-      const valid = settingNewPassword ? password.value.length >= 12 && password.value.length <= 128 : password.value.length >= 8;
+      const valid = password.value.length >= 8;
       password.classList.toggle('invalid', !valid);
-      passwordError.textContent = valid ? '' : settingNewPassword ? 'Use between 12 and 128 characters.' : 'Password must be at least 8 characters.';
+      passwordError.textContent = valid ? '' : 'Password must be at least 8 characters.';
       passwordError.classList.toggle('show', !valid);
       return valid;
     }
@@ -171,39 +158,20 @@ import { pageUrl } from '../routes.js';
 
     form.addEventListener('submit', async (e) => {
       e.preventDefault();
-      const emailValid = settingNewPassword || validateEmail();
+      const emailValid = validateEmail();
       const passwordValid = validatePassword();
       if (!emailValid || !passwordValid) return;
       if (!cloud.enabled) return demoSignIn('email', email.value.trim());
 
       const buttonLabel = submitText.textContent;
-      submitText.textContent = settingNewPassword ? 'Saving…' : 'Signing in…';
+      submitText.textContent = 'Signing in…';
       showMessage('');
       try {
-        if (settingNewPassword) await cloud.setNewPassword(password.value);
-        else await cloud.signIn(email.value.trim(), password.value, rememberBox.checked);
-        window.location.href = settingNewPassword ? pageUrl('/signin') : HOME;
+        await cloud.signIn(email.value.trim(), password.value, rememberBox.checked);
+        window.location.href = HOME;
       } catch (error) {
         showMessage(error.message, true);
         submitText.textContent = buttonLabel;
-      }
-    });
-
-    /* ---------- Forgot password: email a reset link ---------- */
-    const forgotLink = document.querySelector('.forgot-link');
-    forgotLink.addEventListener('click', async (e) => {
-      e.preventDefault();
-      if (!validateEmail()) { email.focus(); return; }
-      if (!cloud.enabled) {
-        showMessage('Password reset starts working once accounts are connected.', true);
-        return;
-      }
-      try {
-        await cloud.sendPasswordReset(email.value.trim());
-        // Same message whether or not the account exists, so strangers can't use this to test emails
-        showMessage('If ' + email.value.trim() + ' has an account, a reset link is on its way. Check your inbox.');
-      } catch (error) {
-        showMessage(error.message, true);
       }
     });
   }

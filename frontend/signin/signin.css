@@ -179,8 +179,6 @@
   transform: rotate(45deg) translate(-1px,-1px);
 }
 .checkbox input:focus-visible + .checkbox-box { outline: 2px solid var(--primary); outline-offset: 2px; }
-.forgot-link { font-size: 13.5px; color: var(--primary-hover); font-weight: 600; }
-.forgot-link:hover { text-decoration: underline; }
 
 .btn-full { width: 100%; }
 

@@ -1,24 +1,4 @@
 {
-  "headers": [
-    {
-      "source": "/resetlink",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store" },
-        { "key": "Referrer-Policy", "value": "no-referrer" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" }
-      ]
-    },
-    {
-      "source": "/resetlink/resetlink.html",
-      "headers": [
-        { "key": "Cache-Control", "value": "no-store" },
-        { "key": "Referrer-Policy", "value": "no-referrer" },
-        { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" }
-      ]
-    }
-  ],
   "redirects": [
     { "source": "/index/index.html", "destination": "/", "permanent": false },
     { "source": "/home/home.html", "destination": "/home", "permanent": false },
@@ -32,7 +12,6 @@
     { "source": "/legal/terms.html", "destination": "/terms", "permanent": false }
   ],
   "rewrites": [
-    { "source": "/resetlink", "destination": "/resetlink/resetlink.html" },
     { "source": "/", "destination": "/index/index.html" },
     { "source": "/home", "destination": "/home/home.html" },
     { "source": "/history", "destination": "/history/history.html" },

@@ -44,25 +44,6 @@ import { pageUrl } from '../routes.js';
   });
   window.addEventListener('storage', renderFromSettings);
 
-  const resetPasswordBtn = document.getElementById('passwordResetBtn');
-  const passwordStatus = document.getElementById('passwordResetStatus');
-  resetPasswordBtn.disabled = !BW.cloud?.enabled;
-  if (!BW.cloud?.enabled) passwordStatus.textContent = 'Password reset is available for cloud accounts.';
-  resetPasswordBtn.addEventListener('click', async () => {
-    if (resetPasswordBtn.disabled) return;
-    resetPasswordBtn.disabled = true;
-    passwordStatus.textContent = 'Sending reset link…';
-    try {
-      const user = await BW.cloud.getUser();
-      if (!user?.email) throw new Error('Sign in again to reset your password.');
-      await BW.cloud.sendPasswordReset(user.email);
-      passwordStatus.textContent = 'Reset link requested. Check your account email, including spam, for next steps.';
-      window.location.href = pageUrl('/resetlink?sent=1');
-    } catch (error) {
-      passwordStatus.textContent = error.message || 'Could not send a reset link. Try again.';
-    } finally { resetPasswordBtn.disabled = false; }
-  });
-
   function clearBrowserData() {
     [localStorage, sessionStorage].forEach((store) => {
       Object.keys(store).filter((key) => key.startsWith('breadwinner_')).forEach((key) => store.removeItem(key));

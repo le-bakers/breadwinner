@@ -36,7 +36,7 @@ function storage(initial = {}) {
   };
 }
 
-function setup({ local = {}, tab = {}, protectedPage = false, hash = '', pathname = '/resetlink/resetlink.html', result, getSession, photo = null, photoError = false } = {}) {
+function setup({ local = {}, tab = {}, protectedPage = false, hash = '', result, getSession, photo = null, photoError = false } = {}) {
   const localStorage = storage(local);
   const sessionStorage = storage(tab);
   const events = new Map();
@@ -47,7 +47,6 @@ function setup({ local = {}, tab = {}, protectedPage = false, hash = '', pathnam
   let authOptions;
   let listener;
   const passwordUpdates = [];
-  const resetRequests = [];
   let currentResult = result ?? { data: { session: local[AUTH] || tab[AUTH] ? session() : null }, error: null };
   const photos = new Map(photo ? [['user-1', photo]] : []);
   const profileTable = {
@@ -88,7 +87,6 @@ function setup({ local = {}, tab = {}, protectedPage = false, hash = '', pathnam
     getSession: async () => getSession ? getSession({ authOptions, emit }) : currentResult,
     getUser: async () => ({ data: { user: currentResult.data?.session?.user || null }, error: currentResult.error }),
     updateUser: async (attributes) => { passwordUpdates.push(attributes); return { data: { user }, error: null }; },
-    resetPasswordForEmail: async (email, options) => { resetRequests.push({ email, ...options }); return { error: null }; },
     signOut: async () => {
       authOptions.storage.removeItem(AUTH);
       currentResult = { data: { session: null }, error: null };
@@ -113,7 +111,7 @@ function setup({ local = {}, tab = {}, protectedPage = false, hash = '', pathnam
   }
   const window = {
     BreadWinner: BW,
-    location: { hash, pathname, replace: url => redirects.push(url), reload() {} },
+    location: { hash, replace: url => redirects.push(url), reload() {} },
     addEventListener(name, callback) {
       if (!events.has(name)) events.set(name, []);
       events.get(name).push(callback);
@@ -138,7 +136,7 @@ function setup({ local = {}, tab = {}, protectedPage = false, hash = '', pathnam
     library: { createClient: (url, key, options) => { authOptions = options.auth; return { auth, from, storage: { from: () => bucket }, rpc: async () => ({ error: null }) }; } }
   });
   vm.runInContext(source, context);
-  return { auth, passwordUpdates, resetRequests, photos, rows, files, BW, window, document, context, localStorage, sessionStorage, redirects, notices, classes, timers,
+  return { auth, passwordUpdates, photos, rows, files, BW, window, document, context, localStorage, sessionStorage, redirects, notices, classes, timers,
     emit, get options() { return authOptions; }, setNow: value => { now = value; },
     setResult: value => { currentResult = value; } };
 }
@@ -382,77 +380,6 @@ test('navbar updates desktop/mobile together and offers retry after network fail
 
 const cloudPhoto = 'data:image/jpeg;base64,YWJj';
 
-test('reset emails target the dedicated recovery page', async () => {
-  const app = setup();
-  await app.BW.cloud.sendPasswordReset(user.email);
-  assert.equal(app.resetRequests[0].redirectTo, 'https://breadwinner.test/resetlink/resetlink.html');
-});
-
-test('a normal login or forged recovery URL cannot authorize a password reset', async () => {
-  for (const hash of ['', '#type=recovery']) {
-    const app = setup({ hash, local: { [AUTH]: 'stored' } });
-    await assert.rejects(app.BW.cloud.setNewPassword('a long new password'), /invalid or expired/);
-    assert.equal(app.passwordUpdates.length, 0);
-  }
-});
-
-test('a reset link that lands on another page is forwarded, unread, to the reset page', () => {
-  const app = setup({ hash: '#access_token=t&type=recovery', pathname: '/home' });
-  assert.deepEqual(app.redirects, [pageUrl('/resetlink') + '#access_token=t&type=recovery']);
-  const normal = setup({ hash: '#access_token=t', pathname: '/home' });
-  assert.deepEqual(normal.redirects, []);
-});
-
-test('verified recovery allows one password update and clears credentials afterward', async () => {
-  const app = setup({ local: { [AUTH]: 'stored' } });
-  await app.BW.cloud.getUser();
-  app.emit('PASSWORD_RECOVERY', session());
-  assert.equal(await app.BW.cloud.verifyPasswordRecovery(), true);
-  await app.BW.cloud.setNewPassword('a long new password');
-  assert.equal(app.passwordUpdates.length, 1);
-  assert.equal(app.localStorage.getItem(AUTH), null);
-  assert.equal(app.sessionStorage.getItem(AUTH), null);
-  await assert.rejects(app.BW.cloud.setNewPassword('another long password'), /invalid or expired/);
-});
-
-test('recovery expires, rejects a changed user, and enforces password bounds', async () => {
-  const app = setup({ local: { [AUTH]: 'stored' } });
-  await app.BW.cloud.getUser();
-  app.emit('PASSWORD_RECOVERY', session());
-  for (const password of ['short', 'x'.repeat(129)]) {
-    await assert.rejects(app.BW.cloud.setNewPassword(password), /12 and 128/);
-  }
-  app.setNow(NOW + 15 * 60 * 1000);
-  await assert.rejects(app.BW.cloud.setNewPassword('a long new password'), /invalid or expired/);
-  app.setNow(NOW);
-  app.emit('PASSWORD_RECOVERY', session());
-  app.emit('SIGNED_IN', { ...session(), user: { ...user, id: 'other' } });
-  await assert.rejects(app.BW.cloud.setNewPassword('a long new password'), /invalid or expired/);
-  assert.equal(app.passwordUpdates.length, 0);
-});
-
-test('server rejection and overlapping updates cannot change a password', async () => {
-  const app = setup({ local: { [AUTH]: 'stored' } });
-  await app.BW.cloud.getUser();
-  app.emit('PASSWORD_RECOVERY', session());
-  app.setResult({ data: { session: null }, error: null });
-  await assert.rejects(app.BW.cloud.setNewPassword('a long new password'));
-  assert.equal(app.passwordUpdates.length, 0);
-  app.setResult({ data: { session: session() }, error: null });
-  const first = app.BW.cloud.setNewPassword('a long new password');
-  await assert.rejects(app.BW.cloud.setNewPassword('another long password'), /already in progress/);
-  await first;
-  assert.equal(app.passwordUpdates.length, 1);
-});
-
-test('the auth server must confirm the recovery user before an update', async () => {
-  const app = setup({ local: { [AUTH]: 'stored' } });
-  await app.BW.cloud.getUser();
-  app.emit('PASSWORD_RECOVERY', session());
-  app.auth.getUser = async () => ({ data: { user: null }, error: { message: 'Invalid token' } });
-  await assert.rejects(app.BW.cloud.setNewPassword('a long new password'), /Could not verify/);
-  assert.equal(app.passwordUpdates.length, 0);
-});
 test('cloud profile photos restore on a new browser without persisting a local photo', async () => {
   const app = setup({ local: { [AUTH]: 'stored', breadwinner_user_photo:'old local photo' }, photo:cloudPhoto });
   await app.BW.cloud.getUser(); await flush();

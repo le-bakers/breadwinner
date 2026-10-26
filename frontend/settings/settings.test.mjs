@@ -16,7 +16,7 @@ function setup({ failExport = false, failDelete = false } = {}) {
   const settings = { theme:'light', dateFormat:'MDY' };
   let download, signouts=0;
   const document = { getElementById:element, querySelectorAll() { return theme; }, querySelector:element, body:{appendChild(){}}, createElement() { return { click(){}, remove(){} }; } };
-  const cloud = { enabled:true, async getUser() { return {email:'person@example.com'}; }, async sendPasswordReset() {}, async loadProfilePhoto() { return "cloud-photo"; }, async loadReceipts() { if(failExport) throw Error('Offline'); return [{id:'receipt'}]; }, async signOut() { signouts++; }, async deleteAccount() { if(failDelete) throw Error('Offline'); } };
+  const cloud = { enabled:true, async getUser() { return {email:'person@example.com'}; }, async loadProfilePhoto() { return "cloud-photo"; }, async loadReceipts() { if(failExport) throw Error('Offline'); return [{id:'receipt'}]; }, async signOut() { signouts++; }, async deleteAccount() { if(failDelete) throw Error('Offline'); } };
   const BW = { cloud, Settings: {getSettings:()=>settings, updateSetting:(key,value)=>settings[key]=value}, confirmModal:()=>({open(){},close(){}}) };
   const window = { BreadWinner:BW, location:{}, addEventListener(){} };
   vm.runInNewContext(source, { window, document, localStorage, sessionStorage, pageUrl: x=>x, Blob: class { constructor(parts) { download=JSON.parse(parts[0]); } }, URL:{ createObjectURL:()=> 'blob:test', revokeObjectURL(){} } });
@@ -29,11 +29,6 @@ test('theme and date controls persist preferences and expose pressed state', asy
   assert.equal(s.settings.dateFormat,'ISO');
 });
 
-test('sending a reset email opens the confirmation page', async () => {
-  const s = setup();
-  await s.element('passwordResetBtn').click();
-  assert.equal(s.window.location.href, '/resetlink?sent=1');
-});
 test('export includes cloud receipts and excludes credentials and unrelated browser data',async()=>{
   const s=setup(); await s.element('exportDataBtn').click();
   assert.deepEqual(Object.keys(s.download()).sort(),['breadwinner_settings','breadwinner_user_name','profilePhoto','receipts']);
@@ -50,9 +45,6 @@ test('failed deletion preserves local data and allows retry',async()=>{
 test('clearing a device removes app data from both stores while preserving unrelated data',async()=>{
   const s=setup(); const button=s.element('clearDataConfirm'); await button.click({target:button});
   assert.deepEqual(Object.keys(s.localStorage),['unrelated']); assert.deepEqual(Object.keys(s.sessionStorage),['unrelated']); assert.equal(s.signouts(),1); assert.equal(s.window.location.href,'/signin');
-});
-test('password reset reports a request without claiming delivery',async()=>{
-  const s=setup(); await s.element('passwordResetBtn').click(); assert.match(s.element('passwordResetStatus').textContent,/Reset link requested/); assert.equal(s.element('passwordResetBtn').disabled,false);
 });
 
 test('receipt date preferences preserve the calendar day and handle invalid dates', () => {
