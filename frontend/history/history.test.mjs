@@ -61,3 +61,12 @@ test('empty results and processing receipts without totals are safe', () => {
   assert.deepEqual(receiptStats([]), { deductible: 0, scanned: 0, gfItems: 0 });
   assert.deepEqual(receiptStats([{ processing: true }, { overcharge: '2.50', gfItems: '2' }]), { deductible: 2.5, scanned: 2, gfItems: 2 });
 });
+
+test('history uses the same receipt row template as the dashboard', async () => {
+  // home.js builds every row from #rowTemplate, so a missing piece on one page blanks that page's table.
+  const template = async path => {
+    const html = await readFile(new URL(path, import.meta.url), 'utf8');
+    return html.match(/<template id="rowTemplate">[\s\S]*?<\/template>/)[0];
+  };
+  assert.equal(await template('./history.html'), await template('../home/home.html'));
+});
