@@ -4,25 +4,8 @@
 
 /* Hero illustration shadow follows the chosen accent color. */
 #cardShadowGrad stop { stop-color: var(--primary); }
+tt
 
-:root.landing-page {
-  --landing-gutter: 24px;
-  scrollbar-gutter: stable;
-}
-
-.landing-page .container,
-.landing-page .msn-shell {
-  width: 100%;
-  max-width: 1200px;
-  padding-inline: var(--landing-gutter);
-}
-
-.landing-page .msn-nav { padding-inline: 0; }
-
-@media (max-width: 860px) {
-  :root.landing-page { --landing-gutter: 16px; }
-  .landing-page .msn-actions [data-auth-actions="desktop"] { display: none !important; }
-}
 
 /* ---------- Hero ---------- */
 .hero {
@@ -64,12 +47,11 @@
   position: relative;
   z-index: 1;
   display: grid;
-  grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+  grid-template-columns: 1.05fr 0.95fr;
   gap: 48px;
   align-items: center;
 }
 
-.hero-inner > * { min-width: 0; }
 .hero-copy { max-width: clamp(500px, 42vw, 620px); }
 .hero-title-img {
   width: clamp(260px, 38vw, 560px);
@@ -180,7 +162,7 @@
 .how-step {
   position: relative;
   display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  grid-template-columns: 1fr 1fr;
   column-gap: 64px;
   align-items: center;
   margin-bottom: 64px;
@@ -314,12 +296,10 @@
 .features { padding: 40px 0 110px; }
 .feature-grid {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(4, 1fr);
   gap: 22px;
 }
 .feature-card {
-  min-width: 0;
-  overflow-wrap: anywhere;
   background: var(--card);
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -336,7 +316,7 @@
 .feature-card h3 { font-size: 17px; font-weight: 700; margin-bottom: 8px; }
 .feature-card p { font-size: 14.5px; color: var(--text-secondary); line-height: 1.65; }
 
-@media (max-width: 900px) { .feature-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 900px) { .feature-grid { grid-template-columns: 1fr 1fr; } }
 @media (max-width: 560px) { .feature-grid { grid-template-columns: 1fr; } }
 
 /* ---------- CTA ---------- */
