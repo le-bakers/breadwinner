@@ -1088,7 +1088,7 @@ body[data-receipt-period="current-month"] .fab { box-shadow: var(--shadow-md); }
 .receipt-workspace .summary-label { font-weight: 500; }
 .receipt-workspace .receipts-heading { margin-bottom: 16px; }
 .receipt-workspace .receipts-heading h2 { font-size: 20px; font-weight: 600; }
-.receipt-workspace .toolbar-controls { grid-template-columns: minmax(180px, 1fr) 170px auto; }
+.receipt-workspace .toolbar-controls { grid-template-columns: minmax(180px, 1fr) 170px; }
 .receipt-workspace .search-box, .receipt-workspace .select-wrap select, .receipt-workspace .export-button { border-radius: 10px; }
 .receipt-workspace .search-box input::placeholder { color: var(--workspace-muted); }
 .receipt-workspace .receipts-note { margin: 18px 0 0; color: var(--workspace-muted); }
@@ -1199,7 +1199,7 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
   .receipt-workspace .receipts-heading { gap: 12px; align-items: center; }
   .receipt-workspace .receipts-heading h2 { font-size: 18px; }
   .receipt-workspace .history-link { font-size: 12px; min-height: 44px; }
-  .receipt-workspace .toolbar-controls { grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+  .receipt-workspace .toolbar-controls { grid-template-columns: minmax(0, 1fr); gap: 8px; }
   .receipt-workspace .search-box { grid-column: 1 / -1; }
   .receipt-workspace .export-button { padding: 0 14px; font-size: 13px; }
   .receipt-workspace .receipt-row { grid-template-columns: minmax(0, 1fr) auto; gap: 6px 12px; padding: 16px 0; }

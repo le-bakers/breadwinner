@@ -62,6 +62,58 @@ test('empty results and processing receipts without totals are safe', () => {
   assert.deepEqual(receiptStats([{ processing: true }, { overcharge: '2.50', gfItems: '2' }]), { deductible: 2.5, scanned: 2, gfItems: 2 });
 });
 
+// ---- Tax summary and exports (tax-data.js) ----
+const taxSource = await readFile(new URL('./tax-data.js', import.meta.url), 'utf8');
+const tax = await import('data:text/javascript;base64,' + Buffer.from(taxSource).toString('base64'));
+
+const sampleReceipts = [
+  { name: 'costco run', date: '2026-10-25', lines: [
+    { name: 'GF BREAD', price: 6.49, quantity: 1, gf: true, compare: { source: 'kroger', quantity: 1, regularName: 'White Bread', regularPrice: 3.49, regularSize: '20 oz', gfSize: '14 oz', scaledRegularPrice: 2.44, sizesComparable: true, deduction: 4.05, warnings: [], date: '2026-10-25' } },
+    { name: 'MILK', price: 3.2, quantity: 1, gf: false },
+    { name: '=GF PASTA', price: 4, quantity: 1, gf: true }
+  ] },
+  { name: 'target', date: '2026-03-02', lines: [
+    { name: 'XANTHAN GUM', price: 9, quantity: 1, gf: true, compare: { source: 'none', quantity: 1, deduction: 9, warnings: [] } }
+  ] },
+  { name: 'still scanning', date: '2026-04-01', processing: true, lines: [{ name: 'X', price: 1, gf: true }] }
+];
+
+test('tax summary lists only gluten-free items, oldest first, and counts the ones still waiting', () => {
+  const summary = tax.collectItems(sampleReceipts);
+  assert.deepEqual(summary.items.map(item => item.name), ['XANTHAN GUM', 'GF BREAD', '=GF PASTA']);
+  assert.equal(summary.total, 13.05);
+  assert.equal(summary.waiting, 1);
+});
+
+test('export rows use real numbers, one total row, and carry the disclaimer', () => {
+  const rows = tax.buildRows(tax.collectItems(sampleReceipts));
+  assert.equal(rows[0].length, tax.HEADERS.length);
+  assert.equal(typeof rows[1][4], 'number');
+  assert.equal(rows.at(-2)[8], 13.05);
+  assert.equal(rows.at(-1)[0], tax.DISCLAIMER);
+  assert.match(rows[2][9], /Regular version \$3\.49 for 20 oz, which is \$2\.44 for 14 oz/);
+});
+
+test('csv writes plain numbers and defuses cells that start like a formula', () => {
+  const csv = tax.makeCsv(tax.buildRows(tax.collectItems(sampleReceipts)));
+  assert.match(csv, /,4\.05,/);
+  assert.match(csv, /"'=GF PASTA"/);
+});
+
+test('xlsx is a valid zip with numbers stored as numbers', async () => {
+  const bytes = Buffer.from(await tax.makeXlsx(tax.buildRows(tax.collectItems(sampleReceipts))).arrayBuffer());
+  assert.equal(bytes.readUInt32LE(0), 0x04034b50);
+  const text = bytes.toString('latin1');
+  assert.match(text, /<c r="I3" s="1"><v>4\.05<\/v><\/c>/);
+  assert.ok(bytes.readUInt32LE(14) > 0, 'local header holds the crc');
+});
+
+test('the print page escapes item names', () => {
+  const html = tax.makePdfHtml(tax.collectItems([{ name: 'r', date: '2026-01-01', lines: [{ name: '<b>GF</b>', price: 1, gf: true }] }]), 'Tax year 2026');
+  assert.ok(!html.includes('<b>GF</b>'));
+  assert.match(html, /Tax year 2026/);
+});
+
 test('history uses the same receipt row template as the dashboard', async () => {
   // home.js builds every row from #rowTemplate, so a missing piece on one page blanks that page's table.
   const template = async path => {

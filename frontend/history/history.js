@@ -1,45 +1,55 @@
 // @ts-nocheck
 import { groupReceipts, receiptStats } from './history-groups.js';
+import { openTaxSummary, makeExportMenu } from './tax-summary.js';
 const openSections = new Map();
 let summaries = [];
 const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' });
 const monthName = new Intl.DateTimeFormat('en-US', { month: 'long' });
-function makeSection(key, title, receipts, level) {
+// title is the heading on screen ("October"); fullTitle is used in the pop-up ("October 2026").
+// slug goes in file names, e.g. 2026 or 2026-10.
+function makeSection(key, title, fullTitle, receipts, level, slug) {
     const section = document.createElement('details');
     section.className = 'history-group history-' + level;
     section.dataset.groupKey = key;
     section.open = openSections.get(key) ?? true;
     const summary = document.createElement('summary');
+    const head = document.createElement('div');
+    head.className = 'history-group-head';
     const heading = document.createElement(level === 'year' ? 'h2' : 'h3');
     heading.className = 'history-group-title';
     heading.textContent = title;
-    summary.appendChild(heading);
-    const stats = document.createElement('span');
-    stats.className = 'history-group-stats';
-    const values = ['Deduction', 'Receipts', 'GF items'].map(label => {
-        const stat = document.createElement('span');
-        stat.className = 'history-stat';
-        const value = document.createElement('strong');
-        value.className = 'metric-number';
-        const caption = document.createElement('span');
-        caption.textContent = label;
-        stat.append(value, caption);
-        stats.appendChild(stat);
-        return value;
-    });
-    summaries.push({ receipts, values });
-    summary.appendChild(stats);
+    const count = document.createElement('p');
+    count.className = 'history-group-count';
+    head.append(heading, count);
+    const stat = document.createElement('span');
+    stat.className = 'history-stat';
+    const value = document.createElement('strong');
+    value.className = 'metric-number';
+    const caption = document.createElement('span');
+    caption.textContent = 'Deduction';
+    stat.append(value, caption);
+    // What the buttons use: the receipts shown in this group, so the pop-up and files match the screen
+    const group = { getReceipts: () => receipts, title: fullTitle, slug };
+    const actions = document.createElement('div');
+    actions.className = 'history-actions';
+    const summaryButton = document.createElement('button');
+    summaryButton.type = 'button';
+    summaryButton.className = 'btn btn-secondary btn-sm history-summary-button';
+    summaryButton.textContent = 'Tax summary';
+    summaryButton.addEventListener('click', () => openTaxSummary(group, summaryButton));
+    actions.append(summaryButton, makeExportMenu(group));
+    summaries.push({ receipts, value, count });
+    summary.append(head, stat, actions);
     section.appendChild(summary);
     return section;
 }
 window.BreadWinner = window.BreadWinner || {};
 window.BreadWinner.receiptHistory = {
     refresh() {
-        for (const { receipts, values } of summaries) {
+        for (const { receipts, value, count } of summaries) {
             const stats = receiptStats(receipts);
-            values[0].textContent = money.format(stats.deductible);
-            values[1].textContent = String(stats.scanned);
-            values[2].textContent = String(stats.gfItems);
+            value.textContent = money.format(stats.deductible);
+            count.textContent = stats.scanned + (stats.scanned === 1 ? ' receipt' : ' receipts') + ' · ' + stats.gfItems + ' GF item' + (stats.gfItems === 1 ? '' : 's');
         }
     },
     render(table, receipts, buildRow) {
@@ -65,12 +75,17 @@ window.BreadWinner.receiptHistory = {
         }
         const oldestFirst = document.getElementById('sortSelect').value === 'oldest';
         for (const year of groupReceipts(receipts, oldestFirst)) {
-            const section = makeSection('year-' + year.year, year.year === null ? 'Undated receipts' : 'Tax year ' + year.year, year.receipts, 'year');
+            const yearTitle = year.year === null ? 'Undated receipts' : 'Tax year ' + year.year;
+            const yearSlug = year.year === null ? 'undated' : String(year.year);
+            const section = makeSection('year-' + year.year, yearTitle, yearTitle, year.receipts, 'year', yearSlug);
             const content = document.createElement('div');
             content.className = 'history-year-content';
             for (const month of year.months) {
-                const title = month.month === null ? 'Unknown month' : monthName.format(new Date(month.year, month.month - 1, 1));
-                const monthly = makeSection('month-' + month.year + '-' + month.month, title, month.receipts, 'month');
+                const known = month.month !== null;
+                const title = known ? monthName.format(new Date(month.year, month.month - 1, 1)) : 'Unknown month';
+                const fullTitle = known ? title + ' ' + month.year : yearTitle + ' · ' + title;
+                const slug = known ? month.year + '-' + String(month.month).padStart(2, '0') : yearSlug + '-unknown-month';
+                const monthly = makeSection('month-' + month.year + '-' + month.month, title, fullTitle, month.receipts, 'month', slug);
                 const rows = document.createElement('div');
                 rows.className = 'receipt-table';
                 if (this.header)
@@ -87,4 +102,4 @@ window.BreadWinner.receiptHistory = {
     }
 };
 // Install grouping before the shared receipt controls load.
-import('../home/home.js?v=9');
+import('../home/home.js?v=10');

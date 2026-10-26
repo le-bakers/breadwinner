@@ -34,31 +34,80 @@
 .history-group > summary:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 3px; }
 .history-year > summary { background: color-mix(in srgb, var(--primary) 6%, var(--bg)); }
 .history-year > summary:hover { background: color-mix(in srgb, var(--primary) 10%, var(--bg)); }
+
+/* Header: title and a small count line on the left, the deduction, then the two buttons */
+.history-group-head { flex: 1 1 auto; min-width: 0; }
 .receipts-section .history-group-title { font-size: 18px; font-weight: 600; white-space: nowrap; letter-spacing: -0.02em; }
-.history-group-stats { display: grid; grid-template-columns: minmax(110px, 1.2fr) repeat(2, minmax(72px, 1fr)); gap: 28px; margin-left: auto; align-items: baseline; text-align: right; }
-.history-stat { display: flex; flex-direction: column; gap: 4px; }
-.history-stat strong { font-size: 18px; font-weight: 500; line-height: 1.2; }
-.history-stat:first-child strong { font-size: 26px; font-weight: 600; color: var(--text); }
+.history-group-count { margin-top: 2px; font-size: 12px; line-height: 1.4; color: var(--workspace-muted); }
+.history-stat { display: flex; flex: 0 0 auto; flex-direction: column; gap: 2px; min-width: 100px; text-align: right; }
+.history-stat strong { font-size: 24px; font-weight: 600; line-height: 1.15; color: var(--text); }
 .history-stat > span { font-size: 12px; color: var(--workspace-muted); }
+.history-actions { display: flex; flex: 0 0 auto; gap: 8px; }
+.receipt-workspace .history-actions .btn,
+.receipt-workspace .history-actions .export-button { height: 36px; min-height: 36px; padding: 0 14px; font-size: 13px; font-weight: 500; border-radius: 10px; white-space: nowrap; }
+.receipt-workspace .history-actions .export-button { background: var(--card); color: var(--text); }
+
 .history-year-content { display: grid; gap: 16px; padding: 12px 20px 0; }
-.history-month > summary { min-height: 80px; padding: 16px 12px; }
+.history-month > summary { min-height: 72px; padding: 14px 12px; }
 .history-month > summary:hover { background: color-mix(in srgb, var(--primary) 4%, var(--bg)); }
 .receipts-section .history-month .history-group-title { font-size: 16px; }
-.history-month .history-stat strong { font-size: 16px; }
-.history-month .history-stat:first-child strong { font-size: 20px; }
+.history-month .history-stat strong { font-size: 19px; }
 .history-month > .receipt-table { margin-top: 4px; }
 .receipt-workspace .history-month .receipt-row-head { border-bottom: 1px solid var(--border); }
 
+/* ---------- Tax summary pop-up ---------- */
+.tax-card { display: flex; flex-direction: column; max-width: 640px; max-height: min(88vh, 780px); padding: 24px; }
+.tax-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+.tax-kicker { margin: 0 0 2px; font-size: 12px; font-weight: 600; letter-spacing: 0.04em; text-transform: uppercase; color: var(--text-secondary); }
+.tax-card .tax-head h3 { margin: 0; font-size: 20px; }
+.tax-close { display: grid; place-items: center; flex: 0 0 auto; width: 40px; height: 40px; margin: -6px -8px 0 0; border: 0; border-radius: 10px; background: transparent; color: var(--text-secondary); cursor: pointer; }
+.tax-close:hover { background: var(--bg); color: var(--text); }
+.tax-close:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 1px; }
+.tax-total { display: grid; gap: 2px; margin: 16px 0 14px; }
+.tax-total-label, .tax-total-sub { font-size: 13px; color: var(--text-secondary); }
+.tax-total strong { font-family: var(--font-display); font-size: 34px; font-weight: 800; line-height: 1.1; color: var(--text); font-variant-numeric: tabular-nums; }
+.modal-card p.tax-banner { margin: 0 0 12px; padding: 10px 12px; border-radius: 12px; border: 1px solid #FDE68A; background: #FFFBEB; color: #92400E; font-size: 13px; line-height: 1.5; }
+.modal-card p.tax-banner-info { border-color: var(--border); background: var(--bg); color: var(--text-secondary); }
+.tax-list { flex: 1 1 auto; min-height: 120px; margin: 0 0 12px; padding: 0; list-style: none; overflow-y: auto; scrollbar-gutter: stable; border-top: 1px solid var(--border); }
+.tax-item { display: flex; justify-content: space-between; gap: 16px; padding: 12px 2px; border-bottom: 1px solid var(--border); }
+.tax-item-main { display: grid; gap: 2px; min-width: 0; }
+.tax-item-name { font-size: 14px; font-weight: 600; color: var(--text); overflow-wrap: anywhere; }
+.tax-item-meta { font-size: 12.5px; line-height: 1.45; color: var(--text-secondary); overflow-wrap: anywhere; }
+.tax-item-alert { font-size: 12.5px; font-weight: 600; color: #92400E; }
+.tax-item-amounts { display: grid; flex: 0 0 auto; gap: 2px; align-content: start; text-align: right; font-variant-numeric: tabular-nums; }
+.tax-item-amounts strong { font-size: 15px; font-weight: 700; color: var(--text); }
+.tax-item-amounts span { font-size: 12px; color: var(--text-secondary); }
+.tax-item.is-waiting .tax-item-amounts strong { color: var(--text-secondary); }
+.modal-card p.tax-empty { margin: 0 0 12px; padding: 24px 0; border-top: 1px solid var(--border); text-align: center; font-size: 14px; }
+.tax-checklist { margin: 0 0 10px; font-size: 13px; color: var(--text-secondary); }
+.tax-checklist summary { cursor: pointer; font-weight: 600; color: var(--text); padding: 4px 0; }
+.tax-checklist summary:focus-visible { outline: 2px solid var(--primary-hover); outline-offset: 2px; border-radius: 4px; }
+.tax-checklist ul { margin: 6px 0 0; padding-left: 20px; line-height: 1.55; }
+.tax-checklist a { color: var(--primary-hover); }
+.modal-card p.tax-disclaimer { margin: 0; font-size: 12px; line-height: 1.5; }
+.tax-actions { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-top: 16px; }
+.tax-actions .export-button { height: 44px; padding: 0 18px; }
+.tax-actions .export-menu-options { top: auto; bottom: calc(100% + 6px); left: 0; right: auto; }
+.tax-actions .tax-done { flex: 0 0 auto; min-width: 110px; }
+:root[data-theme="dark"] .modal-card p.tax-banner:not(.tax-banner-info) { background: rgba(251, 191, 36, 0.12); border-color: rgba(251, 191, 36, 0.35); color: #FDE68A; }
+:root[data-theme="dark"] .tax-item-alert { color: #FCD34D; }
+
+@media (max-width: 860px) {
+  .history-group > summary { flex-wrap: wrap; row-gap: 12px; }
+  .history-actions { flex: 1 0 calc(100% - 24px); margin-left: 24px; }
+  .history-actions > * { flex: 1 1 0; }
+  .receipt-workspace .history-actions .btn,
+  .receipt-workspace .history-actions .export-button { width: 100%; justify-content: center; }
+}
 @media (max-width: 700px) {
-  .history-group > summary { flex-wrap: wrap; gap: 12px; padding: 18px 16px; }
-  .history-group-stats { flex-basis: 100%; margin-left: 24px; grid-template-columns: minmax(0, 1.3fr) repeat(2, minmax(0, 1fr)); gap: 12px; text-align: left; }
-  .history-stat strong { font-size: 16px; }
-  .history-stat:first-child strong { font-size: 24px; }
-  .history-stat > span { font-size: 12px; }
+  .history-group > summary { gap: 12px; padding: 16px 14px; }
+  .history-stat strong { font-size: 20px; }
+  .history-month .history-stat strong { font-size: 18px; }
   .history-year-content { padding: 8px 0 0 8px; gap: 12px; }
-  .history-month > summary { padding: 16px 8px; }
-  .history-month .history-stat:first-child strong { font-size: 20px; }
-  .history-group-title { white-space: normal; }
+  .history-month > summary { padding: 14px 8px; }
+  .receipts-section .history-group-title { white-space: normal; }
+  .tax-card { padding: 20px 18px; max-height: 92vh; }
+  .tax-total strong { font-size: 30px; }
 }
 @media (max-width: 560px) {
   .dashboard-history { padding-top: 24px; }
