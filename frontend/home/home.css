@@ -670,9 +670,6 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
 .fab-wrapper.is-options-open .fab-option:nth-child(3) { transition-delay: 0.08s; }
 .fab-wrapper.is-options-open .fab-icon { transform: rotate(45deg); }
 .fab-icon { transition: transform 0.3s var(--ease-out); }
-/* Wide screens: the button slides away while scrolling down (home.ts), so it never covers row buttons */
-.fab-wrapper { transition: transform 0.3s var(--ease-out), opacity 0.2s; }
-.fab-wrapper.is-tucked { transform: translateY(calc(100% + 40px)); opacity: 0; pointer-events: none; }
  
 @media (max-width: 560px) {
   .fab-wrapper { bottom: 20px; right: 20px; }
@@ -1285,7 +1282,7 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
     background: var(--primary);
     box-shadow: var(--shadow-md);
     transition: width 240ms var(--ease-out), height 240ms var(--ease-out),
-      background 180ms, transform 0.3s var(--ease-out), opacity 0.2s;
+      background 180ms;
   }
   .dashboard-home ~ .fab-wrapper.is-options-open {
     width: 240px;

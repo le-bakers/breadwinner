@@ -1484,18 +1484,6 @@ import { displayMetrics } from './metrics.js';
         fabOptionUpload.hidden = false;
         fabOptionManual.hidden = false;
         setFabOptionsOpen(false);
-        // On wide screens the floating button slides away while you scroll down, so it
-        // never sits on top of item buttons. Scrolling up or reaching the bottom brings it back.
-        // (On phones it lives inside the bottom menu, so it always stays.)
-        let lastScrollY = window.scrollY;
-        window.addEventListener('scroll', () => {
-            const goingDown = window.scrollY > lastScrollY;
-            lastScrollY = window.scrollY;
-            const wide = window.matchMedia('(min-width: 861px)').matches;
-            const atBottom = window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 4;
-            const inUse = fabWrapper.classList.contains('is-options-open') || fabWrapper.contains(document.activeElement);
-            fabWrapper.classList.toggle('is-tucked', wide && goingDown && window.scrollY > 80 && !atBottom && !inUse);
-        }, { passive: true });
         photoBtn.addEventListener('click', (e) => {
             e.stopPropagation();
             setFabOptionsOpen(!fabWrapper.classList.contains('is-options-open'));
