@@ -8,84 +8,77 @@ from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image
 
 import gemini
-import gf_detect
+import gluten
 import kroger
 import ocr
-import receipt_parser
-import unit_price
+import receipt
+import units
+
+ENGINE = os.getenv("OCR_ENGINE", "gemini")
+LOW, HIGH = 0.01, 999.99
+MAX_BYTES = 10 * 1024 * 1024
+MAX_PIXELS = 50_000_000
+FORMATS = ("JPEG", "PNG", "WEBP")
+MATCH, UNKNOWN, MISMATCH = 0, 1, 2
 
 app = FastAPI()
-
-# Who reads the receipt photo. Set OCR_ENGINE in .env:
-#   "gemini" (the default) = Google's Gemini reads the photo. Most accurate, free allowance per day.
-#   "local"                = RapidOCR reads it on this computer. Free and unlimited, less accurate.
-# Gemini always falls back to local when it can't be used, so a scan never fails just because of Gemini.
-OCR_ENGINE = os.getenv("OCR_ENGINE", "gemini")
-
-# Lets the website (a different address than this server) ask this server for data
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_methods=["GET", "POST"],
-    allow_headers=["*"],
-)
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "POST"], allow_headers=["*"])
 
 
 @app.get("/")
-def health_check():
+def health():
+    """Tell the website the server is awake"""
     return {"status": "ok"}
 
 
-@app.get("/kroger/search")
-def kroger_search(zip: str, term: str):
+def zipcode(zip):
+    """Reject anything that is not a five-digit zip code"""
     if not (zip.isdigit() and len(zip) == 5):
-        raise HTTPException(status_code=422, detail="Type a 5-digit zip code.")
+        raise HTTPException(422, "Type a 5-digit zip code.")
+
+
+def limits(prices, quantity):
+    """Reject prices or quantities outside the allowed range"""
+    for price in prices:
+        if not LOW <= price <= HIGH:
+            raise HTTPException(422, "Prices must be between $0.01 and $999.99.")
+    if not 1 <= quantity <= 99:
+        raise HTTPException(422, "How many you bought must be between 1 and 99.")
+
+
+@app.get("/kroger/search")
+def search(zip: str, term: str):
+    """Return the top three priced products for a search at the nearest Kroger-family store"""
+    zipcode(zip)
 
     try:
-        location_id = kroger.find_nearest_location(zip)
-        products = priced_products(term, location_id) if location_id else []
+        location = kroger.store(zip)
+        products = priced(term, location) if location else []
     except requests.RequestException as error:
-        print(f"Kroger search failed: {error}")  # shows in the server log (Render → Logs), never the keys
-        raise HTTPException(status_code=502, detail="Kroger could not be reached right now.")
+        print(f"Kroger search failed: {error}")
+        raise HTTPException(502, "Kroger could not be reached right now.")
 
-    if location_id is None:
-        raise HTTPException(status_code=404, detail="No Kroger-banner store near that zip code.")
+    if location is None:
+        raise HTTPException(404, "No Kroger-banner store near that zip code.")
 
-    return {"location_id": location_id, "results": products[:3]}
+    return {"location_id": location, "results": products[:3]}
 
 
-def priced_products(term, location_id):
-    """Kroger's matches for a search at one store, best match first, leaving out products with no price."""
-    # Kroger refuses a search of more than 8 words or fewer than 3 letters (error 400, seen 2026-10-13)
+def priced(term, location):
+    """Search one store and keep only products with a regular shelf price"""
     term = " ".join(term.split()[:8])
     if len(term) < 3:
         return []
-
-    # Ask for more than 3, because some products come back without a price at this store
-    products = kroger.search_products(term, location_id, limit=10)
-
-    # "price" is Kroger's regular shelf price, not a sale price. A sale would make the
-    # regular item look cheaper than usual and the extra cost look bigger than it is.
-    return [product for product in products if product["price"]]
-
-
-LOWEST_PRICE, HIGHEST_PRICE = 0.01, 999.99
+    return [product for product in kroger.search(term, location, limit=10) if product["price"]]
 
 
 @app.get("/deduction")
 def deduction(gf_price: float, gf_size: str = "", quantity: int = 1,
               regular_price: float = None, regular_size: str = ""):
-    """The extra cost of one gluten-free receipt line, compared with the regular version.
-    Leave regular_price out when no regular version exists. An organized estimate, not tax advice."""
-    prices = [gf_price] if regular_price is None else [gf_price, regular_price]
-    for price in prices:
-        if not LOWEST_PRICE <= price <= HIGHEST_PRICE:
-            raise HTTPException(status_code=422, detail="Prices must be between $0.01 and $999.99.")
-    if not 1 <= quantity <= 99:
-        raise HTTPException(status_code=422, detail="How many you bought must be between 1 and 99.")
+    """Work out the extra cost of one gluten-free line with warnings worth a second look"""
+    limits([gf_price] if regular_price is None else [gf_price, regular_price], quantity)
 
     if regular_price is None:
-        # Some gluten-free items have no regular version (xanthan gum), so the whole price is extra cost
         return {
             "deduction": round(gf_price, 2),
             "scaled_regular_price": 0,
@@ -93,9 +86,7 @@ def deduction(gf_price: float, gf_size: str = "", quantity: int = 1,
             "warnings": ["Counted in full, because you said no regular version of this item exists."],
         }
 
-    result = unit_price.calculate_deduction(gf_price, gf_size, regular_price, regular_size, quantity)
-
-    # Warnings never block anything. They tell the user which numbers deserve a second look.
+    result = units.deduct(gf_price, gf_size, regular_price, regular_size, quantity)
     result["warnings"] = []
     if not result["sizes_comparable"]:
         result["warnings"].append(
@@ -110,84 +101,65 @@ def deduction(gf_price: float, gf_size: str = "", quantity: int = 1,
 
 @app.get("/suggest")
 def suggest(zip: str, term: str, gf_price: float, gf_name: str = "", quantity: int = 1, gf_size_guess: str = ""):
-    """A first guess at the comparison for one gluten-free receipt line, so the user only has to
-    approve it or change it. The website never counts a suggestion until the user approves it.
-    term is what to search for to find the regular version, gf_name is the gluten-free item itself.
-    gf_size_guess is the package size the receipt reader guessed, used when Kroger can't tell us."""
-    if not (zip.isdigit() and len(zip) == 5):
-        raise HTTPException(status_code=422, detail="Type a 5-digit zip code.")
-    if not LOWEST_PRICE <= gf_price <= HIGHEST_PRICE:
-        raise HTTPException(status_code=422, detail="Prices must be between $0.01 and $999.99.")
-    if not 1 <= quantity <= 99:
-        raise HTTPException(status_code=422, detail="How many you bought must be between 1 and 99.")
+    """Draft a comparison for one gluten-free line that the user approves or changes"""
+    zipcode(zip)
+    limits([gf_price], quantity)
 
     try:
-        location_id = kroger.find_nearest_location(zip)
-        if location_id is None:
-            raise HTTPException(status_code=404, detail="No Kroger-banner store near that zip code.")
-        regular_products = priced_products(term, location_id)[:3]
+        location = kroger.store(zip)
+        if location is None:
+            raise HTTPException(404, "No Kroger-banner store near that zip code.")
+        regulars = priced(term, location)[:3]
     except requests.RequestException as error:
         print(f"Kroger suggest failed: {error}")
-        raise HTTPException(status_code=502, detail="Kroger could not be reached right now.")
+        raise HTTPException(502, "Kroger could not be reached right now.")
 
-    # The gluten-free item's own listing is only used to find its package size.
-    # If that lookup fails, the suggestion is still made, just without a size.
     try:
-        gf_products = priced_products(gf_name, location_id)
+        listings = priced(gf_name, location)
     except requests.RequestException:
-        gf_products = []
+        listings = []
 
-    if not regular_products:
-        return {"regular": None}  # nothing to suggest, so the user compares this one by hand
+    if not regulars:
+        return {"regular": None}
 
-    # Kroger's listing at the exact receipt price is the surest size, then a Kroger listing with the same
-    # name (stores charge different prices for the same box). The reader's guess comes last,
-    # because comparing a 12 oz box with a 16 oz box at full price gives a wrong number.
-    gf_size = size_of_same_priced_product(gf_products, gf_price / quantity)
-    if not gf_size:
-        gf_size = size_of_same_named_product(gf_products, gf_name)
-    if not gf_size and unit_price.parse_size(gf_size_guess):
-        gf_size = gf_size_guess.strip()
-    regular = pick_regular(regular_products, gf_size)
+    size = same_price(listings, gf_price / quantity) or same_name(listings, gf_name)
+    if not size and units.size(gf_size_guess):
+        size = gf_size_guess.strip()
+    regular = pick(regulars, size)
 
-    result = deduction(gf_price, gf_size, quantity, regular["price"], regular["size"] or "")
+    result = deduction(gf_price, size, quantity, regular["price"], regular["size"] or "")
     result["regular"] = regular
-    result["gf_size"] = gf_size  # "" when it could not be found; the user types it in then
+    result["gf_size"] = size
     return result
 
 
-def size_of_same_priced_product(products, price_for_one):
-    """The package size Kroger lists for the gluten-free item, or "" when we can't be sure.
-    A product only counts as the same one when its Kroger price equals the price on the receipt.
-    A size taken from the wrong product would quietly give a wrong number, so no match means no guess."""
+def same_price(products, price):
+    """Return the size of a listing sold at exactly the receipt price or an empty string"""
     for product in products:
-        for kroger_price in [product["price"], product["promo_price"]]:
-            if kroger_price and product["size"] and abs(kroger_price - price_for_one) < 0.005:
+        for amount in [product["price"], product["promo_price"]]:
+            if amount and product["size"] and abs(amount - price) < 0.005:
                 return product["size"]
     return ""
 
 
-def size_of_same_named_product(products, gf_name):
-    """The package size Kroger lists for a product whose name has every word of the item's name, in the
-    same order, even when the price is different. (The order matters: "Barilla Chickpea Spaghetti, Gluten
-    Free" is a different product from "Barilla Gluten Free Spaghetti".) If those products come in more
-    than one size, we can't tell which one was bought, so no guess."""
-    wanted = words_in(gf_name)
-    if len(wanted) < 2:  # one word, like "pasta", matches too many products
+def same_name(products, name):
+    """Return the one size shared by listings whose names hold every word of the item in order"""
+    wanted = tokens(name)
+    if len(wanted) < 2:
         return ""
 
     sizes = []
     for product in products:
-        if has_words_in_order(words_in(product["name"]), wanted) and unit_price.parse_size(product["size"]):
+        if ordered(tokens(product["name"]), wanted) and units.size(product["size"]):
             sizes.append(product["size"])
 
-    if len(set(size.lower().strip() for size in sizes)) == 1:
+    if len({size.lower().strip() for size in sizes}) == 1:
         return sizes[0]
     return ""
 
 
-def has_words_in_order(words, wanted):
-    """True when every word in wanted shows up in words, in the same order (other words can sit between)."""
+def ordered(words, wanted):
+    """Check that every wanted word appears among the words in the same order"""
     position = 0
     for word in words:
         if position < len(wanted) and word == wanted[position]:
@@ -195,131 +167,111 @@ def has_words_in_order(words, wanted):
     return position == len(wanted)
 
 
-def words_in(name):
-    """The words of a product name, so "Udi's® GF Bread" and "Udis gluten-free bread" can be compared."""
+def tokens(name):
+    """Split a product name into lowercase words with GF spelled out as gluten free"""
     name = (name or "").lower().replace("'", "").replace("’", "")
     words = []
     for word in re.findall(r"[a-z0-9]+", name):
         if word == "gf":
-            words += ["gluten", "free"]  # stores shorten "gluten free" to "GF"
+            words += ["gluten", "free"]
         else:
             words.append(word)
     return words
 
 
-def pick_regular(products, gf_size):
-    """Kroger's best match, unless only a lower match can be compared by size.
-    (A 12 oz gluten-free loaf compares with a 20 oz loaf, not with a 6 ct pack of rolls.)
-    The price is never used to choose: picking the cheapest would make the extra cost look bigger."""
-    wanted = unit_price.parse_size(gf_size)
+def pick(products, size):
+    """Pick the best Kroger match whose size can be compared or else the top match"""
+    wanted = units.size(size)
     if wanted:
         for product in products:
-            size = unit_price.parse_size(product["size"])
-            if size and size[0] == wanted[0]:
+            found = units.size(product["size"])
+            if found and found[0] == wanted[0]:
                 return product
     return products[0]
 
 
-MAX_PHOTO_BYTES = 10 * 1024 * 1024  # 10 MB. Phone photos are about 2-8 MB
-MAX_PHOTO_PIXELS = 50_000_000       # 50 megapixels. Phones take 12-48; more than this is a trick or a mistake
-PHOTO_FORMATS = ("JPEG", "PNG", "WEBP")
-
-
-def check_photo(image_bytes):
-    """Stops a file that is too big, is not a photo, or is damaged, before any reader sees it."""
-    if len(image_bytes) > MAX_PHOTO_BYTES:
-        raise HTTPException(status_code=413, detail="That photo is too big. The limit is 10 MB.")
+def check(photo):
+    """Reject a photo that is too big or not a picture or damaged before any reader sees it"""
+    if len(photo) > MAX_BYTES:
+        raise HTTPException(413, "That photo is too big. The limit is 10 MB.")
 
     try:
-        image = Image.open(io.BytesIO(image_bytes))  # only reads the file's header, so it is fast
-        file_type = image.format
-        too_many_pixels = image.width * image.height > MAX_PHOTO_PIXELS
-        if file_type in PHOTO_FORMATS and not too_many_pixels:
-            image.load()  # reads every pixel, which fails on a cut-off or damaged file
+        image = Image.open(io.BytesIO(photo))
+        kind = image.format
+        huge = image.width * image.height > MAX_PIXELS
+        if kind in FORMATS and not huge:
+            image.load()
     except Exception:
-        raise HTTPException(status_code=422, detail="Could not read that file as a receipt photo.")
+        raise HTTPException(422, "Could not read that file as a receipt photo.")
 
-    if file_type not in PHOTO_FORMATS:
-        raise HTTPException(status_code=415, detail="Use a JPEG, PNG or WebP photo.")
-    if too_many_pixels:
-        raise HTTPException(status_code=413, detail="That photo has too many pixels. Use a smaller one.")
+    if kind not in FORMATS:
+        raise HTTPException(415, "Use a JPEG, PNG or WebP photo.")
+    if huge:
+        raise HTTPException(413, "That photo has too many pixels. Use a smaller one.")
 
 
 @app.post("/scan")
 def scan(file: UploadFile):
-    # The photo is read, turned into text, and thrown away. Nothing is saved on the server.
-    # Reading one byte past the limit is enough to know it is too big, without loading a huge file.
-    image_bytes = file.file.read(MAX_PHOTO_BYTES + 1)
+    """Read a receipt photo into items with gluten-free guesses without saving the photo"""
+    photo = file.file.read(MAX_BYTES + 1)
+    if not photo:
+        raise HTTPException(400, "The uploaded file was empty.")
 
-    if not image_bytes:
-        raise HTTPException(status_code=400, detail="The uploaded file was empty.")
-
-    check_photo(image_bytes)
+    check(photo)
 
     try:
-        engine, items, subtotal = read_items(image_bytes)
+        engine, items, subtotal = read(photo)
     except Exception:
-        raise HTTPException(status_code=422, detail="Could not read that file as a receipt photo.")
+        raise HTTPException(422, "Could not read that file as a receipt photo.")
 
-    # Guess which items are gluten-free products. The website shows the guesses and the user corrects them.
-    gf_detect.add_guesses(items)
-
-    # How many packages each line is for. Only Gemini reads this off the receipt so far.
+    gluten.guess(items)
     for item in items:
         item.setdefault("quantity", 1)
 
-    # "engine" says who read it ("gemini" or "local"), which helps when an item looks wrong.
-    # "subtotal" is the receipt's own subtotal (or null). The website warns when the items don't add up to it.
     return {"engine": engine, "items": items, "subtotal": subtotal}
 
 
-def read_items(image_bytes):
-    """Returns who read the photo, the list of items they found, and the receipt's subtotal."""
-    if OCR_ENGINE == "gemini":
+def read(photo):
+    """Read a photo with Gemini and fall back to the local reader when Gemini is unavailable"""
+    if ENGINE == "gemini":
         try:
-            items, subtotal = gemini.read_receipt(image_bytes)
+            items, subtotal = gemini.read(photo)
             return "gemini", items, subtotal
-        except gemini.GeminiUnavailable as reason:
-            print(f"Gemini was skipped ({reason}). Reading the photo on this computer instead.")
+        except gemini.Unavailable as why:
+            print(f"Gemini was skipped ({why}). Reading the photo on this computer instead.")
 
-    items, subtotal = read_locally(image_bytes)
+    items, subtotal = local(photo)
     return "local", items, subtotal
 
 
-def read_locally(image_bytes):
-    """Reads the photo on this computer and returns (items, subtotal).
-    A small photo sometimes reads better enlarged and sometimes worse. So when the first reading
-    looks shaky, an enlarged copy is read too, and whichever reading has less trouble is kept."""
-    first = read_text(ocr.extract_text(image_bytes))
+def local(photo):
+    """Read a photo on this computer and retry it enlarged when the first reading looks shaky"""
+    first = parse(ocr.read(photo))
 
-    check, unsure_rows = trouble(first)
-    if check != DOES_NOT_ADD_UP and unsure_rows == 0:
+    status, unsure = trouble(first)
+    if status != MISMATCH and unsure == 0:
         return first
 
-    bigger_photo = ocr.enlarge_small_photo(image_bytes)
-    if bigger_photo is None:
+    bigger = ocr.enlarge(photo)
+    if bigger is None:
         return first
 
-    second = read_text(ocr.extract_text(bigger_photo))
-    return min(first, second, key=trouble)  # on a tie, min() keeps the first reading
+    return min(first, parse(ocr.read(bigger)), key=trouble)
 
 
-def read_text(text):
-    return receipt_parser.parse_receipt(text), receipt_parser.find_subtotal(text)
-
-
-ADDS_UP, NOTHING_TO_CHECK, DOES_NOT_ADD_UP = 0, 1, 2
+def parse(text):
+    """Turn receipt text into its items and printed subtotal"""
+    return receipt.parse(text), receipt.subtotal(text)
 
 
 def trouble(reading):
-    """How much is wrong with a reading, smaller is better: first whether the prices
-    add up to the receipt's subtotal, then how many rows the reader was unsure about."""
+    """Score a reading by whether it adds up to the subtotal and then by how many rows are unsure"""
     items, subtotal = reading
     total = round(sum(item["price"] for item in items), 2)
-    unsure_rows = sum(item["unsure"] for item in items)
+    unsure = sum(item["unsure"] for item in items)
 
     if subtotal is None:
-        return NOTHING_TO_CHECK, unsure_rows
+        return UNKNOWN, unsure
     if total == subtotal:
-        return ADDS_UP, unsure_rows
-    return DOES_NOT_ADD_UP, unsure_rows
+        return MATCH, unsure
+    return MISMATCH, unsure

@@ -2,57 +2,50 @@ import io
 
 from PIL import Image, ImageOps
 
-SMALL_PHOTO = 1600  # pixels on the longer side. Phone photos are bigger; pictures saved from a website are smaller
-ENLARGE_BY = 2.5    # how many times bigger enlarge_small_photo makes a small photo
+SMALL = 1600
+SCALE = 2.5
+SURE = 0.8
+MARK = "(?)"
 
-# The reader scores every piece of text from 0 (a guess) to 1 (certain).
-# A row holding a piece below this score gets UNSURE_MARK in front, so the app can ask the user to check it.
-UNSURE_BELOW = 0.8
-UNSURE_MARK = "(?)"
-
-_local_engine = None  # the text-reading model is big, so it is loaded once, on the first scan
+_engine = None
 
 
-def extract_text(image_bytes):
-    """Turn a receipt photo (raw bytes) into text, one receipt row per line.
-    Runs on this computer with RapidOCR: free, no internet, no limits."""
-    global _local_engine
-    if _local_engine is None:
+def read(photo):
+    """Read a receipt photo on this computer into text with one receipt row per line"""
+    global _engine
+    if _engine is None:
         from rapidocr import RapidOCR
-        _local_engine = RapidOCR()
+        _engine = RapidOCR()
 
-    result = _local_engine(image_bytes)
+    result = _engine(photo)
     if result.boxes is None:
-        return ""  # no readable text in the image
+        return ""
 
-    # Each piece of text comes with a box: 4 corner points (each one is x, y)
     pieces = []
     for box, text, score in zip(result.boxes, result.txts, result.scores):
-        top_left, top_right, bottom_right, bottom_left = box
+        tl, tr, br, bl = box
         pieces.append({
             "text": text,
-            "sure": score >= UNSURE_BELOW,
-            "left": top_left[0],
-            "center": (top_left[0] + bottom_right[0]) / 2,
-            "middle": (top_left[1] + bottom_right[1]) / 2,
-            "height": bottom_left[1] - top_left[1],
-            "width": top_right[0] - top_left[0],
-            "rise": top_right[1] - top_left[1],  # how much lower the right end is than the left end
+            "sure": score >= SURE,
+            "left": tl[0],
+            "center": (tl[0] + br[0]) / 2,
+            "middle": (tl[1] + br[1]) / 2,
+            "height": bl[1] - tl[1],
+            "width": tr[0] - tl[0],
+            "rise": tr[1] - tl[1],
         })
 
-    return group_into_rows(pieces)
+    return rows(pieces)
 
 
-def enlarge_small_photo(image_bytes):
-    """In a small photo the letters are only a few pixels tall, and some get misread.
-    Returns a bigger copy to read as a second try, or None when the photo is already big."""
-    image = Image.open(io.BytesIO(image_bytes))
-    if max(image.size) >= SMALL_PHOTO:
+def enlarge(photo):
+    """Return a bigger copy of a small photo or None when the photo is already big"""
+    image = Image.open(io.BytesIO(photo))
+    if max(image.size) >= SMALL:
         return None
 
-    image = ImageOps.exif_transpose(image)  # stand the photo upright the way the phone meant it
-    image = image.convert("RGB")
-    image = image.resize((round(image.width * ENLARGE_BY), round(image.height * ENLARGE_BY)), Image.LANCZOS)
+    image = ImageOps.exif_transpose(image).convert("RGB")
+    image = image.resize((round(image.width * SCALE), round(image.height * SCALE)), Image.LANCZOS)
 
     buffer = io.BytesIO()
     image.save(buffer, format="PNG")
@@ -60,42 +53,34 @@ def enlarge_small_photo(image_bytes):
 
 
 def straighten(pieces):
-    """A photo is almost never perfectly level, so a price on the right sits a little
-    lower (or higher) than its item name on the left. Measure that tilt and undo it."""
-    total_width = sum(piece["width"] for piece in pieces)
-    if total_width <= 0:
+    """Undo the tilt of a photo so a price lines up with its item name"""
+    width = sum(piece["width"] for piece in pieces)
+    if width <= 0:
         return
 
-    tilt = sum(piece["rise"] for piece in pieces) / total_width
+    tilt = sum(piece["rise"] for piece in pieces) / width
     for piece in pieces:
-        piece["middle"] = piece["middle"] - tilt * piece["center"]
+        piece["middle"] -= tilt * piece["center"]
 
 
-def group_into_rows(pieces):
-    """The OCR reads an item name and its price as two separate pieces.
-    Pieces at about the same height on the page belong to the same row."""
+def rows(pieces):
+    """Join text pieces at the same height into receipt rows and mark rows with shaky pieces"""
     straighten(pieces)
     pieces.sort(key=lambda piece: piece["middle"])
 
-    rows = []
+    groups = []
     for piece in pieces:
-        last_row = rows[-1] if rows else None
-        if last_row and abs(piece["middle"] - last_row[0]["middle"]) < piece["height"] * 0.6:
-            last_row.append(piece)
+        if groups and abs(piece["middle"] - groups[-1][0]["middle"]) < piece["height"] * 0.6:
+            groups[-1].append(piece)
         else:
-            rows.append([piece])
+            groups.append([piece])
 
     lines = []
-    for row in rows:
-        row.sort(key=lambda piece: piece["left"])
-        line = " ".join(piece["text"] for piece in row)
-        if not all(piece["sure"] for piece in row):
-            line = UNSURE_MARK + " " + line
+    for group in groups:
+        group.sort(key=lambda piece: piece["left"])
+        line = " ".join(piece["text"] for piece in group)
+        if not all(piece["sure"] for piece in group):
+            line = MARK + " " + line
         lines.append(line)
 
     return "\n".join(lines)
-
-
-if __name__ == "__main__":
-    with open("sample_receipt.jpg", "rb") as image_file:
-        print(extract_text(image_file.read()))

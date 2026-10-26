@@ -1,32 +1,27 @@
-import os
+import base64
 import io
 import json
+import os
 import time
-import base64
+
 import requests
-from PIL import Image, ImageOps
 from dotenv import load_dotenv
-import unit_price
+from PIL import Image, ImageOps
+
+import units
 
 load_dotenv()
 
-API_KEY = os.getenv("GEMINI_API_KEY")
-API_URL = "https://generativelanguage.googleapis.com/v1beta/models"
-TIMEOUT = 45  # seconds to wait for Gemini before giving up
-
-# Tried in this order. Each model has its own free daily allowance, so when the
-# first one runs out the second one still works. Model names: ai.google.dev/gemini-api/docs/models
+KEY = os.getenv("GEMINI_API_KEY")
+URL = "https://generativelanguage.googleapis.com/v1beta/models"
+TIMEOUT = 45
 MODELS = ["gemini-3.8-flash", "gemini-3.5-flash-lite"]
-
-# Safety net against a surprise bill: never send more than this many requests in one day.
-# On a key with no billing account Google cannot charge anything at all.
-DAILY_LIMIT = int(os.getenv("GEMINI_DAILY_LIMIT", "200"))
-
-MAX_PHOTO_SIDE = 3072          # pixels. Phone photos are bigger than Gemini needs
-REST_AFTER_REFUSAL = 300       # seconds to leave a model alone after Google refuses a request
+LIMIT = int(os.getenv("GEMINI_DAILY_LIMIT", "200"))
+SIDE = 3072
+REST = 300
 
 _usage = {"day": None, "count": 0}
-_resting_until = {}  # model name -> the time it can be tried again
+_resting = {}
 
 PROMPT = """This is a photo of a store receipt. List every product the shopper bought, in the order printed.
 
@@ -64,8 +59,7 @@ If the photo is not a receipt, return an empty list.
 Also give subtotal: the SUBTOTAL printed on the receipt, before tax. Use 0 if no subtotal is
 printed, or if the receipt has any coupon or discount lines."""
 
-# The exact shape Gemini must answer in, so the answer is always the same kind of JSON
-ANSWER_SHAPE = {
+SCHEMA = {
     "type": "object",
     "properties": {
         "items": {
@@ -92,46 +86,38 @@ ANSWER_SHAPE = {
 }
 
 
-class GeminiUnavailable(Exception):
-    """Gemini could not read this photo right now (no key, out of free requests, no internet...)."""
+class Unavailable(Exception):
+    """Signal that Gemini cannot read this photo right now"""
 
 
-def read_receipt(image_bytes):
-    """Send a receipt photo to Gemini and get back (items, subtotal).
-    Each item is {"name", "price", "quantity", "upc", "unsure", "plain_name", "gf", "regular_term", "package_size"}.
-    The subtotal is None when the receipt has none to check the items against.
-    Raises GeminiUnavailable when no model could do it, so the caller can use the local reader."""
-    if not API_KEY:
-        raise GeminiUnavailable("there is no GEMINI_API_KEY in .env")
+def read(photo):
+    """Send a receipt photo to Gemini and return its items and subtotal"""
+    if not KEY:
+        raise Unavailable("there is no GEMINI_API_KEY in .env")
 
-    photo = base64.b64encode(prepare_photo(image_bytes)).decode("utf-8")
-
-    request_body = {
+    body = {
         "contents": [{
             "parts": [
-                {"inline_data": {"mime_type": "image/jpeg", "data": photo}},
+                {"inline_data": {"mime_type": "image/jpeg", "data": base64.b64encode(shrink(photo)).decode("utf-8")}},
                 {"text": PROMPT},
             ],
         }],
         "generationConfig": {
-            # Must be the code word APPLICATION_JSON. Google's guide shows "application/json",
-            # but a plain web request like this one is refused with it (error 400, seen 2026-10-12).
-            "responseFormat": {"text": {"mimeType": "APPLICATION_JSON", "schema": ANSWER_SHAPE}},
+            "responseFormat": {"text": {"mimeType": "APPLICATION_JSON", "schema": SCHEMA}},
         },
     }
 
     for model in MODELS:
-        if time.time() < _resting_until.get(model, 0):
+        if time.time() < _resting.get(model, 0):
             continue
-        if not count_request():
-            raise GeminiUnavailable(f"the daily limit of {DAILY_LIMIT} requests is used up")
+        if not count():
+            raise Unavailable(f"the daily limit of {LIMIT} requests is used up")
 
         try:
-            # The key goes in a header, not the URL, so an error message can never print it
             response = requests.post(
-                f"{API_URL}/{model}:generateContent",
-                json=request_body,
-                headers={"x-goog-api-key": API_KEY},
+                f"{URL}/{model}:generateContent",
+                json=body,
+                headers={"x-goog-api-key": KEY},
                 timeout=TIMEOUT,
             )
         except requests.RequestException as error:
@@ -139,139 +125,128 @@ def read_receipt(image_bytes):
             continue
 
         if response.status_code != 200:
-            # Out of free requests (429), a key problem (403), a wrong model name (404)...
-            # Asking again right away would only fail again, so leave this model alone for a while.
-            _resting_until[model] = time.time() + REST_AFTER_REFUSAL
-            print(f"Gemini {model} said no ({response.status_code}): {error_message(response)}")
+            _resting[model] = time.time() + REST
+            print(f"Gemini {model} said no ({response.status_code}): {reason(response)}")
             continue
 
         try:
-            answer = read_answer(response.json())
-            return clean_items(answer["items"]), clean_subtotal(answer.get("subtotal"))
+            data = answer(response.json())
+            return clean(data["items"]), subtotal(data.get("subtotal"))
         except (KeyError, IndexError, TypeError, ValueError, AttributeError):
             print(f"Gemini {model} gave an answer that could not be understood")
 
-    raise GeminiUnavailable("no Gemini model could read the photo")
+    raise Unavailable("no Gemini model could read the photo")
 
 
-def prepare_photo(image_bytes):
-    """Turn any photo into a smaller JPEG. Raises an error if the file is not a picture.
-    Saving a fresh copy also drops hidden details phones add, like where the photo was taken."""
-    image = Image.open(io.BytesIO(image_bytes))
-    image = ImageOps.exif_transpose(image)  # stand the photo upright the way the phone meant it
-    image = image.convert("RGB")
-    image.thumbnail((MAX_PHOTO_SIDE, MAX_PHOTO_SIDE))
+def shrink(photo):
+    """Turn any photo into a smaller upright JPEG without hidden location details"""
+    image = Image.open(io.BytesIO(photo))
+    image = ImageOps.exif_transpose(image).convert("RGB")
+    image.thumbnail((SIDE, SIDE))
 
     buffer = io.BytesIO()
     image.save(buffer, format="JPEG", quality=85)
     return buffer.getvalue()
 
 
-def count_request():
-    """Add one to today's count. Returns False once today's limit is reached."""
+def count():
+    """Count one request for today and return False once the daily limit is reached"""
     today = time.strftime("%Y-%m-%d")
     if _usage["day"] != today:
         _usage["day"] = today
         _usage["count"] = 0
 
-    if _usage["count"] >= DAILY_LIMIT:
+    if _usage["count"] >= LIMIT:
         return False
 
     _usage["count"] += 1
     return True
 
 
-def error_message(response):
-    """Google's own explanation of what went wrong, if it sent one.
-    Its short reason code (like API_KEY_SERVICE_BLOCKED) goes in front: that code names the exact cause."""
+def reason(response):
+    """Describe why Google refused a request with its exact reason code in front"""
     try:
         error = response.json()["error"]
         message = error["message"]
-        reason = error.get("status")  # a general word, like PERMISSION_DENIED
+        code = error.get("status")
         for detail in error.get("details") or []:
             if detail.get("reason"):
-                reason = detail["reason"]  # the exact cause, when Google gives one
+                code = detail["reason"]
                 break
     except (KeyError, TypeError, ValueError, AttributeError):
         return "no details given"
 
-    if reason:
-        return f"[{reason}] {message}"
-    return message
+    return f"[{code}] {message}" if code else message
 
 
-def read_answer(data):
-    """Pull Gemini's answer ({"items": [...], "subtotal": ...}) out of its reply."""
+def answer(data):
+    """Pull the JSON answer out of Gemini's reply while skipping its thinking notes"""
     parts = data["candidates"][0]["content"]["parts"]
-    # Skip the model's private "thinking" notes; the real answer is the rest
     text = "".join(part["text"] for part in parts if "text" in part and not part.get("thought"))
     return json.loads(text)
 
 
-def clean_items(raw_items):
-    """Never trust an AI answer blindly: keep only items with a real name and a real price."""
+def clean(raw):
+    """Keep only items with a real name and price and tidy every field"""
     items = []
-    for raw in raw_items:
-        name = str(raw.get("name") or "").strip()
-        price = raw.get("price")
-        upc = raw.get("upc")
+    for item in raw:
+        name = str(item.get("name") or "").strip()
+        price = item.get("price")
+        upc = item.get("upc")
 
         if not name or not isinstance(price, (int, float)) or price <= 0:
             continue
         if not (isinstance(upc, str) and upc.isdigit() and 12 <= len(upc) <= 14):
             upc = None
 
-        # How many packages the line is for. Anything odd counts as 1, which the user can change.
-        quantity = raw.get("quantity")
-        if type(quantity) is not int or not 1 <= quantity <= 99:
-            quantity = 1
+        qty = item.get("quantity")
+        if type(qty) is not int or not 1 <= qty <= 99:
+            qty = 1
 
+        gf = item.get("gluten_free") is True
         items.append({
             "name": name,
             "price": round(float(price), 2),
-            "quantity": quantity,
+            "quantity": qty,
             "upc": upc,
-            "unsure": False,  # Gemini does not say how sure it is, so no line is marked "hard to read"
-            "plain_name": short_text(raw.get("plain_name")),
-            # These two are Gemini's guesses. gf_detect.py double-checks them and the user confirms.
-            "gf": raw.get("gluten_free") is True,
-            "regular_term": short_text(raw.get("regular_version")),
-            # A guess too: the website shows it as one, and the user can change it
-            "package_size": clean_size(raw.get("package_size")) if raw.get("gluten_free") is True else None,
+            "unsure": False,
+            "plain_name": tidy(item.get("plain_name")),
+            "gf": gf,
+            "regular_term": tidy(item.get("regular_version")),
+            "package_size": size(item.get("package_size")) if gf else None,
         })
 
     return items
 
 
-def short_text(value):
-    """A tidy piece of text, or None when Gemini left it empty."""
+def tidy(value):
+    """Trim a piece of text to 60 letters or return None when it is empty"""
     if not isinstance(value, str):
         return None
     return value.strip()[:60] or None
 
 
-def clean_size(value):
-    """A package size the deduction math can read ("12 oz"), or None for anything else."""
-    text = short_text(value)
-    if text and unit_price.parse_size(text):
+def size(value):
+    """Keep a package size only when the deduction math can read it"""
+    text = tidy(value)
+    if text and units.size(text):
         return text
     return None
 
 
-def clean_subtotal(value):
-    """The receipt's subtotal as a number, or None when Gemini found none (it answers 0 then)."""
+def subtotal(value):
+    """Turn Gemini's subtotal into a number or None when it found none"""
     if isinstance(value, (int, float)) and value > 0:
         return round(float(value), 2)
     return None
 
 
 if __name__ == "__main__":
-    # One real request, to check the key works:  py gemini.py test_receipt.png
     import sys
 
-    with open(sys.argv[1], "rb") as image_file:
-        found_items, found_subtotal = read_receipt(image_file.read())
+    with open(sys.argv[1], "rb") as file:
+        found, total = read(file.read())
 
-    for item in found_items:
+    for item in found:
         print(item)
-    print("Subtotal:", found_subtotal)
+    print("Subtotal:", total)

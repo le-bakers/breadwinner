@@ -249,7 +249,7 @@ import { displayMetrics } from './metrics.js';
                 // A saved comparison is kept but only counted while the item is marked gluten-free,
                 // so a mis-tap on the circle loses nothing
                 saveLines(receipt, row, expand);
-                focusLine(receipt, expand, line, '.item-mark');
+                focusLine(expand, line, '.item-mark');
             });
             const name = document.createElement('span');
             name.className = 'item-name';
@@ -280,7 +280,7 @@ import { displayMetrics } from './metrics.js';
                     approveBtn.addEventListener('click', () => {
                         approve(line);
                         saveLines(receipt, row, expand);
-                        focusLine(receipt, expand, line, '.badge-tax');
+                        focusLine(expand, line, '.badge-tax');
                         toast('Saved. ' + money(line.compare.deduction) + ' counted for ' + line.name);
                     });
                     badges.appendChild(approveBtn);
@@ -311,7 +311,7 @@ import { displayMetrics } from './metrics.js';
                         line.compare = compare;
                         delete line.draft;
                         saveLines(receipt, row, expand);
-                        focusLine(receipt, expand, line, '.badge-tax');
+                        focusLine(expand, line, '.badge-tax');
                         toast('Saved. ' + money(compare.deduction) + ' counted for ' + line.name);
                     }
                 }));
@@ -355,7 +355,7 @@ import { displayMetrics } from './metrics.js';
                 saveLines(receipt, row, expand);
                 const next = receipt.lines[Math.min(index, receipt.lines.length - 1)];
                 if (next)
-                    focusLine(receipt, expand, next, '.item-edit-btn');
+                    focusLine(expand, next, '.item-edit-btn');
                 else
                     expand.querySelector('.add-item-name').focus();
                 toast('Removed ' + line.name);
@@ -372,7 +372,7 @@ import { displayMetrics } from './metrics.js';
             editBtn.addEventListener('click', () => {
                 EDITING.add(line);
                 renderLines(receipt, row, expand);
-                focusLine(receipt, expand, line, '.edit-name');
+                focusLine(expand, line, '.edit-name');
             });
             li.appendChild(editBtn);
             li.appendChild(badges);
@@ -420,7 +420,7 @@ import { displayMetrics } from './metrics.js';
         function close() {
             EDITING.delete(line);
             renderLines(receipt, row, expand);
-            focusLine(receipt, expand, line, '.item-edit-btn');
+            focusLine(expand, line, '.item-edit-btn');
         }
         cancelBtn.addEventListener('click', close);
         form.addEventListener('keydown', (e) => { if (e.key === 'Escape')
@@ -460,7 +460,7 @@ import { displayMetrics } from './metrics.js';
             }
             EDITING.delete(line);
             saveLines(receipt, row, expand);
-            focusLine(receipt, expand, line, '.item-edit-btn');
+            focusLine(expand, line, '.item-edit-btn');
             toast(lostComparison ? 'Saved. The price changed, so compare this item again.' : 'Saved ' + line.name);
         });
         const nameLabel = document.createElement('label');
@@ -506,7 +506,7 @@ import { displayMetrics } from './metrics.js';
             return;
         line.draft = draft;
         saveLines(receipt, row, expand);
-        focusLine(receipt, expand, line, '.badge-approve');
+        focusLine(expand, line, '.badge-approve');
         toast('Price suggested. Check it, then approve.');
     }
     /* ---------- Suggested comparisons (see suggest.js) ---------- */
@@ -644,7 +644,7 @@ import { displayMetrics } from './metrics.js';
         }
     }
     // Redrawing the list replaces every button, so keyboard focus is put back on the line just changed
-    function focusLine(receipt, expand, line, selector) {
+    function focusLine(expand, line, selector) {
         const li = Array.from(expand.querySelectorAll('.expand-item-list li')).find((item) => item._line === line);
         const target = li && li.querySelector(selector);
         if (target)

@@ -4,26 +4,6 @@
 
 .dashboard { padding: 40px 0 140px; }
 
-/* ---------- Nav extras ---------- */
-.icon-btn {
-  position: relative;
-  width: 40px; height: 40px;
-  border-radius: 50%;
-  border: 1px solid var(--border);
-  background: var(--card);
-  display: flex; align-items: center; justify-content: center;
-  transition: border-color 0.2s, transform 0.2s;
-}
-.icon-btn:hover { border-color: var(--primary); transform: translateY(-1px); }
-.notif-dot {
-  position: absolute;
-  top: 8px; right: 9px;
-  width: 7px; height: 7px;
-  border-radius: 50%;
-  background: #EF4444;
-  border: 1.5px solid var(--card);
-}
-
 /* ---------- Dashboard hierarchy ---------- */
 .dashboard-home { padding-top: 44px; }
 .dashboard-home .mobile-view { animation: none; }
@@ -430,7 +410,6 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
 .badge-change { background: var(--border); color: var(--text-secondary); }
 .badge-change:hover { color: var(--text); }
 
-.items-hint { font-size: 13px; line-height: 1.5; color: var(--text-secondary); margin-bottom: 12px; }
 .receipt-total { margin-top: 12px; font-size: 13px; line-height: 1.5; color: var(--text-secondary); }
 
 /* The "not tax advice" line that sits next to every dollar total */
@@ -954,7 +933,6 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
 :root[data-theme="dark"] .receipt-row:not(.receipt-row-head).open { background: #223026; }
 :root[data-theme="dark"] .receipt-expand { background: #161E17; }
 
-
 /* ---------- Mobile views (desktop: show both together) ---------- */
 @media (min-width: 861px) {
   .mobile-view[hidden] { display: block; }
@@ -962,7 +940,6 @@ button.badge:focus-visible { outline: 2px solid var(--primary-hover); outline-of
 @media (max-width: 860px) {
   .dashboard { padding-bottom: calc(220px + env(safe-area-inset-bottom)); }
   .fab-wrapper { bottom: calc(92px + env(safe-area-inset-bottom, 0px)); }
-  .dash-navbar .mobile-menu { display: none; }
 
   /* Mobile view switching */
   .mobile-view[hidden] { display: none; }

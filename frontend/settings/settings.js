@@ -214,7 +214,6 @@ import { pageUrl } from '../routes.js';
     const profileForm = document.getElementById('profileForm');
     const editBtn = document.getElementById('editProfileBtn');
     const cancelBtn = document.getElementById('cancelProfileBtn');
-    const formActions = document.getElementById('formActions');
     const saveBtn = document.getElementById('saveProfileBtn');
     const summaryName = document.getElementById('summaryName');
     const summaryEmail = document.getElementById('summaryEmail');
