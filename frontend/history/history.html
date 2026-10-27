@@ -21,7 +21,7 @@
 
 <div data-navbar="home"></div>
 
-<main id="main-content" class="dashboard dashboard-history receipt-workspace">
+<main id="main-content" tabindex="-1" class="dashboard dashboard-history receipt-workspace">
   <div class="container">
 
     <!-- ============ RECEIPT VIEW ============ -->
@@ -49,6 +49,11 @@
           </div>
         </div>
         
+        <div class="receipt-save-status">
+          <p id="receiptSaveStatus" role="status" aria-live="polite"></p>
+          <button type="button" class="btn btn-secondary btn-sm" id="retrySaveBtn" hidden>Retry</button>
+        </div>
+
         <div class="receipt-table" id="receiptTable">
           <div class="receipt-row receipt-row-head" role="row">
             <span>Receipt</span>
@@ -280,8 +285,8 @@
 <script src="../components/navbar.js" type="module"></script>
 <script src="../shared.js" type="module"></script>
 <script src="../cloud.js" type="module"></script>
-<script src="../home/compare.js?v=2" type="module"></script>
-<script src="../home/suggest.js?v=1" type="module"></script>
+<script src="../home/compare.js?v=3" type="module"></script>
+<script src="../home/suggest.js?v=2" type="module"></script>
 <script src="../history/history.js?v=2" type="module"></script>
 </body>
 </html>

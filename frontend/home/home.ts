@@ -45,18 +45,71 @@ import { displayMetrics } from './metrics.js';
   function loadReceipts() {
     try {
       const stored = JSON.parse(localStorage.getItem(RECEIPTS_STORAGE_KEY) || '[]');
-      return Array.isArray(stored) ? stored : [];
+      return Array.isArray(stored) ? stored.map((receipt) => ({ ...receipt, processing: false })) : [];
     } catch (e) { return []; }
   }
+  const unsavedReceipts = new Set();
+  const pendingSaves = new Map();
+  const deletingReceipts = new Set();
+  const saveStatus = document.getElementById('receiptSaveStatus');
+  const retrySaveBtn = document.getElementById('retrySaveBtn');
+  let receiptsLoading = cloud.enabled;
+  let receiptsLoadError = '';
+
+  function updateSaveStatus() {
+    const failed = [...unsavedReceipts].some((receipt) => !pendingSaves.has(receipt) && !receipt.processing);
+    let message = 'All changes saved.';
+    if (receiptsLoading) message = 'Loading your receipts…';
+    else if (receiptsLoadError) message = 'Could not load your receipts. Retry to continue.';
+    else if (failed) message = 'Some changes could not be saved. Keep this page open and retry.';
+    else if ([...unsavedReceipts].some((item) => item.processing)) message = 'Reading receipt…';
+    else if (pendingSaves.size) message = 'Saving changes…';
+    saveStatus.textContent = message;
+    retrySaveBtn.hidden = !failed && !receiptsLoadError;
+  }
+
   // receipt = the one that changed (the database saves just that one; demo mode saves them all)
   function saveReceipts(receipt) {
-    if (cloud.enabled) {
-      cloud.saveReceipt(receipt).catch((error) => toast('Not saved to your account: ' + error.message));
-      return;
-    }
-    try { localStorage.setItem(RECEIPTS_STORAGE_KEY, JSON.stringify(RECEIPTS)); } catch (e) { /* storage unavailable */ }
+    if (!RECEIPTS.includes(receipt) || deletingReceipts.has(receipt)) return Promise.resolve(false);
+    unsavedReceipts.add(receipt);
+    let operation;
+    try {
+      if (cloud.enabled) operation = cloud.saveReceipt(receipt);
+      else {
+        localStorage.setItem(RECEIPTS_STORAGE_KEY, JSON.stringify(RECEIPTS.filter((item) => !item.processing)));
+        operation = Promise.resolve();
+      }
+    } catch (error) { operation = Promise.reject(error); }
+    pendingSaves.set(receipt, operation);
+    updateSaveStatus();
+    return operation.then(() => {
+      if (pendingSaves.get(receipt) === operation) {
+        pendingSaves.delete(receipt);
+        unsavedReceipts.delete(receipt);
+        updateSaveStatus();
+      }
+      return true;
+    }, (error) => {
+      if (pendingSaves.get(receipt) === operation) {
+        pendingSaves.delete(receipt);
+        updateSaveStatus();
+        toast('Changes not saved: ' + error.message);
+      }
+      return false;
+    });
   }
   const RECEIPTS = cloud.enabled ? [] : loadReceipts();
+  RECEIPTS.forEach(tally);
+  retrySaveBtn.addEventListener('click', () => {
+    if (receiptsLoadError) { loadAccountReceipts(); return; }
+    unsavedReceipts.forEach((receipt) => { if (!pendingSaves.has(receipt) && !receipt.processing) saveReceipts(receipt); });
+  });
+  window.addEventListener('beforeunload', (event) => {
+    if (unsavedReceipts.size || deletingReceipts.size) {
+      event.preventDefault();
+      event.returnValue = '';
+    }
+  });
 
   // Scope the dashboard to this month without dropping older saved receipts.
   function getPageReceipts() {
@@ -143,8 +196,16 @@ import { displayMetrics } from './metrics.js';
     renameInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') renameInput.blur(); });
 
     frag.querySelector('.cell-date').textContent = dateFormatter.format(new Date(receipt.date + 'T00:00'));
-    if (receipt.imageUrl) {
-      frag.querySelector('.expand-receipt-img').src = receipt.imageUrl;
+    const receiptImage = frag.querySelector('.expand-receipt-img');
+    if (receipt.imageUrl) receiptImage.src = receipt.imageUrl;
+    if (cloud.enabled && receipt.photoPath) {
+      // Viewing links expire after six hours; renew a failed link without resaving the receipt.
+      receiptImage.addEventListener('error', async () => {
+        try {
+          const url = await cloud.refreshReceiptPhoto(receipt);
+          if (url) receiptImage.src = url;
+        } catch (error) { receiptImage.alt = 'Receipt photo could not be loaded.'; }
+      }, { once: true });
     }
     const photoButton = frag.querySelector('.receipt-photo-button');
     if (photoButton) {
@@ -286,7 +347,7 @@ import { displayMetrics } from './metrics.js';
             approve(line);
             saveLines(receipt, row, expand);
             focusLine(expand, line, '.badge-tax');
-            toast('Saved. ' + money(line.compare.deduction) + ' counted for ' + line.name);
+            toast(money(line.compare.deduction) + ' counted for ' + line.name);
           });
           badges.appendChild(approveBtn);
         }
@@ -312,11 +373,13 @@ import { displayMetrics } from './metrics.js';
           apiBase: API_BASE,
           opener: b,
           onSave: (compare) => {
+            if (!RECEIPTS.includes(receipt) || !receipt.lines.includes(line)) return;
             line.compare = compare;
+            line.quantity = compare.quantity;
             delete line.draft;
             saveLines(receipt, row, expand);
             focusLine(expand, line, '.badge-tax');
-            toast('Saved. ' + money(compare.deduction) + ' counted for ' + line.name);
+            toast(money(compare.deduction) + ' counted for ' + line.name);
           }
         }));
         badges.appendChild(b);
@@ -452,6 +515,7 @@ import { displayMetrics } from './metrics.js';
 
       const rounded = Math.round(newPrice * 100) / 100;
       const priceChanged = Math.abs(rounded - line.price) >= 0.005;
+      const changed = priceChanged || newName !== line.name;
       if (newName !== line.name) {
         line.name = newName;
         // The helper name and search word described the old text
@@ -461,14 +525,14 @@ import { displayMetrics } from './metrics.js';
       }
       line.price = rounded;
       line.unsure = false;  // the user has looked at this line
-      // A saved comparison was worked out from the old price, so it can't be kept
-      const lostComparison = priceChanged && (line.compare || line.draft);
-      if (priceChanged) { delete line.compare; delete line.draft; }
+      // The approved math belongs to the old product and price.
+      const lostComparison = changed && (line.compare || line.draft);
+      if (changed) { delete line.compare; delete line.draft; }
 
       EDITING.delete(line);
       saveLines(receipt, row, expand);
       focusLine(expand, line, '.item-edit-btn');
-      toast(lostComparison ? 'Saved. The price changed, so compare this item again.' : 'Saved ' + line.name);
+      toast(lostComparison ? 'Item changed. Compare this item again.' : 'Updated ' + line.name);
     });
 
     const nameLabel = document.createElement('label');
@@ -490,6 +554,7 @@ import { displayMetrics } from './metrics.js';
 
   // The "Suggest" button on one item: an earlier approved comparison first, then Kroger
   async function suggestLine(receipt, row, expand, line, button) {
+    const key = lineKey(line);
     let draft = suggest.recall(line, RECEIPTS);
     if (!draft) {
       const zip = suggest.getZip();
@@ -510,7 +575,7 @@ import { displayMetrics } from './metrics.js';
       }
     }
     // The user may have compared this line by hand while Kroger was answering
-    if (line.compare) return;
+    if (!canSuggest(receipt, line, key)) return;
     line.draft = draft;
     saveLines(receipt, row, expand);
     focusLine(expand, line, '.badge-approve');
@@ -552,6 +617,7 @@ import { displayMetrics } from './metrics.js';
 
     await Promise.all(receipt.lines.map(async (line) => {
       if (!line.gf || line.compare || line.draft) return;
+      const key = lineKey(line);
 
       let draft = suggest.recall(line, RECEIPTS);
       if (!draft && zip) {
@@ -560,10 +626,19 @@ import { displayMetrics } from './metrics.js';
         problem = problem || answer.problem;
       }
       // The user may have compared this line by hand while Kroger was answering
-      if (draft && !line.compare) { line.draft = draft; made += 1; }
+      if (draft && canSuggest(receipt, line, key)) { line.draft = draft; made += 1; }
     }));
 
     return { made, problem };
+  }
+
+  function lineKey(line) {
+    return JSON.stringify([line.name, line.price, line.quantity || 1, line.gf]);
+  }
+
+  function canSuggest(receipt, line, key) {
+    return RECEIPTS.includes(receipt) && !deletingReceipts.has(receipt) && receipt.lines.includes(line)
+      && line.gf && !line.compare && !line.draft && lineKey(line) === key;
   }
 
   // The strip above the items: how many suggestions are waiting, and a way to ask Kroger for more
@@ -659,7 +734,10 @@ import { displayMetrics } from './metrics.js';
     const gfLines = receipt.lines.filter((line) => line.gf);
     const overcharge = gfLines.reduce((sum, line) => sum + (line.compare ? line.compare.deduction : 0), 0);
     // Still needs the user when a line was hard to read, or a gluten-free item has no comparison yet
-    const waiting = receipt.lines.some((line) => line.unsure || (line.gf && !line.compare));
+    const total = receipt.lines.reduce((sum, line) => sum + line.price, 0);
+    const mismatch = typeof receipt.subtotal === 'number' && Math.abs(total - receipt.subtotal) >= 0.005;
+    const waiting = !receipt.lines.length || mismatch
+      || receipt.lines.some((line) => line.unsure || line.gf === null || (line.gf && !line.compare));
 
     receipt.items = receipt.lines.length;
     receipt.gfItems = gfLines.length;
@@ -760,17 +838,31 @@ import { displayMetrics } from './metrics.js';
     deleteOpenedFrom = null;
   }
 
-  function deleteReceipt() {
-    const index = RECEIPTS.indexOf(receiptToDelete);
-    if (index !== -1) {
-      RECEIPTS.splice(index, 1);
-      if (cloud.enabled) cloud.deleteReceipt(receiptToDelete).catch((error) => toast('Not deleted from your account: ' + error.message));
-      else saveReceipts();
+  async function deleteReceipt() {
+    const receipt = receiptToDelete;
+    if (!receipt || deletingReceipts.has(receipt)) return;
+    deletingReceipts.add(receipt);
+    deleteConfirmBtn.disabled = true;
+    try {
+      if (cloud.enabled) await cloud.deleteReceipt(receipt);
+      else localStorage.setItem(RECEIPTS_STORAGE_KEY, JSON.stringify(RECEIPTS.filter((r) => r !== receipt && !r.processing)));
+      RECEIPTS.splice(RECEIPTS.indexOf(receipt), 1);
+      pendingSaves.delete(receipt);
+      unsavedReceipts.delete(receipt);
+      updateSaveStatus();
       applyFilters();
       updateMetrics();
       toast('Receipt deleted');
+      if (receiptToDelete === receipt) {
+        closeDeleteModal();
+        searchInput.focus();
+      }
+    } catch (error) {
+      toast('Receipt could not be deleted: ' + error.message);
+    } finally {
+      deletingReceipts.delete(receipt);
+      deleteConfirmBtn.disabled = false;
     }
-    closeDeleteModal();
   }
 
   if (deleteModal) {
@@ -792,19 +884,26 @@ import { displayMetrics } from './metrics.js';
   function render(list) {
     if (window.BreadWinner.receiptHistory) {
       window.BreadWinner.receiptHistory.render(table, list, buildRow);
+      const empty = table.querySelector('.receipt-empty');
+      if (empty && (receiptsLoading || receiptsLoadError)) empty.textContent = emptyMessage();
       return;
     }
     table.querySelectorAll('.receipt-row:not(.receipt-row-head), .receipt-expand, .receipt-empty').forEach((el) => el.remove());
     if (!list.length) {
       const empty = document.createElement('div');
       empty.className = 'receipt-empty';
-      empty.textContent = searchInput.value.trim()
-      ? 'No receipts match your search.'
-      : 'No receipts this month yet! Click the green + button to upload or take a photo of a receipt.';
+      empty.setAttribute('role', 'status');
+      empty.textContent = emptyMessage();
       table.appendChild(empty);
       return;
     }
     list.forEach((r) => table.appendChild(buildRow(r)));
+  }
+
+  function emptyMessage() {
+    return receiptsLoading ? 'Loading your receipts…' : receiptsLoadError ? 'Your receipts could not be loaded.'
+      : searchInput.value.trim() ? 'No receipts match your search.'
+      : 'No receipts this month yet! Use Add Receipt to get started.';
   }
 
   function applyFilters() {
@@ -1053,8 +1152,8 @@ import { displayMetrics } from './metrics.js';
   // Where the Python server lives (set in shared.ts: this computer, or Render)
   const API_BASE = window.BreadWinner.apiBase;
 
-  function toast(message) {
-    if (window.BreadWinner && window.BreadWinner.toast) window.BreadWinner.toast(message);
+  function toast(message, duration) {
+    if (window.BreadWinner && window.BreadWinner.toast) window.BreadWinner.toast(message, duration);
   }
 
   async function scanReceipt(blob) {
@@ -1087,16 +1186,34 @@ import { displayMetrics } from './metrics.js';
   // A small JPEG copy (800 pixels on the longer side, about 50 KB) is what gets saved with the receipt, not the original.
   // Decoding the picture is also the check that the file really is a photo: a damaged or non-image file throws here.
   async function makeThumbnail(blob) {
-    const bitmap = await createImageBitmap(blob);
-    const scale = Math.min(1, 800 / Math.max(bitmap.width, bitmap.height));
-    const canvas = document.createElement('canvas');
-    canvas.width = Math.round(bitmap.width * scale);
-    canvas.height = Math.round(bitmap.height * scale);
-    canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
-    bitmap.close();
-    return new Promise((resolve, reject) => {
-      canvas.toBlob((jpeg) => (jpeg ? resolve(jpeg) : reject(new Error('Could not shrink the photo'))), 'image/jpeg', 0.7);
-    });
+    let bitmap;
+    try { bitmap = await createImageBitmap(blob); }
+    catch (error) {
+      bitmap = await new Promise((resolve, reject) => {
+        const image = new Image();
+        const url = URL.createObjectURL(blob);
+        image.onload = () => { URL.revokeObjectURL(url); resolve(image); };
+        image.onerror = () => { URL.revokeObjectURL(url); reject(new Error('Could not read that image.')); };
+        image.src = url;
+      });
+    }
+    try {
+      let scale = Math.min(1, 800 / Math.max(bitmap.width, bitmap.height));
+      const canvas = document.createElement('canvas');
+      let thumbnail;
+      do {
+        canvas.width = Math.max(1, Math.round(bitmap.width * scale));
+        canvas.height = Math.max(1, Math.round(bitmap.height * scale));
+        canvas.getContext('2d').drawImage(bitmap, 0, 0, canvas.width, canvas.height);
+        thumbnail = await new Promise((resolve, reject) => {
+          canvas.toBlob((jpeg) => jpeg ? resolve(jpeg) : reject(new Error('Could not shrink the photo')), 'image/jpeg', 0.7);
+        });
+        scale *= 0.75;
+      } while (thumbnail.size > 500000);  // same limit as the private photo bucket
+      return thumbnail;
+    } finally {
+      if (bitmap.close) bitmap.close();
+    }
   }
 
   async function processReceipt(blob) {
@@ -1130,9 +1247,9 @@ import { displayMetrics } from './metrics.js';
     }
     catch (error) {
       // fetch throws a TypeError when nothing answers at API_BASE (the Python server is off)
-      if (error instanceof TypeError) scanProblem = 'Photo saved, but the scanner server is not running, so no items were read.';
-      else if (error.reason) scanProblem = 'Photo saved, but the scanner said: ' + error.reason;
-      else scanProblem = 'Photo saved, but that file could not be read as a receipt.';
+      if (error instanceof TypeError) scanProblem = 'Photo added, but the scanner server is not running, so no items were read.';
+      else if (error.reason) scanProblem = 'Photo added, but the scanner said: ' + error.reason;
+      else scanProblem = 'Photo added, but that file could not be read as a receipt.';
     }
 
     receipt.processing = false;
@@ -1194,6 +1311,7 @@ import { displayMetrics } from './metrics.js';
     try { thumbnail = await makeThumbnail(file); }
     catch (error) { toast('That file could not be opened as a photo. Choose a JPEG, PNG or WebP picture.'); return; }
 
+    if (!RECEIPTS.includes(receipt) || deletingReceipts.has(receipt)) return;
     receipt.imageUrl = cloud.enabled ? URL.createObjectURL(thumbnail) : await blobToDataUrl(thumbnail);
     if (cloud.enabled) receipt.photoBlob = thumbnail;
     saveReceipts(receipt);
@@ -1231,6 +1349,7 @@ import { displayMetrics } from './metrics.js';
     }));
 
     const newReceipt = {
+      id: crypto.randomUUID(),
       name: storeName,
       date: dateStr,
       subtotal,  // the subtotal printed on the receipt, or null when the scanner found none
@@ -1241,6 +1360,7 @@ import { displayMetrics } from './metrics.js';
     tally(newReceipt);  // fills in items, gfItems, overcharge and status
 
     RECEIPTS.unshift(newReceipt);
+    if (processing) { unsavedReceipts.add(newReceipt); updateSaveStatus(); }
     if (!processing) saveReceipts(newReceipt);
     showReceiptHistory();
 
@@ -1271,6 +1391,7 @@ import { displayMetrics } from './metrics.js';
     stopCamera();
     cameraOverlay.hidden = true;
     document.body.style.overflow = '';
+    if (photoBtn) photoBtn.focus();
   }
 
   function setFabOptionsOpen(open) {
@@ -1312,6 +1433,7 @@ import { displayMetrics } from './metrics.js';
       setFabOptionsOpen(false);
       closeCamera();
       cameraOverlay.hidden = false;
+      cameraClose.focus();
       startCamera();
     });
 
@@ -1375,35 +1497,40 @@ import { displayMetrics } from './metrics.js';
       catch (error) {
         console.error('Could not save uploaded receipt:', error);
         if (window.BreadWinner.dismissToast) window.BreadWinner.dismissToast();
+        toast('Could not add that photo. Try another image.');
       }
     });
   }
 
   /* ---------- Signed in with an account: fetch this person's receipts ---------- */
-  if (cloud.enabled) {
-    async function loadAccount() {
-      let user;
-      try { user = await cloud.getUser(); }
-      catch (error) {
-        // cloud.js keeps the protected page hidden and offers a retry.
-        return;
-      }
+  async function loadAccountReceipts() {
+    receiptsLoading = true;
+    receiptsLoadError = '';
+    if (photoBtn) photoBtn.disabled = true;
+    updateSaveStatus();
+    applyFilters();
+    try {
+      const user = await cloud.getUser();
       if (!user) { window.location.href = pageUrl('/signin'); return; }
 
       // The name can arrive only now (first visit after Google sign-in)
       const name = (user.user_metadata && (user.user_metadata.full_name || user.user_metadata.name)) || '';
-      if (name && welcomeHeading) welcomeHeading.textContent = 'Welcome back, ' + name.trim().split(/\s+/)[0] + '!';
+      if (name && welcomeHeading && welcomeHeading.textContent.includes('Welcome back')) welcomeHeading.textContent = 'Welcome back, ' + name.trim().split(/\s+/)[0] + '!';
       if (name && avatarEl) avatarEl.textContent = getInitials(name);
 
-      try {
-        RECEIPTS.push(...await cloud.loadReceipts());
-      } catch (error) {
-        toast('Could not load your receipts: ' + error.message);
-      }
+      const loaded = await cloud.loadReceipts();
+      RECEIPTS.push(...loaded.filter((receipt) => !RECEIPTS.some((existing) => existing.id === receipt.id)));
       RECEIPTS.forEach(tally);  // fills in items, gfItems, overcharge and status
+    } catch (error) {
+      receiptsLoadError = error.message;
+      toast('Could not load your receipts: ' + error.message);
+    } finally {
+      receiptsLoading = false;
+      if (photoBtn) photoBtn.disabled = Boolean(receiptsLoadError);
+      updateSaveStatus();
       applyFilters();
       updateMetrics(true);
     }
-    loadAccount();
   }
+  if (cloud.enabled) loadAccountReceipts();
 })();

@@ -102,4 +102,4 @@ window.BreadWinner.receiptHistory = {
     }
 };
 // Install grouping before the shared receipt controls load.
-import('../home/home.js?v=10');
+import('../home/home.js?v=11');

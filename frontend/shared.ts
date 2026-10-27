@@ -234,6 +234,8 @@ window.BreadWinner = window.BreadWinner || {};
       wrap.innerHTML = '<div class="toast-wrap"><svg viewBox="0 0 24 24" fill="none"><path d="M5 13l4 4L19 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="toast-text"></span></div>';
       wrap = wrap.firstElementChild;
       document.body.appendChild(wrap);
+      wrap.setAttribute('role', 'status');
+      wrap.setAttribute('aria-live', 'polite');
     }
     wrap.querySelector('.toast-text').textContent = message;
     wrap.classList.add('show');
@@ -247,11 +249,41 @@ window.BreadWinner = window.BreadWinner || {};
 
   /* ---------- Confirm dialog helper ---------- */
   BW.confirmModal = function (overlayEl) {
-    return {
-      open() { overlayEl.hidden = false; document.body.style.overflow = 'hidden'; },
-      close() { overlayEl.hidden = true; document.body.style.overflow = ''; }
+    let opener = null;
+    const controls = {
+      open() {
+        opener = document.activeElement;
+        overlayEl.hidden = false;
+        document.body.style.overflow = 'hidden';
+        const first = overlayEl.querySelector('button:not(:disabled)');
+        if (first) first.focus();
+      },
+      close() {
+        overlayEl.hidden = true;
+        document.body.style.overflow = '';
+        if (opener && opener.isConnected) opener.focus();
+      }
     };
+    overlayEl.addEventListener('keydown', (event) => {
+      if (event.key === 'Escape') controls.close();
+    });
+    return controls;
   };
+
+  // Keep keyboard navigation within whichever dialog is currently open.
+  document.addEventListener('keydown', (event) => {
+    if (event.key !== 'Tab' || event.defaultPrevented) return;
+    const dialog = document.querySelector('.modal-overlay:not([hidden]) [aria-modal="true"], .camera-overlay:not([hidden]) [aria-modal="true"]');
+    if (!dialog) return;
+    const focusable = [...dialog.querySelectorAll('button, a[href], input, select, textarea, [tabindex]')]
+      .filter((element) => !element.disabled && element.tabIndex >= 0 && element.getClientRects().length && !element.closest('[inert]'));
+    const first = focusable[0];
+    const last = focusable[focusable.length - 1];
+    if (first && (!dialog.contains(document.activeElement) || (event.shiftKey ? document.activeElement === first : document.activeElement === last))) {
+      event.preventDefault();
+      (event.shiftKey ? last : first).focus();
+    }
+  });
 
 /* ---------- Avatar identity (shared across pages) ---------- */
   // Apply the default avatar background to every avatar element — the navbar
