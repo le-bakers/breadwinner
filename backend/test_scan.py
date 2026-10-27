@@ -181,14 +181,6 @@ def test_size():
     assert units.size(None) is None
 
 
-@pytest.mark.parametrize("size", ["0 oz", "0 ct", "0.0 lb", "9" * 400 + " oz"])
-def test_invalid_package_sizes_do_not_break_comparisons(size):
-    assert units.size(size) is None
-    result = units.deduct(6.49, "14 oz", 3.49, size)
-    assert result["deduction"] == 3.00
-    assert result["sizes_comparable"] is False
-
-
 def test_bread_is_scaled_to_the_gf_size():
     result = units.deduct(6.49, "14 oz", 3.49, "20 oz")
     assert result["deduction"] == 4.05

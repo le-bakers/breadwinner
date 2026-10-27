@@ -1,4 +1,3 @@
-import math
 import re
 
 UNITS = {
@@ -38,8 +37,7 @@ def size(text):
         return None
 
     kind, scale = UNITS[match.group(2)]
-    amount = float(match.group(1)) * scale
-    return (kind, amount) if math.isfinite(amount) and amount > 0 else None
+    return kind, float(match.group(1)) * scale
 
 
 def deduct(price, gfsize, regular, regsize, qty=1):

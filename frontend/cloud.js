@@ -310,14 +310,13 @@ import { pageUrl } from './routes.js';
             name: row.store_name,
             date: row.receipt_date,
             subtotal: row.subtotal === null ? null : Number(row.subtotal),
-            overcharge: Number(row.extra_cost || 0),
             photoPath: row.photo,
             imageUrl: isOldPhoto(row.photo) ? row.photo : null, // loadReceipts fills in a viewing link for files
             lines: row.lines
         };
     }
     // Uploads the receipt's new photo (receipt.photoBlob), or moves an old "data:" photo to a file, and sets receipt.photoPath
-    async function uploadPhoto(client, receipt, user) {
+    async function uploadPhoto(client, receipt) {
         let blob = receipt.photoBlob;
         if (!blob && isOldPhoto(receipt.photoPath))
             blob = await (await fetch(receipt.photoPath)).blob();
@@ -325,6 +324,9 @@ import { pageUrl } from './routes.js';
             return;
         if (blob.type !== 'image/jpeg' || blob.size > MAX_PHOTO_BYTES)
             throw new Error('the photo is too big or is not a JPEG');
+        const user = await BW.cloud.getUser();
+        if (!user)
+            throw new Error('you are signed out');
         const path = user.id + '/' + receipt.id + '.jpg';
         const { error } = await client.storage.from(PHOTO_BUCKET).upload(path, blob, { contentType: 'image/jpeg', upsert: true });
         if (error)
@@ -484,10 +486,9 @@ import { pageUrl } from './routes.js';
         },
         // The signed-in person's receipts, newest first. The privacy rules return only theirs.
         async loadReceipts() {
-            await saveLine;
             const { data, error } = await (await supabase())
                 .from('receipts')
-                .select('id, store_name, receipt_date, subtotal, extra_cost, photo, lines')
+                .select('id, store_name, receipt_date, subtotal, photo, lines')
                 .order('receipt_date', { ascending: false })
                 .order('created_at', { ascending: false });
             if (error)
@@ -503,44 +504,21 @@ import { pageUrl } from './routes.js';
             }
             return receipts;
         },
-        async refreshReceiptPhoto(receipt) {
-            if (!receipt.photoPath || isOldPhoto(receipt.photoPath))
-                return receipt.imageUrl;
-            const { data, error } = await (await supabase()).storage.from(PHOTO_BUCKET)
-                .createSignedUrls([receipt.photoPath], PHOTO_LINK_SECONDS);
-            if (error)
-                fail(error);
-            const url = data?.[0]?.signedUrl;
-            if (url)
-                receipt.imageUrl = url;
-            return url;
-        },
         // Adds the receipt, or updates it if it was saved before (same id)
         saveReceipt(receipt) {
             if (!receipt.id)
                 receipt.id = crypto.randomUUID();
-            // Keep the Blob intact, but freeze the editable data before waiting in the queue.
-            const saved = { ...receipt, lines: JSON.parse(JSON.stringify(receipt.lines)) };
-            const photoBlob = receipt.photoBlob;
-            const owner = photoOwner;
             return oneAtATime(async () => {
                 const client = await supabase();
-                const user = await BW.cloud.getUser();
-                if (!user || (owner && user.id !== owner))
-                    throw new Error('Your account changed. Reload before saving.');
                 // A photo that won't upload must not lose the receipt's items, so the receipt is saved first and the problem reported after
                 let photoProblem = '';
                 try {
-                    await uploadPhoto(client, saved, user);
-                    if (receipt.photoBlob === photoBlob) {
-                        receipt.photoPath = saved.photoPath;
-                        receipt.photoBlob = saved.photoBlob;
-                    }
+                    await uploadPhoto(client, receipt);
                 }
                 catch (error) {
                     photoProblem = error.message;
                 }
-                const { error } = await client.from('receipts').upsert({ ...toRow(saved), user_id: user.id });
+                const { error } = await client.from('receipts').upsert(toRow(receipt));
                 if (error)
                     fail(error);
                 if (photoProblem)
@@ -548,10 +526,9 @@ import { pageUrl } from './routes.js';
             });
         },
         deleteReceipt(receipt) {
-            const id = receipt.id;
             return oneAtATime(async () => {
                 const client = await supabase();
-                const { error } = await client.from('receipts').delete().eq('id', id);
+                const { error } = await client.from('receipts').delete().eq('id', receipt.id);
                 if (error)
                     fail(error);
                 // If this fails the receipt is already gone; "Delete my account" removes any photo left behind

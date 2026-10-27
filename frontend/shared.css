@@ -16,7 +16,6 @@
   --text: #1F2937;
   --text-secondary: #6B7280;
   --success: #10B981;
-  --focus-ring: #15803D;
 
   /* Derived / utility */
   --shadow-sm: 0 1px 2px rgba(31, 41, 55, 0.04), 0 1px 1px rgba(31, 41, 55, 0.03);
@@ -41,6 +40,7 @@
   *, *::before, *::after {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
   }
@@ -75,6 +75,7 @@ input, select { font-family: inherit; }
 :focus-visible {
   outline: 2px solid var(--primary);
   outline-offset: 3px;
+  border-radius: 4px;
 }
 
 .sr-only {
@@ -808,31 +809,3 @@ body:has(.msn-nav) { padding-top: 74px; }
 
 /* Private pages stay hidden until cloud.js confirms the visitor is signed in */
 html[data-protected]:not(.auth-ok) body { visibility: hidden; }
-
-/* Strong keyboard focus in both themes, including controls that reset outlines. */
-:root[data-theme="dark"] { --focus-ring: #86EFAC; }
-:root :is(button, a[href], input, select, textarea, summary, [tabindex]):focus-visible {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 3px;
-}
-.switch input:focus-visible + .switch-track {
-  outline: 3px solid var(--focus-ring);
-  outline-offset: 3px;
-}
-button:disabled { cursor: not-allowed; }
-.sr-only:focus {
-  position: fixed;
-  top: 12px;
-  left: 12px;
-  width: auto;
-  height: auto;
-  margin: 0;
-  padding: 12px 18px;
-  clip: auto;
-  overflow: visible;
-  white-space: normal;
-  background: var(--card);
-  color: var(--text);
-  border-radius: var(--radius-sm);
-  z-index: 10000;
-}

@@ -1,3 +1,4 @@
+"use strict";
 // @ts-nocheck
 /* ============================================
    BreadWinner — "Compare with the regular version" popup
@@ -36,22 +37,8 @@
     let picked = null; // the Kroger product the user chose
     let outcome = null; // the server's answer for what is on screen right now
     let askNumber = 0; // lets a slow answer be ignored once the user has changed something
-    let searchNumber = 0;
     let typingTimer = null;
-    function invalidateCalculation() {
-        clearTimeout(typingTimer);
-        askNumber += 1;
-        outcome = null;
-        saveBtn.disabled = true;
-        outcomeBox.hidden = true;
-    }
-    function invalidateSearch() {
-        searchNumber += 1;
-        searchBtn.disabled = false;
-    }
     function open(options) {
-        invalidateSearch();
-        invalidateCalculation();
         current = options;
         const line = options.line;
         // A suggestion (line.draft) fills the popup in the same way a saved comparison does
@@ -82,14 +69,13 @@
     function close() {
         modal.hidden = true;
         document.body.style.overflow = '';
-        invalidateSearch();
-        invalidateCalculation();
+        askNumber += 1;
+        clearTimeout(typingTimer);
         if (current && current.opener && current.opener.isConnected)
             current.opener.focus();
         current = null;
     }
     function showPane(name) {
-        invalidateSearch();
         source = name;
         tabs.forEach((tab) => {
             const on = tab.dataset.pane === name;
@@ -113,8 +99,6 @@
     }
     /* ---------- Kroger lookup ---------- */
     async function search() {
-        if (!current)
-            return;
         const term = termInput.value.trim();
         const zip = zipInput.value.trim();
         if (!term) {
@@ -136,26 +120,19 @@
         calculate();
         setSearchNote('Searching…');
         searchBtn.disabled = true;
-        const mySearch = ++searchNumber;
-        const context = current;
         try {
-            const response = await fetch(context.apiBase + '/kroger/search?zip=' + zip + '&term=' + encodeURIComponent(term));
-            const answer = response.ok ? await response.json() : null;
-            if (mySearch !== searchNumber || current !== context)
-                return;
+            const response = await fetch(current.apiBase + '/kroger/search?zip=' + zip + '&term=' + encodeURIComponent(term));
             if (response.status === 404)
                 setSearchNote('No Kroger-family store is near that zip code. Use "Type it in" instead.');
             else if (!response.ok)
                 setSearchNote('Kroger could not be reached right now. Try again, or use "Type it in".');
             else {
-                const found = answer.results;
+                const found = (await response.json()).results;
                 showResults(found);
                 setSearchNote(found.length ? 'Pick the one closest to your gluten-free item.' : 'Nothing found. Try simpler words, like "bread".');
             }
         }
         catch (error) {
-            if (mySearch !== searchNumber || current !== context)
-                return;
             // fetch throws when nothing answers at apiBase (the Python server is off)
             setSearchNote('The price server is not running, so Kroger can’t be searched. Use "Type it in" instead.');
         }
@@ -199,21 +176,21 @@
         return { name: manualName.value.trim() || 'Regular version', price: Math.round(price * 100) / 100, size: manualSize.value.trim() };
     }
     async function calculate() {
-        invalidateCalculation();
-        const myAsk = askNumber;
+        const myAsk = ++askNumber;
+        outcome = null;
+        saveBtn.disabled = true;
         if (!current)
             return;
         const line = current.line;
         const apiBase = current.apiBase;
         const regular = regularChoice();
-        const quantity = Number(quantityInput.value);
-        if (!regular || !Number.isInteger(quantity) || !(quantity >= 1 && quantity <= 99))
+        const quantity = Math.round(Number(quantityInput.value));
+        if (!regular || !(quantity >= 1 && quantity <= 99)) {
+            outcomeBox.hidden = true;
             return;
-        const gfSize = gfSizeInput.value.trim();
-        const term = termInput.value.trim();
-        const chosenSource = source;
-        const params = new URLSearchParams({ gf_price: line.price, gf_size: gfSize, quantity: quantity });
-        if (chosenSource !== 'none') {
+        }
+        const params = new URLSearchParams({ gf_price: line.price, gf_size: gfSizeInput.value.trim(), quantity: quantity });
+        if (source !== 'none') {
             params.set('regular_price', regular.price);
             params.set('regular_size', regular.size || '');
         }
@@ -235,10 +212,10 @@
             return;
         }
         outcome = {
-            source: chosenSource,
-            gfSize: gfSize,
+            source: source,
+            gfSize: gfSizeInput.value.trim(),
             quantity: quantity,
-            term: term,
+            term: termInput.value.trim(),
             regularName: regular.name,
             regularPrice: regular.price,
             regularSize: regular.size || '',
@@ -248,7 +225,7 @@
             warnings: answer.warnings
         };
         // With no regular version there is no math to show; the server's note already says why
-        const lines = chosenSource === 'none' ? answer.warnings : [explain(outcome, line.price)].concat(answer.warnings);
+        const lines = source === 'none' ? answer.warnings : [explain(outcome, line.price)].concat(answer.warnings);
         showOutcome(answer.warnings.length ? 'warn' : 'ok', money(answer.deduction) + ' potential deduction', lines);
         saveBtn.disabled = false;
     }
@@ -278,8 +255,7 @@
     }
     // Typing recalculates after a short pause, so the number doesn't flicker on every key
     function calculateSoon() {
-        // Invalidate immediately: Save must never submit the previous inputs during the pause.
-        invalidateCalculation();
+        clearTimeout(typingTimer);
         typingTimer = setTimeout(calculate, 350);
     }
     /* ---------- Wiring ---------- */
@@ -293,18 +269,9 @@
     }));
     [gfSizeInput, quantityInput, manualName, manualPrice, manualSize].forEach((input) => input.addEventListener('input', calculateSoon));
     [termInput, manualName].forEach((input) => input.addEventListener('input', updateStoreLinks));
-    [termInput, zipInput].forEach((input) => input.addEventListener('input', () => {
-        invalidateSearch();
-        if (source === 'kroger') {
-            picked = null;
-            showResults([]);
-            setSearchNote('');
-            invalidateCalculation();
-        }
-    }));
     form.addEventListener('submit', (e) => {
         e.preventDefault();
-        if (!outcome || !current || saveBtn.disabled)
+        if (!outcome || !current)
             return;
         const now = new Date();
         // The day the regular price was looked up, kept as part of the record

@@ -34,9 +34,7 @@
   // Same name AND same price. A different price can mean a different size or a different
   // number of packages, so it is treated as a different item.
   function sameItem(a, b) {
-    return a.name.trim().toUpperCase() === b.name.trim().toUpperCase()
-      && Math.abs(a.price - b.price) < 0.005
-      && (a.quantity || 1) === (b.compare?.quantity || b.quantity || 1);
+    return a.name.trim().toUpperCase() === b.name.trim().toUpperCase() && Math.abs(a.price - b.price) < 0.005;
   }
 
   // Looks through the receipts saved on this device for the newest comparison the user
@@ -45,8 +43,7 @@
     let newest = null;
     receipts.forEach((receipt) => receipt.lines.forEach((other) => {
       if (other === line || !other.gf || !other.compare || !other.compare.date) return;
-      const age = daysSince(other.compare.date);
-      if (!sameItem(line, other) || !Number.isFinite(age) || age < 0 || age > KEEP_DAYS) return;
+      if (!sameItem(line, other) || daysSince(other.compare.date) > KEEP_DAYS) return;
       if (!newest || other.compare.date > newest.date) newest = other.compare;
     }));
     // The copy keeps the day the regular price was really looked up

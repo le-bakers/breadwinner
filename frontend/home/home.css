@@ -1342,7 +1342,3 @@ button.badge { min-width: 0; min-height: 36px; border-radius: 8px; padding: 8px 
 @media (max-width: 860px) and (prefers-reduced-motion: reduce) {
   #mobileBottomNav { transition: none; }
 }
-
-.receipt-save-status { display: flex; align-items: center; gap: 12px; margin-bottom: 14px; }
-.receipt-save-status p { font-size: 13px; color: var(--text-secondary); }
-.receipt-save-status [hidden] { display: none; }
