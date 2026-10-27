@@ -37,6 +37,25 @@
       nav ? nav.getBoundingClientRect().height : 0,
       ...controls.map(button => button.offsetWidth + ':' + button.offsetHeight)].join('|');
 
+    function syncDemoVideos() {
+      images.forEach((video, index) => {
+        if (video.tagName !== 'VIDEO') return;
+        const bounds = video.getBoundingClientRect();
+        const nearViewport = bounds.top < window.innerHeight + 200 && bounds.bottom > -200;
+        const current = !pinned || index === active;
+        if (current && nearViewport) {
+          if (video.dataset.src) {
+            video.src = video.dataset.src;
+            delete video.dataset.src;
+            video.load();
+          }
+          if (video.paused) video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      });
+    }
+
     function setActive(index, force = false) {
       if (index === active && !force) return;
       const previous = active;
@@ -59,20 +78,20 @@
         images[i].classList.toggle('is-previous', i === previous && !current);
         images[i].classList.toggle('is-active', current);
         images[i].setAttribute('aria-hidden', String(!current));
-        if (images[i].tagName === 'VIDEO') {
-          if (current) images[i].play().catch(() => {});
-          else images[i].pause();
-        }
       });
     }
 
     function render(force = false) {
-      if (!pinned) return;
+      if (!pinned) {
+        syncDemoVideos();
+        return;
+      }
       const position = Math.max(0, (window.scrollY - start) / (stageHeight * 0.8));
       setActive(Math.min(steps.length - 1, Math.floor(position)), force);
       steps.forEach((step, i) => {
         step.style.setProperty('--how-progress', String(Math.max(0, Math.min(1, position - i))));
       });
+      syncDemoVideos();
     }
 
     function measure() {
@@ -102,7 +121,6 @@
         track.classList.remove('is-enhanced');
         images.forEach((image, i) => {
           steps[i].appendChild(image);
-          if (image.tagName === 'VIDEO') image.play().catch(() => {});
           image.classList.remove('is-active', 'is-previous');
           image.removeAttribute('aria-hidden');
           steps[i].classList.remove('is-active');
@@ -114,6 +132,7 @@
         active = -1;
       }
       signature = geometrySignature();
+      syncDemoVideos();
     }
 
     function schedule(measureFirst = false) {
